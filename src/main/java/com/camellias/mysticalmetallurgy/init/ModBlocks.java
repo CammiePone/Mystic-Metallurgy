@@ -1,23 +1,17 @@
 package com.camellias.mysticalmetallurgy.init;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.camellias.mysticalmetallurgy.blocks.ores.BlockSilverOre;
-
 import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 
-public class ModBlocks 
-{
-	//-----Block list-----//
-	public static final List<Block> BLOCKS = new ArrayList<Block>();
-			
+@GameRegistry.ObjectHolder("mysticalmetallurgy")
+public class ModBlocks
+{			
 	//Overworld Ores
-	public static final Block SILVER_ORE = new BlockSilverOre("oreSilver", Material.ROCK);
+	public static final Block ORE = null;
 	
 	//Nether Ores
 	
 	
 	//End Ores
+	
 }

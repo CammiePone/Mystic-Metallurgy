@@ -1,0 +1,10 @@
+item.mysticalmetallurgy.ingot_silver.name=Silver Ingot
+
+info.mysticalmetallurgy.shift=<Hold Shift For More Info>
+info.mysticalmetallurgy.attributes=Attributes:
+
+effect.mysticalmetallurgy.dense.name=Durable
+effect.mysticalmetallurgy.fire.name=Flame
+
+itemGroup.mystical_metals_items=Mystical Metallurgy Items
+itemGroup.mystical_metals_ores=Mystical Metallurgy Ores
