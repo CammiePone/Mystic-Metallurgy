@@ -1,5 +1,6 @@
 package com.camellias.mysticalmetallurgy.common.effect;
 
+import com.camellias.mysticalmetallurgy.Main;
 import com.camellias.mysticalmetallurgy.api.Effect;
 import com.camellias.mysticalmetallurgy.api.RegisterItemEffectsEvent;
 import net.minecraft.client.resources.I18n;
@@ -10,6 +11,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.oredict.OreDictionary;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -26,6 +28,7 @@ public class EffectHandler
     public static EffectHandler INSTANCE = new EffectHandler();
 
     private Map<ItemMeta, List<EffectLevelPair>> itemEffects = new HashMap<>();
+    private Map<String, List<EffectLevelPair>> oreDictEffects = new HashMap<>();
 
     @SuppressWarnings("unchecked")
     public void registerItemWithEffect(@Nonnull Item item, int meta, @Nonnull ResourceLocation effect, int level)
@@ -33,7 +36,7 @@ public class EffectHandler
         if (Effect.exists(effect))
         {
             ItemMeta im = new ItemMeta(item, meta);
-            
+
             if (itemEffects.containsKey(im))
             {
                 itemEffects.get(im).add(new EffectLevelPair(effect, level));
@@ -45,24 +48,42 @@ public class EffectHandler
         }
     }
 
-    private List<EffectLevelPair> getItemEffects(Item item, int meta)
+    @SuppressWarnings("unchecked")
+    public void registerItemWithEffect(@Nonnull String oreDict, @Nonnull ResourceLocation effect, int level)
     {
         return itemEffects.get(new ItemMeta(item, meta));
+                }
+                Main.logger.info(String.format("successfully registered %s effect to oredict %s", effect.toString(), oreDict));
     }
 
+    @Nonnull
     private List<EffectLevelPair> getItemEffects(ItemStack stack)
     {
-        return getItemEffects(stack.getItem(), stack.getMetadata());
-    }
+        List<EffectLevelPair> effects = new ArrayList<>();
+        for (int id : OreDictionary.getOreIDs(stack))
+        {
+            String oreDictEntry = OreDictionary.getOreName(id);
+            if (oreDictEffects.containsKey(oreDictEntry))
+                effects.addAll(oreDictEffects.get(oreDictEntry));
+        }
 
-    private boolean isRegistered(Item item, int meta)
-    {
-        return itemEffects.containsKey(new ItemMeta(item, meta));
+        ItemMeta im = new ItemMeta(stack.getItem(), stack.getMetadata());
+        if (itemEffects.containsKey(im))
+            effects.addAll(itemEffects.get(im));
+
+        return effects;
     }
 
     private boolean isRegistered(ItemStack stack)
     {
-        return isRegistered(stack.getItem(), stack.getMetadata());
+        for (int id : OreDictionary.getOreIDs(stack))
+        {
+            String oreDictEntry = OreDictionary.getOreName(id);
+            if (oreDictEffects.containsKey(oreDictEntry))
+                return true;
+        }
+
+        return itemEffects.containsKey(new ItemMeta(stack.getItem(), stack.getMetadata()));
     }
 
     private static class ItemMeta

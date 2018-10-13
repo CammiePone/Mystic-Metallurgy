@@ -10,10 +10,12 @@ import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.registries.RegistryBuilder;
 
 @Mod.EventBusSubscriber
@@ -57,12 +59,12 @@ public class RegistrationHandler
     @SubscribeEvent
     public static void registerItemEffects(RegisterItemEffectsEvent event)
     {
-        event.getRegistry().registerItemWithEffect(ModItems.INGOT, 0, EffectFire.ID, 3);
+        event.getRegistry().registerItemWithEffect("ingotSilver", EffectFire.ID, 3);
     }
     
     public static void registerOreDict()
     {
-    	
+        OreDictionary.registerOre("ingotSilver", new ItemStack(ModItems.INGOT, 1, 0));
     }
     
     private static Block asDefault(Block block, ResourceLocation loc, CreativeTabs tab)
