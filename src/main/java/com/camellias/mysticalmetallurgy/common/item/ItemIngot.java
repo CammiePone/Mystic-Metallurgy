@@ -1,7 +1,6 @@
 package com.camellias.mysticalmetallurgy.common.item;
 
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
@@ -10,7 +9,7 @@ import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ItemIngot extends Item {
+public class ItemIngot extends ItemVariant {
     private Map<Integer, ResourceLocation> variants = new HashMap<>();
 
     public ItemIngot() {

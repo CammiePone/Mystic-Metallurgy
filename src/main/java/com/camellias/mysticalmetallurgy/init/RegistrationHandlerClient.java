@@ -2,7 +2,9 @@ package com.camellias.mysticalmetallurgy.init;
 
 import com.camellias.mysticalmetallurgy.common.item.ItemIngot;
 
+import com.camellias.mysticalmetallurgy.common.item.ItemVariant;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
@@ -28,11 +30,14 @@ public class RegistrationHandlerClient
     {
         for (Item item : items)
         {
-            if (item.getHasSubtypes())
+            if (item instanceof ItemVariant)
             {
                 NonNullList<ItemStack> list = NonNullList.create();
-                item.getSubItems(ModTabs.MYSTICAL_METALS_ITEMS, list);
-                list.forEach(stack -> registerItemModel(item, stack.getItemDamage(), ((ItemIngot) item).getVariantId(stack)));
+                for (CreativeTabs tab : item.getCreativeTabs())
+                {
+                    item.getSubItems(tab, list);
+                    list.forEach(stack -> registerItemModel(item, stack.getItemDamage(), ((ItemVariant) item).getVariantId(stack)));
+                }
             }
             else registerItemModel(item);
         }
