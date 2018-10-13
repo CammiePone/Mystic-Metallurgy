@@ -45,15 +45,34 @@ public class EffectHandler
             {
                 itemEffects.put(im, new ArrayList<>(Collections.singletonList(new EffectLevelPair(effect, level))));
             }
+            Main.logger.info(String.format("successfully registered %s effect to item %s:%d", effect.toString(), item.getRegistryName().toString(), meta));
         }
+        else
+            Main.logger.warn(String.format("failed to register %s effect to item %s:%d - effect does not exist",  effect.toString(), item.getRegistryName().toString(), meta));
     }
 
     @SuppressWarnings("unchecked")
     public void registerItemWithEffect(@Nonnull String oreDict, @Nonnull ResourceLocation effect, int level)
     {
-        return itemEffects.get(new ItemMeta(item, meta));
+        if (Effect.exists(effect))
+        {
+            if (OreDictionary.doesOreNameExist(oreDict))
+            {
+                if (oreDictEffects.containsKey(oreDict))
+                {
+                    oreDictEffects.get(oreDict).add(new EffectLevelPair(effect, level));
+                }
+                else
+                {
+                    oreDictEffects.put(oreDict, new ArrayList<>(Collections.singletonList(new EffectLevelPair(effect, level))));
                 }
                 Main.logger.info(String.format("successfully registered %s effect to oredict %s", effect.toString(), oreDict));
+            }
+            else
+                Main.logger.warn(String.format("failed to register %s effect to oredict %s - oredict entry does not exist", effect.toString(), oreDict));
+        }
+        else
+            Main.logger.warn(String.format("failed to register %s effect to oredict %s - effect does not exist", effect.toString(), oreDict));
     }
 
     @Nonnull
