@@ -12,6 +12,8 @@ import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
@@ -177,6 +179,12 @@ public class TileCrucible extends TileEntity implements ITickable
         world.notifyBlockUpdate(pos, state, state, 3);
         world.scheduleBlockUpdate(pos, blockType, 0, 0);
         super.markDirty();
+    }
+
+    @Override
+    public boolean shouldRefresh(World world, BlockPos pos, @Nonnull IBlockState oldState, @Nonnull IBlockState newSate)
+    {
+        return false;
     }
 
     @Override
