@@ -125,7 +125,7 @@ public class TileCrucible extends TileEntity implements ITickable
 
             NBTTagCompound fluidTag = new NBTTagCompound();
             fluidTag.setTag("effects", tagList);
-            output.fillInternal(new FluidStack(ModFluids.MYTHIC, 144, fluidTag), true);
+            output.fillInternal(new FluidStack(ModFluids.MYSTICAL_METAL, 144, fluidTag), true);
             for (int slot = 0; slot < INPUT_SLOTS; slot ++)
                 input.setStackInSlot(slot, ItemStack.EMPTY);
             input.getStackInSlot(FUEL_SLOT).shrink(1);

@@ -6,15 +6,18 @@ import com.camellias.mysticalmetallurgy.api.RegisterItemEffectsEvent;
 import com.camellias.mysticalmetallurgy.common.block.crucible.BlockCrucible;
 import com.camellias.mysticalmetallurgy.common.block.crucible.TileCrucible;
 import com.camellias.mysticalmetallurgy.common.effect.*;
+import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
 import com.camellias.mysticalmetallurgy.common.item.ItemIngot;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -34,8 +37,11 @@ public class RegistrationHandler
     @SubscribeEvent
     public static void registerBlocks(RegistryEvent.Register<Block> event)
     {
+        FluidRegistry.registerFluid(ModFluids.MYSTICAL_METAL);
+
         event.getRegistry().registerAll(
-                asDefault(new BlockCrucible(), BlockCrucible.LOC, ModTabs.MYSTICAL_METALS_BLOCKS)
+                asDefault(new BlockCrucible(), BlockCrucible.LOC, ModTabs.MYSTICAL_METALS_BLOCKS),
+                asDefault(new BlockFluidClassic(ModFluids.MYSTICAL_METAL, Material.LAVA), FluidMysticMetal.ID, ModTabs.MYSTICAL_METALS_BLOCKS)
         );
 
         GameRegistry.registerTileEntity(TileCrucible.class, BlockCrucible.LOC);
@@ -57,7 +63,6 @@ public class RegistrationHandler
 
     public static void registerFluids()
     {
-        FluidRegistry.registerFluid(ModFluids.MYTHIC);
     }
 
     @SubscribeEvent
@@ -72,9 +77,11 @@ public class RegistrationHandler
     @SubscribeEvent
     public static void registerItemEffects(RegisterItemEffectsEvent event)
     {
-        event.getRegistry().registerItemWithEffect("ingotSilver", EffectFire.ID, 3);
+        event.getRegistry().registerItemWithEffect("ingotIron", EffectDense.ID, 3);
+        event.getRegistry().registerItemWithEffect("ingotGold", EffectFire.ID, 3);
     }
-    
+
+    //region <helper>
     public static void registerOreDict()
     {
         OreDictionary.registerOre("ingotSilver", new ItemStack(ModItems.INGOT, 1, 0));
@@ -94,4 +101,5 @@ public class RegistrationHandler
     {
         return new ItemBlock(block).setRegistryName(loc);
     }
+    //endregion
 }

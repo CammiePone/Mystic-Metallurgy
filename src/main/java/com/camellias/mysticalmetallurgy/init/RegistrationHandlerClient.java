@@ -3,19 +3,29 @@ package com.camellias.mysticalmetallurgy.init;
 import com.camellias.mysticalmetallurgy.common.block.crucible.RendererCrucible;
 import com.camellias.mysticalmetallurgy.common.block.crucible.TileCrucible;
 
+import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
 import com.camellias.mysticalmetallurgy.common.item.ItemVariant;
+import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.ItemMeshDefinition;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
+
+import javax.annotation.Nonnull;
 
 @Mod.EventBusSubscriber(Side.CLIENT)
 public class RegistrationHandlerClient
@@ -30,8 +40,21 @@ public class RegistrationHandlerClient
         );
 
         ClientRegistry.bindTileEntitySpecialRenderer(TileCrucible.class, new RendererCrucible());
+
+        registerFluidModel(ModBlocks.MYSTICAL_LIQUID_METAL, ModFluids.MYSTICAL_METAL, FluidMysticMetal.ID);
     }
-    
+
+    @SubscribeEvent
+    public static void registerTex(TextureStitchEvent.Pre event)
+    {
+        registerAllTex(event.getMap(),
+                FluidMysticMetal.FLOW,
+                FluidMysticMetal.STILL
+        );
+    }
+
+
+    //region <helper>
     private static void registerAllItemModel(Item... items)
     {
         for (Item item : items)
@@ -63,4 +86,42 @@ public class RegistrationHandlerClient
     {
         ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(location, variant));
     }
+
+    private static void registerAllTex(TextureMap map, ResourceLocation... locations)
+    {
+        for (ResourceLocation tex : locations)
+            map.registerSprite(tex);
+    }
+
+    private static void registerFluidModel(Block block, Fluid fluid, ResourceLocation location)
+    {
+        ModelLoader.setCustomStateMapper(block, new FluidStateMapper(fluid, new ModelResourceLocation(location, fluid.getName())));
+    }
+
+    public static class FluidStateMapper extends StateMapperBase implements ItemMeshDefinition
+    {
+
+        public final Fluid fluid;
+        public final ModelResourceLocation location;
+
+        public FluidStateMapper(Fluid fluid, ModelResourceLocation location) {
+            this.fluid = fluid;
+
+            // have each block hold its fluid per nbt? hm
+            this.location = location;
+        }
+
+        @Nonnull
+        @Override
+        protected ModelResourceLocation getModelResourceLocation(@Nonnull IBlockState state) {
+            return location;
+        }
+
+        @Nonnull
+        @Override
+        public ModelResourceLocation getModelLocation(@Nonnull ItemStack stack) {
+            return location;
+        }
+    }
+    //endregion
 }

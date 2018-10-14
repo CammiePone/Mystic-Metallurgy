@@ -8,6 +8,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 public class ModBlocks
 {
 	public static final Block CRUCIBLE = Blocks.AIR;
+	public static final Block MYSTICAL_LIQUID_METAL = Blocks.AIR;
 
 	//Overworld Ores
 	public static final Block ORE = Blocks.AIR;

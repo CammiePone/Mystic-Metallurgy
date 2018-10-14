@@ -6,10 +6,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidUtil;
 
 public class RendererCrucible extends TileEntitySpecialRenderer<TileCrucible>
 {
@@ -35,8 +32,8 @@ public class RendererCrucible extends TileEntitySpecialRenderer<TileCrucible>
             GlStateManager.enableBlend();
             RenderUtils.translateAgainstPlayer(te.getPos(), false);
 
-            FluidStack fluid = FluidUtil.getFluidContained(new ItemStack(Items.LAVA_BUCKET)); //te.output.getFluid(); for testing (color missing)
-            int color = fluid.getFluid().getColor(fluid);
+            FluidStack fluid = te.output.getFluid(); //FluidUtil.getFluidContained(new ItemStack(Items.LAVA_BUCKET)); //for testing (color missing)
+            int color = fluid.getFluid().getColor();
             final TextureAtlasSprite still = Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(fluid.getFluid().getStill(fluid).toString());
             final TextureAtlasSprite flowing = Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(fluid.getFluid().getFlowing(fluid).toString());
 

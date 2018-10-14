@@ -3,6 +3,7 @@ package com.camellias.mysticalmetallurgy;
 import com.camellias.mysticalmetallurgy.common.effect.EffectHandler;
 import com.camellias.mysticalmetallurgy.init.RegistrationHandler;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -23,6 +24,10 @@ public class Main
 	static final String ACCEPTEDVERSIONS = "[1.12.2]";
 
 	public static Logger logger;
+	static
+	{
+		FluidRegistry.enableUniversalBucket();
+	}
 
 	//Initialization
 	@EventHandler
