@@ -6,9 +6,11 @@ import com.camellias.mysticalmetallurgy.api.RegisterItemEffectsEvent;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.oredict.OreDictionary;
@@ -76,7 +78,7 @@ public class EffectHandler
     }
 
     @Nonnull
-    private List<EffectLevelPair> getItemEffects(ItemStack stack)
+    public List<EffectLevelPair> getItemEffects(ItemStack stack)
     {
         List<EffectLevelPair> effects = new ArrayList<>();
         for (int id : OreDictionary.getOreIDs(stack))
@@ -93,7 +95,7 @@ public class EffectHandler
         return effects;
     }
 
-    private boolean isRegistered(ItemStack stack)
+    public boolean hasStackEffects(ItemStack stack)
     {
         for (int id : OreDictionary.getOreIDs(stack))
         {
@@ -126,15 +128,34 @@ public class EffectHandler
         }
     }
 
-    private static class EffectLevelPair
+    public static class EffectLevelPair implements INBTSerializable<NBTTagCompound>
     {
-        ResourceLocation effect;
-        int level;
+        private static final String NBT_EFFECT = "effect_id";
+        private static final String NBT_LEVEL = "effect_level";
+
+        public ResourceLocation effect;
+        public int level;
 
         EffectLevelPair(ResourceLocation effect, int level)
         {
             this.effect = effect;
             this.level = level;
+        }
+
+        @Override
+        public NBTTagCompound serializeNBT()
+        {
+            NBTTagCompound tag = new NBTTagCompound();
+            tag.setString(NBT_EFFECT, effect.toString());
+            tag.setInteger(NBT_LEVEL, level);
+            return tag;
+        }
+
+        @Override
+        public void deserializeNBT(NBTTagCompound nbt)
+        {
+            effect = new ResourceLocation(nbt.getString(NBT_EFFECT));
+            level = nbt.getInteger(NBT_LEVEL);
         }
     }
 
@@ -144,7 +165,7 @@ public class EffectHandler
         ItemStack stack = event.getItemStack();
         List<String> tooltip = event.getToolTip();
 
-        if (isRegistered(stack))
+        if (hasStackEffects(stack))
         {
             //<Hold Shift For More Info>
             if (!event.getFlags().isAdvanced())
