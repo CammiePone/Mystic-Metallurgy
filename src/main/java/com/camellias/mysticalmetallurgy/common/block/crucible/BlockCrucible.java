@@ -150,6 +150,13 @@ public class BlockCrucible extends Block
 
     //region <other>
     @Override
+    public int getLightValue(IBlockState state, IBlockAccess world, BlockPos pos)
+    {
+        TileEntity tile = world.getTileEntity(pos);
+        return ((tile instanceof TileCrucible) && ((TileCrucible)tile).isLit() ? 15 : 0) * 15;
+    }
+
+    @Override
     @SuppressWarnings("deprecation")
     public boolean isFullCube(IBlockState state)
     {
