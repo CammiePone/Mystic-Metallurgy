@@ -31,7 +31,9 @@ public class TileCrucible extends TileEntity implements ITickable
     private static final String NBT_INPUT = "input";
     private static final String NBT_OUTPUT = "output";
     private static final String NBT_PROGRESS = "progress";
+    private static final String NBT_LIT = "onfire";
 
+    private boolean lit = false;
     private int progress = 100;
     private static final int MaxFuelLevel = 4;
     public static int FUEL_SLOT = 2;
@@ -70,7 +72,10 @@ public class TileCrucible extends TileEntity implements ITickable
         protected void onContentsChanged(int slot)
         {
             if (slot == FUEL_SLOT)
+            {
+                lit = lit && !getStackInSlot(slot).isEmpty();
                 world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockCrucible.COAL_LEVEL, getStackInSlot(slot).getCount()));
+            }
             markDirty();
         }
     };
@@ -96,13 +101,17 @@ public class TileCrucible extends TileEntity implements ITickable
     @Override
     public void update()
     {
-        if(world.isRemote) return;
-        if (progress >= 100 || world.getTotalWorldTime() % 10 != 0) return;
-
-        if (++progress == 99)
+        if (world.isRemote) return;
+        if (world.getTotalWorldTime() % 10 != 0) return;
+        if (progress >= 100)
+        {
+            if (canStart())
+                progress = 0;
+        }
+        else if (++progress == 99)
         {
             NBTTagList tagList = new NBTTagList();
-            for (int slot = 0; slot < input.getSlots(); slot++)
+            for (int slot = 0; slot < INPUT_SLOTS; slot++)
             {
                 for (EffectHandler.EffectLevelPair el : EffectHandler.INSTANCE.getItemEffects(input.getStackInSlot(slot)))
                 {
@@ -121,7 +130,7 @@ public class TileCrucible extends TileEntity implements ITickable
 
     public boolean hasValidContent()
      {
-        for (int slot = 0; slot < input.getSlots(); slot++)
+        for (int slot = 0; slot < INPUT_SLOTS; slot++)
         {
             if(!EffectHandler.INSTANCE.hasStackEffects(input.getStackInSlot(slot)))
                 return false;
@@ -130,16 +139,14 @@ public class TileCrucible extends TileEntity implements ITickable
         return true;
     }
 
-    public boolean canActivate()
+    public boolean canStart()
     {
-        return output.canFill() && hasValidContent() && progress <= 100 && !input.getStackInSlot(FUEL_SLOT).isEmpty();
+        return output.canFill() && hasValidContent() && progress >= 100 && !input.getStackInSlot(FUEL_SLOT).isEmpty() && lit;
     }
 
-    public void activate()
-    {
-        if (canActivate())
-            progress = 0;
-    }
+    public boolean canLight() { return !input.getStackInSlot(FUEL_SLOT).isEmpty(); }
+    public void setLit() { lit = true; }
+    public boolean isLit() { return lit; }
 
     public static boolean isValidFuel(ItemStack stack)
     {
@@ -218,6 +225,7 @@ public class TileCrucible extends TileEntity implements ITickable
         compound.setTag(NBT_INPUT, input.serializeNBT());
         compound.setTag(NBT_OUTPUT, output.writeToNBT(new NBTTagCompound()));
         compound.setInteger(NBT_PROGRESS, progress);
+        compound.setBoolean(NBT_LIT, lit);
         return compound;
     }
 
@@ -227,6 +235,7 @@ public class TileCrucible extends TileEntity implements ITickable
         if (cmp.hasKey(NBT_INPUT)) input.deserializeNBT(cmp.getCompoundTag(NBT_INPUT));
         if (cmp.hasKey(NBT_OUTPUT)) output.readFromNBT(cmp.getCompoundTag(NBT_OUTPUT));
         if (cmp.hasKey(NBT_PROGRESS)) progress = cmp.getInteger(NBT_PROGRESS);
+        if (cmp.hasKey(NBT_LIT)) lit = cmp.getBoolean(NBT_LIT);
     }
     //endregion
 }

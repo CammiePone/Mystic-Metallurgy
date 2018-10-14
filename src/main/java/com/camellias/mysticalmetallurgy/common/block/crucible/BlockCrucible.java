@@ -11,7 +11,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
+import net.minecraft.item.ItemFlintAndSteel;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -48,12 +48,13 @@ public class BlockCrucible extends Block
             if (tile != null)
             {
                 ItemStack stack = playerIn.getHeldItem(hand);
-                if (stack.getItem() == Items.BONE)
+                if (stack.getItem() instanceof ItemFlintAndSteel)
                 {
-                    if (tile.canActivate())
+                    if (tile.canLight())
                     {
-                        tile.activate();
-                        stack.shrink(1);
+                        tile.setLit();
+                        stack.damageItem(1, playerIn);
+                        tile.markDirty();
                     }
                 }
                 else
@@ -92,6 +93,8 @@ public class BlockCrucible extends Block
                 }
             }
         }
+        tile.markDirty();
+    }
     }
 
     //region <tileentity>
