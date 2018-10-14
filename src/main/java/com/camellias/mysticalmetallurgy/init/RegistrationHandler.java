@@ -22,9 +22,9 @@ import net.minecraftforge.registries.RegistryBuilder;
 public class RegistrationHandler
 {
     @SubscribeEvent
-    public static void registerBlocks(RegistryEvent.NewRegistry event)
+    public static void registerRegistry(RegistryEvent.NewRegistry event)
     {
-        new RegistryBuilder<Effect>().setName(Effect.REGISTRY_NAME).setMaxID(Effect.MAX_ID).create();
+        new RegistryBuilder<>().setName(Effect.REGISTRY_NAME).setType((Class)Effect.class).setMaxID(Effect.MAX_ID).create();
     }
     
     @SubscribeEvent
