@@ -1,9 +1,15 @@
 package com.camellias.mysticalmetallurgy.common.block.crucible;
 
+import com.camellias.mysticalmetallurgy.api.utils.RenderUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
 
 public class RendererCrucible extends TileEntitySpecialRenderer<TileCrucible>
 {
@@ -21,6 +27,22 @@ public class RendererCrucible extends TileEntitySpecialRenderer<TileCrucible>
             //make them fit
             GlStateManager.scale(0.3F, 0.3F, 0.3F);
             Minecraft.getMinecraft().getRenderItem().renderItem(te.input.getStackInSlot(slot), ItemCameraTransforms.TransformType.FIXED);
+            GlStateManager.popMatrix();
+        }
+        if (te.output != null && te.output.getFluidAmount() > 0)
+        {
+            GlStateManager.pushMatrix();
+            GlStateManager.enableBlend();
+            RenderUtils.translateAgainstPlayer(te.getPos(), false);
+
+            FluidStack fluid = FluidUtil.getFluidContained(new ItemStack(Items.LAVA_BUCKET)); //te.output.getFluid(); for testing (color missing)
+            int color = fluid.getFluid().getColor(fluid);
+            final TextureAtlasSprite still = Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(fluid.getFluid().getStill(fluid).toString());
+            final TextureAtlasSprite flowing = Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(fluid.getFluid().getFlowing(fluid).toString());
+
+            RenderUtils.renderFluid(fluid, te.getPos(), 0.35d, 0.35d, 0.35d, 0.0d, 0.0d, 0.0d, 0.30d, 0.30d, 0.30d, color, still, flowing);
+
+            GlStateManager.disableBlend();
             GlStateManager.popMatrix();
         }
     }

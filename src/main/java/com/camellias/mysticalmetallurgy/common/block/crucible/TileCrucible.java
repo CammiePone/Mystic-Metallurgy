@@ -33,11 +33,14 @@ public class TileCrucible extends TileEntity implements ITickable
     private static final String NBT_PROGRESS = "progress";
     private static final String NBT_LIT = "onfire";
 
-    private boolean lit = false;
-    private int progress = 100;
     private static final int MaxFuelLevel = 4;
     public static int FUEL_SLOT = 2;
     public static int INPUT_SLOTS = 2;
+
+    private boolean lit = false;
+    private int progress = 100;
+
+    //region <inventory>
     ItemStackHandler input = new ItemStackHandler(3)
     {
         @Override
@@ -97,6 +100,7 @@ public class TileCrucible extends TileEntity implements ITickable
             return super.canDrain();
         }
     };
+    //endregion
 
     @Override
     public void update()
