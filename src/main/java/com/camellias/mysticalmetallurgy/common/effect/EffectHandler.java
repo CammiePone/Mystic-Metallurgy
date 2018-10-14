@@ -3,6 +3,7 @@ package com.camellias.mysticalmetallurgy.common.effect;
 import com.camellias.mysticalmetallurgy.Main;
 import com.camellias.mysticalmetallurgy.api.Effect;
 import com.camellias.mysticalmetallurgy.api.RegisterItemEffectsEvent;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -168,7 +169,7 @@ public class EffectHandler
         if (hasStackEffects(stack))
         {
             //<Hold Shift For More Info>
-            if (!event.getFlags().isAdvanced())
+            if (!GuiScreen.isShiftKeyDown())
             {
                 tooltip.add(TextFormatting.GOLD + I18n.format("info.mysticalmetallurgy.shift"));
             }
@@ -179,7 +180,7 @@ public class EffectHandler
 
                 for (EffectLevelPair effectPair : getItemEffects(stack))
                 {
-                    tooltip.add(Effect.getEffect(effectPair.effect).getAttributeInfo());
+                    tooltip.add(String.format("%s %d",Effect.getEffect(effectPair.effect).getAttributeInfo(), effectPair.level));
                 }
             }
         }

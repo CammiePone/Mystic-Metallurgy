@@ -2,6 +2,7 @@ package com.camellias.mysticalmetallurgy;
 
 import com.camellias.mysticalmetallurgy.common.effect.EffectHandler;
 import com.camellias.mysticalmetallurgy.init.RegistrationHandler;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -41,5 +42,6 @@ public class Main
 	public void postInit(FMLPostInitializationEvent event)
 	{
 		EffectHandler.raiseRegisterEvent();
+		MinecraftForge.EVENT_BUS.register(EffectHandler.INSTANCE);
 	}
 }
