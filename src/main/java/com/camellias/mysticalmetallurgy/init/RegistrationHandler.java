@@ -3,6 +3,8 @@ package com.camellias.mysticalmetallurgy.init;
 import com.camellias.mysticalmetallurgy.Main;
 import com.camellias.mysticalmetallurgy.api.Effect;
 import com.camellias.mysticalmetallurgy.api.RegisterItemEffectsEvent;
+import com.camellias.mysticalmetallurgy.common.block.crucible.BlockCrucible;
+import com.camellias.mysticalmetallurgy.common.block.crucible.TileCrucible;
 import com.camellias.mysticalmetallurgy.common.effect.*;
 import com.camellias.mysticalmetallurgy.common.item.ItemIngot;
 
@@ -16,8 +18,9 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.oredict.OreDictionary;
-import net.minecraftforge.registries.RegistryBuilder;
+import net.minecraftforge.registries.*;
 
 @Mod.EventBusSubscriber
 public class RegistrationHandler
@@ -32,14 +35,18 @@ public class RegistrationHandler
     public static void registerBlocks(RegistryEvent.Register<Block> event)
     {
         event.getRegistry().registerAll(
+                asDefault(new BlockCrucible(), BlockCrucible.LOC, ModTabs.MYSTICAL_METALS_BLOCKS)
         );
+
+        GameRegistry.registerTileEntity(TileCrucible.class, BlockCrucible.LOC);
     }
     
     @SubscribeEvent
     public static void registerItems(RegistryEvent.Register<Item> event)
     {
         event.getRegistry().registerAll(
-        		
+        		asItem(ModBlocks.CRUCIBLE, BlockCrucible.LOC),
+
                 asDefault(new ItemIngot()
                                 .addVariant(0, new ResourceLocation(Main.MODID, "ingot_silver")),
                         new ResourceLocation(Main.MODID, "ingot"),

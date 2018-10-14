@@ -13,6 +13,7 @@ public class ModTabs
 {
     public static final CreativeTabs MYSTICAL_METALS_ITEMS = new ModTab("mystical_metals_items", Items.IRON_INGOT);
     public static final CreativeTabs MYSTICAL_METALS_ORES = new ModTab("mystical_metals_ores", Blocks.IRON_ORE);
+    public static final CreativeTabs MYSTICAL_METALS_BLOCKS = new ModTab("mystical_metals_blocks", Blocks.IRON_BLOCK);
 
     private static class ModTab extends CreativeTabs
     {

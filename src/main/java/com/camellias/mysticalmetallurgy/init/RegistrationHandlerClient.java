@@ -1,6 +1,7 @@
 package com.camellias.mysticalmetallurgy.init;
 
-import com.camellias.mysticalmetallurgy.common.item.ItemIngot;
+import com.camellias.mysticalmetallurgy.common.block.crucible.RendererCrucible;
+import com.camellias.mysticalmetallurgy.common.block.crucible.TileCrucible;
 
 import com.camellias.mysticalmetallurgy.common.item.ItemVariant;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -11,6 +12,7 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -22,8 +24,12 @@ public class RegistrationHandlerClient
     public static void registerModels(ModelRegistryEvent event)
     {
         registerAllItemModel(
+                Item.getItemFromBlock(ModBlocks.CRUCIBLE),
+
                 ModItems.INGOT
         );
+
+        ClientRegistry.bindTileEntitySpecialRenderer(TileCrucible.class, new RendererCrucible());
     }
     
     private static void registerAllItemModel(Item... items)
