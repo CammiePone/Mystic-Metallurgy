@@ -98,6 +98,7 @@ public class EffectHandler
 
     public boolean hasStackEffects(ItemStack stack)
     {
+        if (stack.isEmpty()) return false;
         for (int id : OreDictionary.getOreIDs(stack))
         {
             String oreDictEntry = OreDictionary.getOreName(id);
