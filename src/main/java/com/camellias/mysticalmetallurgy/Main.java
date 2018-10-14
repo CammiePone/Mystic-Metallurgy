@@ -28,6 +28,7 @@ public class Main
 	public void preInit(FMLPreInitializationEvent event)
 	{
 		logger = event.getModLog();
+		RegistrationHandler.registerFluids();
 	}
 
 	@EventHandler

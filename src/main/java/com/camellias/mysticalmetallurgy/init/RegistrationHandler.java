@@ -13,6 +13,7 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.oredict.OreDictionary;
@@ -45,6 +46,11 @@ public class RegistrationHandler
                         ModTabs.MYSTICAL_METALS_ITEMS)
 
         );
+    }
+
+    public static void registerFluids()
+    {
+        FluidRegistry.registerFluid(ModFluids.MYTHIC);
     }
 
     @SubscribeEvent
