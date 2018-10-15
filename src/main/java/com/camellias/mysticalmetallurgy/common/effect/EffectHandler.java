@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -114,30 +115,6 @@ public class EffectHandler
     }
 
     @Nonnull
-    public static NBTTagCompound writeContentEffectsToNBT(IItemHandler handler, Integer... slotsToIgnore)
-    {
-        List<Integer> ignore = Arrays.asList(slotsToIgnore);
-        NBTTagList tagList = new NBTTagList();
-        for (int slot = 0; slot < handler.getSlots(); slot++)
-        {
-            if (ignore.contains(slot)) continue;
-
-            ItemStack stack = handler.getStackInSlot(slot);
-            if (hasStackEffects(stack))
-            {
-                for (EffectHandler.EffectLevelPair el : getItemEffects(stack))
-                {
-                    tagList.appendTag(el.serializeNBT());
-                }
-            }
-        }
-
-        NBTTagCompound cmp = new NBTTagCompound();
-        cmp.setTag(NBT_EFFECTS, tagList);
-        return cmp;
-    }
-
-    @Nonnull
     public static List<EffectLevelPair> readEffectsFromNBT(NBTTagCompound tag)
     {
         List<EffectLevelPair> list = new ArrayList<>();
@@ -148,6 +125,40 @@ public class EffectHandler
                     list.add(EffectLevelPair.fromNBT((NBTTagCompound) nbt)));
         }
         return list;
+    }
+
+    @Nonnull
+    public static List<EffectLevelPair> combineStackEffects(ItemStack... stacks)
+    {
+        List<EffectLevelPair> list = new ArrayList<>(stacks.length);
+        for (ItemStack stack : stacks)
+        {
+            if (!stack.isEmpty() && hasStackEffects(stack))
+            {
+                for (EffectHandler.EffectLevelPair el : getItemEffects(stack))
+                {
+                    int newLevel = Math.round((float)el.level / (float)stacks.length);
+                    if (newLevel > 0)
+                        list.add(new EffectLevelPair(el.effect, newLevel));
+                }
+            }
+        }
+        return list;
+    }
+
+    public static NBTTagCompound combineStackEffectsToNBT(ItemStack... stacks)
+    {
+        List<EffectLevelPair> effects = combineStackEffects(stacks);
+
+        NBTTagList tagList = new NBTTagList();
+        for (EffectHandler.EffectLevelPair el : effects)
+        {
+            tagList.appendTag(el.serializeNBT());
+        }
+
+        NBTTagCompound cmp = new NBTTagCompound();
+        cmp.setTag(NBT_EFFECTS, tagList);
+        return cmp;
     }
 
     private static class ItemMeta

@@ -26,6 +26,8 @@ import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TileCrucible extends TileEntity implements ITickable
 {
@@ -35,8 +37,8 @@ public class TileCrucible extends TileEntity implements ITickable
     private static final String NBT_LIT = "onfire";
 
     private static final int MaxFuelLevel = 4;
-    public static int FUEL_SLOT = 2;
     public static int INPUT_SLOTS = 2;
+    public static int FUEL_SLOT = INPUT_SLOTS;
 
     private boolean lit = false;
     private int progress = 100;
@@ -115,7 +117,11 @@ public class TileCrucible extends TileEntity implements ITickable
         }
         else if (++progress == 99)
         {
-            output.fillInternal(new FluidStack(ModFluids.MYSTICAL_METAL, 144, EffectHandler.writeContentEffectsToNBT(input, FUEL_SLOT)), true);
+            List<ItemStack> stacks = new ArrayList<>();
+            for (int slot = 0; slot < INPUT_SLOTS; slot ++)
+                stacks.add(input.getStackInSlot(slot));
+
+            output.fillInternal(new FluidStack(ModFluids.MYSTICAL_METAL, 144, EffectHandler.combineStackEffectsToNBT(stacks.toArray(new ItemStack[0]))), true);
 
             for (int slot = 0; slot < INPUT_SLOTS; slot ++)
                 input.setStackInSlot(slot, ItemStack.EMPTY);
