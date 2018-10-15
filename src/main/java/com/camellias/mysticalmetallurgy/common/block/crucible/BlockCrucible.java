@@ -71,7 +71,13 @@ public class BlockCrucible extends Block
         if (!playerIn.isSneaking() && !stack.isEmpty())
         {
             if (TileCrucible.isValidFuel(stack))
-                playerIn.setHeldItem(hand, tile.input.insertItem(TileCrucible.FUEL_SLOT, stack, false));
+            {
+                ItemStack fuelStack = stack.copy();
+                fuelStack.setCount(1);
+                if (tile.input.insertItem(TileCrucible.FUEL_SLOT, fuelStack, false).isEmpty())
+                    stack.shrink(1);
+
+            }
             else
             {
                 for (int slot = 0; slot < TileCrucible.INPUT_SLOTS; slot++)
