@@ -83,6 +83,7 @@ public class BlockCrucible extends Block
             if (fluidHandler != null)
             {
                 FluidUtil.interactWithFluidHandler(playerIn, hand, tile.output);
+                tile.markDirty();
             }
             else if (!playerIn.isSneaking())
             {
@@ -118,7 +119,6 @@ public class BlockCrucible extends Block
                 }
             }
         }
-        tile.markDirty();
     }
 
     @SideOnly(Side.CLIENT)
