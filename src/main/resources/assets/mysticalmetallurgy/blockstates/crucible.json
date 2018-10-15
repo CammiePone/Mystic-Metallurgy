@@ -1,9 +1,15 @@
 {
   "variants": {
-    "coallevel=0": { "model": "mysticalmetallurgy:crucible" },
-    "coallevel=1": { "model": "mysticalmetallurgy:crucible_1" },
-    "coallevel=2": { "model": "mysticalmetallurgy:crucible_2" },
-    "coallevel=3": { "model": "mysticalmetallurgy:crucible_3" },
-    "coallevel=4": { "model": "mysticalmetallurgy:crucible_4" }
+    "coallevel=0,lit=true": { "model": "mysticalmetallurgy:crucible" },
+    "coallevel=1,lit=true": { "model": "mysticalmetallurgy:crucible_1" },
+    "coallevel=2,lit=true": { "model": "mysticalmetallurgy:crucible_2" },
+    "coallevel=3,lit=true": { "model": "mysticalmetallurgy:crucible_3" },
+    "coallevel=4,lit=true": { "model": "mysticalmetallurgy:crucible_4" },
+
+    "coallevel=0,lit=false": { "model": "mysticalmetallurgy:crucible" },
+    "coallevel=1,lit=false": { "model": "mysticalmetallurgy:crucible_1" },
+    "coallevel=2,lit=false": { "model": "mysticalmetallurgy:crucible_2" },
+    "coallevel=3,lit=false": { "model": "mysticalmetallurgy:crucible_3" },
+    "coallevel=4,lit=false": { "model": "mysticalmetallurgy:crucible_4" }
   }
 }

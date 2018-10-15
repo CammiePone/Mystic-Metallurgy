@@ -1,13 +1,11 @@
 package com.camellias.mysticalmetallurgy.common.block.crucible;
 
 import com.camellias.mysticalmetallurgy.common.effect.EffectHandler;
-import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
 import com.camellias.mysticalmetallurgy.init.ModFluids;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -79,7 +77,7 @@ public class TileCrucible extends TileEntity implements ITickable
         {
             if (slot == FUEL_SLOT)
             {
-                lit = lit && !getStackInSlot(slot).isEmpty();
+                setLit(lit && !getStackInSlot(slot).isEmpty());
                 world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockCrucible.COAL_LEVEL, getStackInSlot(slot).getCount()));
             }
             markDirty();
@@ -112,6 +110,11 @@ public class TileCrucible extends TileEntity implements ITickable
         if (world.getTotalWorldTime() % 10 != 0) return;
         if (progress >= 100)
         {
+            if (progress == 100)
+            {
+                input.extractItem(FUEL_SLOT, 1, false);
+                progress++;
+            }
             if (canStart())
                 progress = 0;
         }
@@ -125,8 +128,8 @@ public class TileCrucible extends TileEntity implements ITickable
 
             for (int slot = 0; slot < INPUT_SLOTS; slot ++)
                 input.setStackInSlot(slot, ItemStack.EMPTY);
-            input.getStackInSlot(FUEL_SLOT).shrink(1);
         }
+        markDirty();
     }
 
     public boolean hasValidContent()
@@ -146,8 +149,13 @@ public class TileCrucible extends TileEntity implements ITickable
     }
 
     public boolean canLight() { return !input.getStackInSlot(FUEL_SLOT).isEmpty(); }
-    public void setLit() { lit = true; }
     public boolean isLit() { return lit; }
+    public void setLit() { setLit(true); }
+    private void setLit(boolean state)
+    {
+        lit = state;
+        world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockCrucible.LIT, state));
+    }
 
     public static boolean isValidFuel(ItemStack stack)
     {

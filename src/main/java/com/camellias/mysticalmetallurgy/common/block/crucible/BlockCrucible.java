@@ -7,11 +7,11 @@ import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemFlintAndSteel;
@@ -24,14 +24,18 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Random;
 
 public class BlockCrucible extends Block
 {
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "crucible");
     public static final PropertyInteger COAL_LEVEL = PropertyInteger.create("coallevel", 0, 4);
+    public static final PropertyBool LIT = PropertyBool.create("lit");
 
     private static final AxisAlignedBB AABB = new AxisAlignedBB(0.125D, 0.0D, 0.125D, 0.875D, 0.875D, 0.875D);
 
@@ -42,7 +46,7 @@ public class BlockCrucible extends Block
         setResistance(5.0F);
         setHardness(3.0F);
 
-        setDefaultState(blockState.getBaseState().withProperty(COAL_LEVEL, 0));
+        setDefaultState(blockState.getBaseState().withProperty(COAL_LEVEL, 0).withProperty(LIT, false));
     }
 
     @Override
@@ -73,7 +77,7 @@ public class BlockCrucible extends Block
 
     private void InsertExtract(TileCrucible tile, EntityPlayer playerIn, EnumHand hand, ItemStack stack)
     {
-        if (!playerIn.isSneaking() && !stack.isEmpty())
+        if (!stack.isEmpty())
         {
             IFluidHandler fluidHandler = FluidUtil.getFluidHandler(stack);
             if (fluidHandler != null)
@@ -97,6 +101,8 @@ public class BlockCrucible extends Block
                         if (tile.input.getStackInSlot(slot).isEmpty())
                         {
                             playerIn.setHeldItem(hand, tile.input.insertItem(slot, stack, false));
+                            break;
+                        }
                     }
                 }
             }
@@ -114,6 +120,24 @@ public class BlockCrucible extends Block
         }
         tile.markDirty();
     }
+
+    @SideOnly(Side.CLIENT)
+    public void randomDisplayTick(IBlockState stateIn, World worldIn, BlockPos pos, Random rand)
+    {
+        if (stateIn.getValue(LIT))
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                double ry = rand.nextDouble() * 0.5 + 0.15;
+                double rx = rand.nextDouble() * 0.4 + 0.3;
+                double rz = rand.nextDouble() * 0.4 + 0.3;
+
+                double vx = rand.nextDouble() * 0.02 - 0.01;
+                double vy = rand.nextDouble() * 0.05 + 0.03;
+                double vz = rand.nextDouble() * 0.02 - 0.01;
+                worldIn.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + rx, pos.getY() + ry, pos.getZ() + rz, vx, vy, vz);
+            }
+        }
     }
 
     //region <tileentity>
@@ -141,15 +165,7 @@ public class BlockCrucible extends Block
     @Override
     protected BlockStateContainer createBlockState()
     {
-        return new BlockStateContainer(this, COAL_LEVEL);
-    }
-
-    @Nonnull
-    @Override
-    @SuppressWarnings("deprecation")
-    public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer)
-    {
-        return this.getStateFromMeta(meta).withProperty(COAL_LEVEL, 0);
+        return new BlockStateContainer(this, COAL_LEVEL, LIT);
     }
 
     @Nonnull
@@ -157,13 +173,13 @@ public class BlockCrucible extends Block
     @SuppressWarnings("deprecation")
     public IBlockState getStateFromMeta(int meta)
     {
-        return getDefaultState().withProperty(COAL_LEVEL, meta & 5);
+        return getDefaultState().withProperty(COAL_LEVEL, meta & 7).withProperty(LIT, (meta >> 3) == 1);//getDefaultState().withProperty(COAL_LEVEL, meta);
     }
 
     @Override
     public int getMetaFromState(IBlockState state)
     {
-        return state.getValue(COAL_LEVEL);
+        return (state.getValue(COAL_LEVEL)) + ((state.getValue(LIT) ? 0 : 1) << 3);//state.getValue(COAL_LEVEL);
     }
     //endregion
 
@@ -171,8 +187,7 @@ public class BlockCrucible extends Block
     @Override
     public int getLightValue(IBlockState state, IBlockAccess world, BlockPos pos)
     {
-        TileEntity tile = world.getTileEntity(pos);
-        return ((tile instanceof TileCrucible) && ((TileCrucible)tile).isLit() ? 15 : 0) * 15;
+        return state.getActualState(world, pos).getValue(LIT) ? 15 : 0;
     }
 
     @Nonnull
