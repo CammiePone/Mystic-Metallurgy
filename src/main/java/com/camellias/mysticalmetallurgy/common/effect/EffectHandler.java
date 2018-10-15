@@ -8,12 +8,14 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.oredict.OreDictionary;
 
 import javax.annotation.Nonnull;
@@ -29,6 +31,8 @@ public class EffectHandler
     private EffectHandler() {}
 
     public static EffectHandler INSTANCE = new EffectHandler();
+
+    public static final String NBT_EFFECTS = "mystical_effects";
 
     private Map<ItemMeta, List<EffectLevelPair>> itemEffects = new HashMap<>();
     private Map<String, List<EffectLevelPair>> oreDictEffects = new HashMap<>();
@@ -79,34 +83,71 @@ public class EffectHandler
     }
 
     @Nonnull
-    public List<EffectLevelPair> getItemEffects(ItemStack stack)
+    public static List<EffectLevelPair> getItemEffects(ItemStack stack)
     {
         List<EffectLevelPair> effects = new ArrayList<>();
         for (int id : OreDictionary.getOreIDs(stack))
         {
             String oreDictEntry = OreDictionary.getOreName(id);
-            if (oreDictEffects.containsKey(oreDictEntry))
-                effects.addAll(oreDictEffects.get(oreDictEntry));
+            if (INSTANCE.oreDictEffects.containsKey(oreDictEntry))
+                effects.addAll(INSTANCE.oreDictEffects.get(oreDictEntry));
         }
 
         ItemMeta im = new ItemMeta(stack.getItem(), stack.getMetadata());
-        if (itemEffects.containsKey(im))
-            effects.addAll(itemEffects.get(im));
+        if (INSTANCE.itemEffects.containsKey(im))
+            effects.addAll(INSTANCE.itemEffects.get(im));
 
         return effects;
     }
 
-    public boolean hasStackEffects(ItemStack stack)
+    public static boolean hasStackEffects(ItemStack stack)
     {
         if (stack.isEmpty()) return false;
         for (int id : OreDictionary.getOreIDs(stack))
         {
             String oreDictEntry = OreDictionary.getOreName(id);
-            if (oreDictEffects.containsKey(oreDictEntry))
+            if (INSTANCE.oreDictEffects.containsKey(oreDictEntry))
                 return true;
         }
 
-        return itemEffects.containsKey(new ItemMeta(stack.getItem(), stack.getMetadata()));
+        return INSTANCE.itemEffects.containsKey(new ItemMeta(stack.getItem(), stack.getMetadata()));
+    }
+
+    @Nonnull
+    public static NBTTagCompound writeContentEffectsToNBT(IItemHandler handler, Integer... slotsToIgnore)
+    {
+        List<Integer> ignore = Arrays.asList(slotsToIgnore);
+        NBTTagList tagList = new NBTTagList();
+        for (int slot = 0; slot < handler.getSlots(); slot++)
+        {
+            if (ignore.contains(slot)) continue;
+
+            ItemStack stack = handler.getStackInSlot(slot);
+            if (hasStackEffects(stack))
+            {
+                for (EffectHandler.EffectLevelPair el : getItemEffects(stack))
+                {
+                    tagList.appendTag(el.serializeNBT());
+                }
+            }
+        }
+
+        NBTTagCompound cmp = new NBTTagCompound();
+        cmp.setTag(NBT_EFFECTS, tagList);
+        return cmp;
+    }
+
+    @Nonnull
+    public static List<EffectLevelPair> readEffectsFromNBT(NBTTagCompound tag)
+    {
+        List<EffectLevelPair> list = new ArrayList<>();
+        if (tag.hasKey(NBT_EFFECTS))
+        {
+            NBTTagList tagList = (NBTTagList)tag.getTag(NBT_EFFECTS);
+            tagList.forEach(nbt ->
+                    list.add(EffectLevelPair.fromNBT((NBTTagCompound) nbt)));
+        }
+        return list;
     }
 
     private static class ItemMeta
@@ -144,6 +185,8 @@ public class EffectHandler
             this.level = level;
         }
 
+        private EffectLevelPair() {}
+
         @Override
         public NBTTagCompound serializeNBT()
         {
@@ -158,6 +201,13 @@ public class EffectHandler
         {
             effect = new ResourceLocation(nbt.getString(NBT_EFFECT));
             level = nbt.getInteger(NBT_LEVEL);
+        }
+
+        public static EffectLevelPair fromNBT(NBTTagCompound nbt)
+        {
+            EffectLevelPair elp = new EffectLevelPair();
+            elp.deserializeNBT(nbt);
+            return elp;
         }
     }
 
