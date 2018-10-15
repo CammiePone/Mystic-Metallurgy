@@ -2,6 +2,7 @@ package com.camellias.mysticalmetallurgy;
 
 import com.camellias.mysticalmetallurgy.common.effect.EffectHandler;
 import com.camellias.mysticalmetallurgy.init.RegistrationHandler;
+import com.camellias.mysticalmetallurgy.network.NetworkHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Mod;
@@ -22,6 +23,7 @@ public class Main
 	public static final String NAME = "Mystical Metallurgy";
 	static final String VERSION = "@GRADLE:VERSION@";
 	static final String ACCEPTEDVERSIONS = "[1.12.2]";
+	public static final String CHANNEL = MODID;
 
 	public static Logger logger;
 	static
@@ -34,6 +36,7 @@ public class Main
 	public void preInit(FMLPreInitializationEvent event)
 	{
 		logger = event.getModLog();
+		NetworkHandler.registerPackets();
 	}
 
 	@EventHandler
