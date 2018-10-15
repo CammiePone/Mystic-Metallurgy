@@ -135,9 +135,15 @@ public class EffectHandler
             {
                 for (EffectHandler.EffectLevelPair el : getItemEffects(stack))
                 {
-                    int newLevel = Math.round((float)el.level / (float)stacks.length);
-                    if (newLevel > 0)
-                        list.add(new EffectLevelPair(el.effect, newLevel));
+                    int idx = list.indexOf(el);
+                    if (idx >= 0)
+                        list.get(idx).level++;
+                    else
+                    {
+                        int newLevel = Math.round((float) el.level / (float) stacks.length);
+                        if (newLevel > 0)
+                            list.add(new EffectLevelPair(el.effect, newLevel));
+                    }
                 }
             }
         }
@@ -195,6 +201,15 @@ public class EffectHandler
         }
 
         private EffectLevelPair() {}
+
+        @Override
+        public boolean equals(Object other)
+        {
+            if (other == this) return true;
+            if (!(other instanceof EffectLevelPair))return false;
+            EffectLevelPair otherMyClass = (EffectLevelPair)other;
+            return otherMyClass.effect.equals(effect);
+        }
 
         @Override
         public NBTTagCompound serializeNBT()
