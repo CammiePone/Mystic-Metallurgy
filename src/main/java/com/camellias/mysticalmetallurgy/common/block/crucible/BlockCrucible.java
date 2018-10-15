@@ -22,6 +22,8 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fluids.FluidUtil;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -73,22 +75,28 @@ public class BlockCrucible extends Block
     {
         if (!playerIn.isSneaking() && !stack.isEmpty())
         {
-            if (TileCrucible.isValidFuel(stack))
+            IFluidHandler fluidHandler = FluidUtil.getFluidHandler(stack);
+            if (fluidHandler != null)
             {
-                ItemStack fuelStack = stack.copy();
-                fuelStack.setCount(1);
-                if (tile.input.insertItem(TileCrucible.FUEL_SLOT, fuelStack, false).isEmpty())
-                    stack.shrink(1);
-
+                FluidUtil.interactWithFluidHandler(playerIn, hand, tile.output);
             }
-            else
+            else if (!playerIn.isSneaking())
             {
-                for (int slot = 0; slot < TileCrucible.INPUT_SLOTS; slot++)
+                if (TileCrucible.isValidFuel(stack))
                 {
-                    if (tile.input.getStackInSlot(slot).isEmpty())
+                    ItemStack fuelStack = stack.copy();
+                    fuelStack.setCount(1);
+                    if (tile.input.insertItem(TileCrucible.FUEL_SLOT, fuelStack, false).isEmpty())
+                        stack.shrink(1);
+
+                }
+                else
+                {
+                    for (int slot = 0; slot < TileCrucible.INPUT_SLOTS; slot++)
                     {
-                        playerIn.setHeldItem(hand, tile.input.insertItem(slot, stack, false));
-                        break;
+                        if (tile.input.getStackInSlot(slot).isEmpty())
+                        {
+                            playerIn.setHeldItem(hand, tile.input.insertItem(slot, stack, false));
                     }
                 }
             }

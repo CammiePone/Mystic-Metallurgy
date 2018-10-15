@@ -7,6 +7,7 @@ import com.camellias.mysticalmetallurgy.common.block.crucible.TileCrucible;
 import com.camellias.mysticalmetallurgy.common.effect.*;
 import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
 
+import com.camellias.mysticalmetallurgy.common.item.tool.ItemLadle;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
@@ -30,6 +31,7 @@ public class RegistrationHandler
     @SubscribeEvent
     public static void registerRegistry(RegistryEvent.NewRegistry event)
     {
+        //noinspection unchecked
         new RegistryBuilder<>().setName(Effect.REGISTRY_NAME).setType((Class)Effect.class).setMaxID(Effect.MAX_ID).create();
     }
     
@@ -49,8 +51,9 @@ public class RegistrationHandler
     {
         event.getRegistry().registerAll(
         		asItem(ModBlocks.CRUCIBLE, BlockCrucible.LOC),
-                asItem(ModBlocks.MYSTICAL_LIQUID_METAL, FluidMysticMetal.ID)
+                asItem(ModBlocks.MYSTICAL_LIQUID_METAL, FluidMysticMetal.ID),
 
+                asDefault(new ItemLadle(), ItemLadle.LOC, ModTabs.MYSTICAL_METALS_ITEMS)
                 //asDefault(new ItemIngot()
                 //                .addVariant(0, new ResourceLocation(Main.MODID, "ingot_silver")),
                 //        new ResourceLocation(Main.MODID, "ingot"),
@@ -74,6 +77,7 @@ public class RegistrationHandler
         event.getRegistry().registerItemWithEffect("ingotIron", EffectDense.ID, 3);
         event.getRegistry().registerItemWithEffect("ingotGold", EffectFire.ID, 3);
     }
+
     public static void registerOreDict()
     {
         //OreDictionary.registerOre("ingotSilver", new ItemStack(ModItems.INGOT, 1, 0));

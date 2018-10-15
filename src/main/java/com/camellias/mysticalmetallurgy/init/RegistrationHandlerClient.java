@@ -34,8 +34,9 @@ public class RegistrationHandlerClient
     public static void registerModels(ModelRegistryEvent event)
     {
         registerAllItemModel(
-                Item.getItemFromBlock(ModBlocks.CRUCIBLE)
+                Item.getItemFromBlock(ModBlocks.CRUCIBLE),
 
+                ModItems.LADLE
                 //ModItems.INGOT
         );
 
