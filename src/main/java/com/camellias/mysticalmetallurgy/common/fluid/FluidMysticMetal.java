@@ -9,8 +9,8 @@ import net.minecraftforge.fluids.FluidStack;
 public class FluidMysticMetal extends Fluid
 {
     public static final ResourceLocation ID = new ResourceLocation(Main.MODID, "mystical_liquid_metal");
-    public static final ResourceLocation STILL = new ResourceLocation(Main.MODID, "blocks/molten_metal_still");
-    public static final ResourceLocation FLOW = new ResourceLocation(Main.MODID, "blocks/molten_metal_flow");
+    public static final ResourceLocation STILL = new ResourceLocation(Main.MODID, "blocks/mystic_metal_still");
+    public static final ResourceLocation FLOW = new ResourceLocation(Main.MODID, "blocks/mystic_metal_flow");
 
     public FluidMysticMetal(String fluidName)
     {
@@ -28,12 +28,6 @@ public class FluidMysticMetal extends Fluid
     @Override
     public int getColor()
     {
-        return 0x551a8b;
-    }
-
-    @Override
-    public int getColor(FluidStack stack)
-    {
-        return super.getColor(stack);
+        return super.getColor();//0x551A8B;//super.getColor();
     }
 }

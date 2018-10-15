@@ -1,10 +1,15 @@
 item.mysticalmetallurgy.ingot_silver.name=Silver Ingot
 
+tile.mysticalmetallurgy.crucible.name=Crucible
+tile.mysticalmetallurgy.mystical_liquid_metal.name=Mystical Liquid Metal
+
 info.mysticalmetallurgy.shift=<Hold Shift For More Info>
 info.mysticalmetallurgy.attributes=Attributes:
 
 effect.mysticalmetallurgy.dense.name=Durable
 effect.mysticalmetallurgy.fire.name=Flame
+
+fluid.mystical_liquid_metal=Mystical Liquid Metal
 
 itemGroup.mystical_metals_items=Mystical Metallurgy Items
 itemGroup.mystical_metals_ores=Mystical Metallurgy Ores

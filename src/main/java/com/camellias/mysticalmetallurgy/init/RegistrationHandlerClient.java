@@ -34,14 +34,14 @@ public class RegistrationHandlerClient
     public static void registerModels(ModelRegistryEvent event)
     {
         registerAllItemModel(
-                Item.getItemFromBlock(ModBlocks.CRUCIBLE),
+                Item.getItemFromBlock(ModBlocks.CRUCIBLE)
 
-                ModItems.INGOT
+                //ModItems.INGOT
         );
 
-        ClientRegistry.bindTileEntitySpecialRenderer(TileCrucible.class, new RendererCrucible());
-
         registerFluidModel(ModBlocks.MYSTICAL_LIQUID_METAL, ModFluids.MYSTICAL_METAL, FluidMysticMetal.ID);
+
+        ClientRegistry.bindTileEntitySpecialRenderer(TileCrucible.class, new RendererCrucible());
     }
 
     @SubscribeEvent
@@ -95,7 +95,12 @@ public class RegistrationHandlerClient
 
     private static void registerFluidModel(Block block, Fluid fluid, ResourceLocation location)
     {
-        ModelLoader.setCustomStateMapper(block, new FluidStateMapper(fluid, new ModelResourceLocation(location, fluid.getName())));
+        Item item = Item.getItemFromBlock(block);
+        FluidStateMapper mapper = new FluidStateMapper(fluid, new ModelResourceLocation(location, "normal"));
+
+        ModelLoader.registerItemVariants(item);
+        ModelLoader.setCustomMeshDefinition(item, mapper);
+        ModelLoader.setCustomStateMapper(block, mapper);
     }
 
     public static class FluidStateMapper extends StateMapperBase implements ItemMeshDefinition

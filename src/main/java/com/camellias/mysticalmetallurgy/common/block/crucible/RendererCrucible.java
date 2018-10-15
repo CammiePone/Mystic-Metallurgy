@@ -32,8 +32,8 @@ public class RendererCrucible extends TileEntitySpecialRenderer<TileCrucible>
             GlStateManager.enableBlend();
             RenderUtils.translateAgainstPlayer(te.getPos(), false);
 
-            FluidStack fluid = te.output.getFluid(); //FluidUtil.getFluidContained(new ItemStack(Items.LAVA_BUCKET)); //for testing (color missing)
-            int color = fluid.getFluid().getColor();
+            FluidStack fluid = te.output.getFluid();
+            int color = fluid.getFluid().getColor(fluid);
             final TextureAtlasSprite still = Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(fluid.getFluid().getStill(fluid).toString());
             final TextureAtlasSprite flowing = Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(fluid.getFluid().getFlowing(fluid).toString());
 
