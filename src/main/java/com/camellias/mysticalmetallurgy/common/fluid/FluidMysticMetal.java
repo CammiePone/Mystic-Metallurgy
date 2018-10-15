@@ -6,6 +6,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 
+import java.awt.*;
+
 public class FluidMysticMetal extends Fluid
 {
     public static final ResourceLocation ID = new ResourceLocation(Main.MODID, "mystical_liquid_metal");
@@ -28,6 +30,6 @@ public class FluidMysticMetal extends Fluid
     @Override
     public int getColor()
     {
-        return super.getColor();//0x551A8B;//super.getColor();
+        return new Color(0x885ead).getRGB();//0x551A8B;//super.getColor();
     }
 }
