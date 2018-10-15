@@ -33,6 +33,8 @@ public class EffectHandler
 
     public static final String NBT_EFFECTS = "mystical_effects";
 
+    private static final String NBT_TIER = "mystic_tier";
+
     private Map<ItemMeta, List<EffectLevelPair>> itemEffects = new HashMap<>();
     private Map<String, List<EffectLevelPair>> oreDictEffects = new HashMap<>();
 
@@ -163,6 +165,24 @@ public class EffectHandler
         NBTTagCompound cmp = new NBTTagCompound();
         cmp.setTag(NBT_EFFECTS, tagList);
         return cmp;
+    }
+
+    public static int getStackTier(ItemStack stack)
+    {
+        NBTTagCompound nbt = stack.getTagCompound();
+        if (nbt == null || !nbt.hasKey(NBT_TIER))
+            return 0;
+
+        return nbt.getInteger(NBT_TIER);
+    }
+
+    public static NBTTagCompound writeTierToNBT(NBTTagCompound nbt, int tier)
+    {
+        if (nbt == null)
+            nbt = new NBTTagCompound();
+
+        nbt.setInteger(NBT_TIER, tier);
+        return nbt;
     }
 
     private static class ItemMeta

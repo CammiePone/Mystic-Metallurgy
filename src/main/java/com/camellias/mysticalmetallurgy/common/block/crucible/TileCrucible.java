@@ -1,5 +1,6 @@
 package com.camellias.mysticalmetallurgy.common.block.crucible;
 
+import com.camellias.mysticalmetallurgy.api.ConfigValues;
 import com.camellias.mysticalmetallurgy.common.effect.EffectHandler;
 import com.camellias.mysticalmetallurgy.init.ModFluids;
 import net.minecraft.block.state.IBlockState;
@@ -12,6 +13,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.FluidStack;
@@ -121,47 +123,62 @@ public class TileCrucible extends TileEntity implements ITickable
         else if (++progress == 99)
         {
             List<ItemStack> stacks = new ArrayList<>();
+            int tier = 0;
             for (int slot = 0; slot < INPUT_SLOTS; slot ++)
-                stacks.add(input.getStackInSlot(slot));
+            {
+                ItemStack stack = input.getStackInSlot(slot);
+                tier = Math.max(tier, EffectHandler.getStackTier(stack));
+                stacks.add(stack);
+            }
 
-            output.fillInternal(new FluidStack(ModFluids.MYSTICAL_METAL, 144, EffectHandler.combineStackEffectsToNBT(stacks.toArray(new ItemStack[0]))), true);
+            NBTTagCompound fluidTag = EffectHandler.combineStackEffectsToNBT(stacks.toArray(new ItemStack[0]));
+            EffectHandler.writeTierToNBT(fluidTag, tier + 1);
+
+            output.fillInternal(new FluidStack(ModFluids.MYSTICAL_METAL, 144, fluidTag), true);
 
             for (int slot = 0; slot < INPUT_SLOTS; slot ++)
                 input.setStackInSlot(slot, ItemStack.EMPTY);
         }
-        markDirty();
+
+        if (progress <= 100) markDirty();
     }
 
-    public boolean hasValidContent()
-     {
-        for (int slot = 0; slot < INPUT_SLOTS; slot++)
-        {
-            if(!EffectHandler.hasStackEffects(input.getStackInSlot(slot)))
-                return false;
-        }
-
-        return true;
-    }
-
-    public boolean canStart()
-    {
-        return output.canFill() && hasValidContent() && progress >= 100 && !input.getStackInSlot(FUEL_SLOT).isEmpty() && lit;
-    }
-
-    public boolean canLight() { return !input.getStackInSlot(FUEL_SLOT).isEmpty(); }
-    public boolean isLit() { return lit; }
-    public void setLit() { setLit(true); }
+    //region <helper>
     private void setLit(boolean state)
     {
         lit = state;
         world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockCrucible.LIT, state));
     }
 
+    private boolean canStart()
+    {
+        return output.canFill() && hasValidContent() && progress >= 100 && !input.getStackInSlot(FUEL_SLOT).isEmpty() && lit;
+    }
+    //endregion
+
+    public boolean hasValidContent()
+    {
+        for (int slot = 0; slot < INPUT_SLOTS; slot++)
+        {
+            ItemStack stack = input.getStackInSlot(slot);
+            if (!EffectHandler.hasStackEffects())
+                return false;
+            if (EffectHandler.getStackTier(stack) >= ConfigValues.MaxCombineTier)
+                return false;
+        }
+
+        return true;
+    }
+
+    public boolean canLight() { return !input.getStackInSlot(FUEL_SLOT).isEmpty(); }
+    public void setLit() { setLit(true); }
+
     public static boolean isValidFuel(ItemStack stack)
     {
         return stack.getItem() == Items.COAL;
     }
 
+    //region <caps>
     @Override
     public boolean hasCapability(@Nullable Capability<?> capability, @Nullable EnumFacing facing)
     {
@@ -186,6 +203,7 @@ public class TileCrucible extends TileEntity implements ITickable
         }
         return super.getCapability(capability, facing);
     }
+    //endregion
 
     //region <syncing>
     @Override
