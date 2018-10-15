@@ -18,6 +18,7 @@ import net.minecraft.item.ItemFlintAndSteel;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -29,6 +30,8 @@ public class BlockCrucible extends Block
 {
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "crucible");
     public static final PropertyInteger COAL_LEVEL = PropertyInteger.create("coallevel", 0, 4);
+
+    private static final AxisAlignedBB AABB = new AxisAlignedBB(0.125D, 0.0D, 0.125D, 0.875D, 0.875D, 0.875D);
 
     public BlockCrucible()
     {
@@ -162,6 +165,14 @@ public class BlockCrucible extends Block
     {
         TileEntity tile = world.getTileEntity(pos);
         return ((tile instanceof TileCrucible) && ((TileCrucible)tile).isLit() ? 15 : 0) * 15;
+    }
+
+    @Nonnull
+    @Override
+    @SuppressWarnings("deprecation")
+    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos)
+    {
+        return AABB;
     }
 
     @Override
