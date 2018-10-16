@@ -11,4 +11,5 @@ public class ModItems
 	public static final Item INGOT = Items.AIR;
 
 	public static final Item LADLE = Items.AIR;
+	public static final Item HAMMER = Items.AIR;
 }

@@ -37,7 +37,8 @@ public class RegistrationHandlerClient
                 Item.getItemFromBlock(ModBlocks.CRUCIBLE),
                 Item.getItemFromBlock(ModBlocks.BRAZIER),
 
-                ModItems.LADLE
+                ModItems.LADLE,
+                ModItems.HAMMER
                 //ModItems.INGOT
         );
 

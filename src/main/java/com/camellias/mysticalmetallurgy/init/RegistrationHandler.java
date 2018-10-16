@@ -8,6 +8,7 @@ import com.camellias.mysticalmetallurgy.common.block.crucible.TileCrucible;
 import com.camellias.mysticalmetallurgy.common.effect.*;
 import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
 
+import com.camellias.mysticalmetallurgy.common.item.tool.ItemHammer;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemLadle;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -56,7 +57,8 @@ public class RegistrationHandler
                 asItem(ModBlocks.BRAZIER, BlockBrazier.LOC),
                 asItem(ModBlocks.MYSTICAL_LIQUID_METAL, FluidMysticMetal.ID),
 
-                asDefault(new ItemLadle(), ItemLadle.LOC, ModTabs.MYSTICAL_METALS_ITEMS)
+                asDefault(new ItemLadle(), ItemLadle.LOC, ModTabs.MYSTICAL_METALS_ITEMS),
+                asDefault(new ItemHammer(), ItemHammer.LOC, ModTabs.MYSTICAL_METALS_ITEMS)
                 //asDefault(new ItemIngot()
                 //                .addVariant(0, new ResourceLocation(Main.MODID, "ingot_silver")),
                 //        new ResourceLocation(Main.MODID, "ingot"),
