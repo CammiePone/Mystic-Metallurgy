@@ -43,7 +43,8 @@ public class TileCrucible extends TileEntity implements ITickable
     private int progress = 100;
 
     //region <inventory>
-    ItemStackHandler input = new ItemStackHandler(3)
+    InternalStackHandler input = new InternalStackHandler(3);
+    private class InternalStackHandler extends ItemStackHandler
     {
         @Override
         public int getSlotLimit(int slot)
@@ -68,9 +69,16 @@ public class TileCrucible extends TileEntity implements ITickable
         @Override
         public ItemStack extractItem(int slot, int amount, boolean simulate)
         {
-            if (progress < 100)
+            if (progress < 100 || slot == FUEL_SLOT)
                 return ItemStack.EMPTY;
             return super.extractItem(slot, amount, simulate);
+        }
+
+        @Nonnull
+        @SuppressWarnings({"UnusedReturnValue", "SameParameterValue"})
+        ItemStack extractItemInternal(int slot, int amount, boolean simulate)
+        {
+            super.extractItem(slot, amount, simulate);
         }
 
         @Override
@@ -83,7 +91,7 @@ public class TileCrucible extends TileEntity implements ITickable
             }
             markDirty();
         }
-    };
+    }
 
     private static final int MaxFluidAmount = 144;
     FluidTank output = new FluidTank(MaxFluidAmount)
@@ -111,11 +119,6 @@ public class TileCrucible extends TileEntity implements ITickable
         if (world.getTotalWorldTime() % 10 != 0) return;
         if (progress >= 100)
         {
-            if (progress == 100)
-            {
-                input.extractItem(FUEL_SLOT, 1, false);
-                progress++;
-            }
             if (canStart())
                 progress = 0;
         }
@@ -135,10 +138,10 @@ public class TileCrucible extends TileEntity implements ITickable
 
             output.fillInternal(new FluidStack(ModFluids.MYSTICAL_METAL, 144, fluidTag), true);
 
-            for (int slot = 0; slot < INPUT_SLOTS; slot ++)
-                input.setStackInSlot(slot, ItemStack.EMPTY);
+            for (int slot = 0; slot < input.getSlots(); slot ++)
+                input.extractItemInternal(slot, 1, false);
         }
-
+        
         if (progress <= 100) markDirty();
     }
 
