@@ -3,6 +3,8 @@ package com.camellias.mysticalmetallurgy.init;
 import com.camellias.mysticalmetallurgy.api.Effect;
 import com.camellias.mysticalmetallurgy.api.RegisterItemEffectsEvent;
 import com.camellias.mysticalmetallurgy.common.block.BlockBrazier;
+import com.camellias.mysticalmetallurgy.common.block.anvil.BlockStoneAnvil;
+import com.camellias.mysticalmetallurgy.common.block.anvil.TileStoneAnvil;
 import com.camellias.mysticalmetallurgy.common.block.crucible.BlockCrucible;
 import com.camellias.mysticalmetallurgy.common.block.crucible.TileCrucible;
 import com.camellias.mysticalmetallurgy.common.effect.*;
@@ -43,10 +45,12 @@ public class RegistrationHandler
         event.getRegistry().registerAll(
                 asDefault(new BlockCrucible(), BlockCrucible.LOC, ModTabs.MYSTICAL_METALS_BLOCKS),
                 asDefault(new BlockBrazier(), BlockBrazier.LOC, ModTabs.MYSTICAL_METALS_BLOCKS),
+                asDefault(new BlockStoneAnvil(), BlockStoneAnvil.LOC, ModTabs.MYSTICAL_METALS_BLOCKS),
                 asFluid(ModFluids.MYSTICAL_METAL, Material.LAVA, FluidMysticMetal.ID, ModTabs.MYSTICAL_METALS_BLOCKS)
         );
 
         GameRegistry.registerTileEntity(TileCrucible.class, BlockCrucible.LOC);
+        GameRegistry.registerTileEntity(TileStoneAnvil.class, BlockStoneAnvil.LOC);
     }
     
     @SubscribeEvent
@@ -55,6 +59,7 @@ public class RegistrationHandler
         event.getRegistry().registerAll(
                 asItem(ModBlocks.CRUCIBLE, BlockCrucible.LOC),
                 asItem(ModBlocks.BRAZIER, BlockBrazier.LOC),
+                asItem(ModBlocks.STONE_ANVIL, BlockStoneAnvil.LOC),
                 asItem(ModBlocks.MYSTICAL_LIQUID_METAL, FluidMysticMetal.ID),
 
                 asDefault(new ItemLadle(), ItemLadle.LOC, ModTabs.MYSTICAL_METALS_ITEMS),

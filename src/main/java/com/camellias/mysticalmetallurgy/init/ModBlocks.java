@@ -9,6 +9,7 @@ public class ModBlocks
 {
 	public static final Block CRUCIBLE = Blocks.AIR;
 	public static final Block BRAZIER = Blocks.AIR;
+	public static final Block STONE_ANVIL = Blocks.AIR;
 	public static final Block MYSTICAL_LIQUID_METAL = Blocks.AIR;
 
 	//Overworld Ores

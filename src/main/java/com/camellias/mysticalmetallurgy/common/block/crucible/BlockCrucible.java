@@ -125,23 +125,6 @@ public class BlockCrucible extends Block
         }
     }
 
-    @Override
-    public void breakBlock(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state)
-    {
-        TileCrucible tile = getTile(worldIn, pos);
-        if (tile != null)
-        {
-            for (int slot = 0; slot < tile.input.getSlots(); slot++)
-            {
-                ItemStack stack = tile.input.getStackInSlot(slot);
-                if (slot == TileCrucible.FUEL_SLOT && state.getValue(LIT))
-                    stack.shrink(1);
-                InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack);
-            }
-        }
-        super.breakBlock(worldIn, pos, state);
-    }
-
     @SideOnly(Side.CLIENT)
     public void randomDisplayTick(IBlockState stateIn, World worldIn, BlockPos pos, Random rand)
     {
@@ -205,6 +188,23 @@ public class BlockCrucible extends Block
     //endregion
 
     //region <other>
+    @Override
+    public void breakBlock(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state)
+    {
+        TileCrucible tile = getTile(worldIn, pos);
+        if (tile != null)
+        {
+            for (int slot = 0; slot < tile.input.getSlots(); slot++)
+            {
+                ItemStack stack = tile.input.getStackInSlot(slot);
+                if (slot == TileCrucible.FUEL_SLOT && state.getValue(LIT))
+                    stack.shrink(1);
+                InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack);
+            }
+        }
+        super.breakBlock(worldIn, pos, state);
+    }
+
     @Override
     public int getLightValue(IBlockState state, IBlockAccess world, BlockPos pos)
     {
