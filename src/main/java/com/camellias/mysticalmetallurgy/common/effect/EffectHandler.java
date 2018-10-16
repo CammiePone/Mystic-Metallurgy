@@ -130,26 +130,30 @@ public class EffectHandler
     @Nonnull
     public static List<EffectLevelPair> combineStackEffects(ItemStack... stacks)
     {
-        List<EffectLevelPair> list = new ArrayList<>(stacks.length);
+        List<EffectLevelPair> allStackEffects = new ArrayList<>();
         for (ItemStack stack : stacks)
         {
-            if (!stack.isEmpty() && hasStackEffects(stack))
+            if (!stack.isEmpty())
             {
-                for (EffectHandler.EffectLevelPair el : getItemEffects(stack))
-                {
-                    int idx = list.indexOf(el);
-                    if (idx >= 0)
-                        list.get(idx).level++;
-                    else
-                    {
-                        int newLevel = Math.round((float) el.level / (float) stacks.length);
-                        if (newLevel > 0)
-                            list.add(new EffectLevelPair(el.effect, newLevel));
-                    }
-                }
+                allStackEffects.addAll(getItemEffects(stack));
             }
         }
-        return list;
+
+        allStackEffects.sort((o1, o2) -> Integer.compare(o2.level, o1.level));
+
+        List<EffectLevelPair> combinedEffects = new ArrayList<>();
+        for (EffectLevelPair pair : allStackEffects)
+        {
+            if (!combinedEffects.contains(pair))
+            {
+                int freq = Collections.frequency(allStackEffects, pair);
+                int newLevel = freq > 1 ? pair.level + freq - 1 : pair.level - stacks.length;
+                if (newLevel > 0)
+                    combinedEffects.add(new EffectLevelPair(pair.effect, newLevel));
+            }
+        }
+
+        return combinedEffects;
     }
 
     public static NBTTagCompound combineStackEffectsToNBT(ItemStack... stacks)
