@@ -60,7 +60,7 @@ public class TileCrucible extends TileEntity implements ITickable
         {
             if (isValidFuel(stack))
                 slot = FUEL_SLOT;
-            if (!output.canFill() || !isValidFuel(stack) && slot == FUEL_SLOT)
+            else if (!output.canFill() || slot == FUEL_SLOT)
                 return stack;
             return super.insertItem(slot, stack, simulate);
         }
