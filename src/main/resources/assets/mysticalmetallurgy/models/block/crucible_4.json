@@ -247,48 +247,28 @@
 			"from": [3, 6, 11],
 			"to": [13, 7, 13],
 			"faces": {
-				"north": {"uv": [0, 0, 10, 1], "texture": "#missing"},
-				"east": {"uv": [0, 0, 2, 1], "texture": "#missing"},
-				"south": {"uv": [0, 0, 10, 1], "texture": "#missing"},
-				"west": {"uv": [0, 0, 2, 1], "texture": "#missing"},
-				"up": {"uv": [3, 3, 13, 5], "texture": "#coal"},
-				"down": {"uv": [0, 0, 10, 2], "texture": "#missing"}
+				"up": {"uv": [3, 3, 13, 5], "texture": "#coal"}
 			}
 		},
 		{
 			"from": [3, 6, 5],
 			"to": [5, 7, 11],
 			"faces": {
-				"north": {"uv": [0, 0, 2, 1], "texture": "#missing"},
-				"east": {"uv": [0, 0, 6, 1], "texture": "#missing"},
-				"south": {"uv": [0, 0, 2, 1], "texture": "#missing"},
-				"west": {"uv": [0, 0, 6, 1], "texture": "#missing"},
-				"up": {"uv": [3, 4, 5, 9], "texture": "#coal"},
-				"down": {"uv": [0, 0, 2, 6], "texture": "#missing"}
+				"up": {"uv": [3, 4, 5, 9], "texture": "#coal"}
 			}
 		},
 		{
 			"from": [11, 6, 5],
 			"to": [13, 7, 11],
 			"faces": {
-				"north": {"uv": [0, 0, 2, 1], "texture": "#missing"},
-				"east": {"uv": [0, 0, 6, 1], "texture": "#missing"},
-				"south": {"uv": [0, 0, 2, 1], "texture": "#missing"},
-				"west": {"uv": [0, 0, 6, 1], "texture": "#missing"},
-				"up": {"uv": [3, 4, 5, 9], "texture": "#coal"},
-				"down": {"uv": [0, 0, 2, 6], "texture": "#missing"}
+				"up": {"uv": [3, 4, 5, 9], "texture": "#coal"}
 			}
 		},
 		{
 			"from": [3, 6, 3],
 			"to": [13, 7, 5],
 			"faces": {
-				"north": {"uv": [0, 0, 10, 1], "texture": "#missing"},
-				"east": {"uv": [0, 0, 2, 1], "texture": "#missing"},
-				"south": {"uv": [0, 0, 10, 1], "texture": "#missing"},
-				"west": {"uv": [0, 0, 2, 1], "texture": "#missing"},
-				"up": {"uv": [3, 3, 13, 5], "texture": "#coal"},
-				"down": {"uv": [0, 0, 10, 2], "texture": "#missing"}
+				"up": {"uv": [3, 3, 13, 5], "texture": "#coal"}
 			}
 		},
 		{
@@ -314,6 +294,28 @@
 			}
 		}
 	],
+	"display": {
+		"thirdperson_righthand": {
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"thirdperson_lefthand": {
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"firstperson_righthand": {
+			"scale": [0.725, 0.725, 0.725]
+		},
+		"firstperson_lefthand": {
+			"scale": [0.725, 0.725, 0.725]
+		},
+		"ground": {
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"gui": {
+			"scale": [0.725, 0.725, 0.725],
+			"translation": [0, 0, 0],
+			"rotation": [22, 25, 0]
+		}
+	},
 	"groups": [
 		{
 			"name": "housing",

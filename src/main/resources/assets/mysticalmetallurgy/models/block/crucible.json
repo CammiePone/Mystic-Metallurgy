@@ -243,17 +243,6 @@
 			}
 		},
 		{
-			"from": [3, 3, 3],
-			"to": [13, 4, 13],
-			"faces": {
-				"north": {"uv": [0, 0, 10, 1], "texture": "#missing"},
-				"east": {"uv": [0, 0, 10, 1], "texture": "#missing"},
-				"south": {"uv": [0, 0, 10, 1], "texture": "#missing"},
-				"west": {"uv": [0, 0, 10, 1], "texture": "#missing"},
-				"down": {"uv": [0, 0, 10, 10], "texture": "#missing"}
-			}
-		},
-		{
 			"name": "east",
 			"from": [11, 11, 7],
 			"to": [13, 12, 9],
@@ -276,6 +265,28 @@
 			}
 		}
 	],
+	"display": {
+		"thirdperson_righthand": {
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"thirdperson_lefthand": {
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"firstperson_righthand": {
+			"scale": [0.725, 0.725, 0.725]
+		},
+		"firstperson_lefthand": {
+			"scale": [0.725, 0.725, 0.725]
+		},
+		"ground": {
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"gui": {
+			"scale": [0.725, 0.725, 0.725],
+			"translation": [0, 0, 0],
+			"rotation": [22, 25, 0]
+		}
+	},
 	"groups": [
 		{
 			"name": "housing",
@@ -356,7 +367,7 @@
 				"visibility": true,
 				"autouv": true
 			},
-			"children": [23, 24]
+			"children": [22, 23]
 		}
 	]
 }
