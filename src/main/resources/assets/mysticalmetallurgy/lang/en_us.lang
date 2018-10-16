@@ -2,6 +2,7 @@ item.mysticalmetallurgy.ingot_silver.name=Silver Ingot
 item.mysticalmetallurgy.ladle.name=Ladle
 
 tile.mysticalmetallurgy.crucible.name=Crucible
+tile.mysticalmetallurgy.brazier.name=Brazier
 tile.mysticalmetallurgy.mystical_liquid_metal.name=Mystical Liquid Metal
 
 info.mysticalmetallurgy.shift=<Hold Shift For More Info>
