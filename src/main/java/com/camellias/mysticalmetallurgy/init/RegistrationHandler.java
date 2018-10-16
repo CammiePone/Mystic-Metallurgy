@@ -2,6 +2,7 @@ package com.camellias.mysticalmetallurgy.init;
 
 import com.camellias.mysticalmetallurgy.api.Effect;
 import com.camellias.mysticalmetallurgy.api.RegisterItemEffectsEvent;
+import com.camellias.mysticalmetallurgy.common.block.BlockBrazier;
 import com.camellias.mysticalmetallurgy.common.block.crucible.BlockCrucible;
 import com.camellias.mysticalmetallurgy.common.block.crucible.TileCrucible;
 import com.camellias.mysticalmetallurgy.common.effect.*;
@@ -40,6 +41,7 @@ public class RegistrationHandler
     {
         event.getRegistry().registerAll(
                 asDefault(new BlockCrucible(), BlockCrucible.LOC, ModTabs.MYSTICAL_METALS_BLOCKS),
+                asDefault(new BlockBrazier(), BlockBrazier.LOC, ModTabs.MYSTICAL_METALS_BLOCKS),
                 asFluid(ModFluids.MYSTICAL_METAL, Material.LAVA, FluidMysticMetal.ID, ModTabs.MYSTICAL_METALS_BLOCKS)
         );
 
@@ -50,7 +52,8 @@ public class RegistrationHandler
     public static void registerItems(RegistryEvent.Register<Item> event)
     {
         event.getRegistry().registerAll(
-        		asItem(ModBlocks.CRUCIBLE, BlockCrucible.LOC),
+                asItem(ModBlocks.CRUCIBLE, BlockCrucible.LOC),
+                asItem(ModBlocks.BRAZIER, BlockBrazier.LOC),
                 asItem(ModBlocks.MYSTICAL_LIQUID_METAL, FluidMysticMetal.ID),
 
                 asDefault(new ItemLadle(), ItemLadle.LOC, ModTabs.MYSTICAL_METALS_ITEMS)
@@ -75,6 +78,7 @@ public class RegistrationHandler
     public static void registerItemEffects(RegisterItemEffectsEvent event)
     {
         event.getRegistry().registerItemWithEffect("ingotIron", EffectDense.ID, 3);
+        event.getRegistry().registerItemWithEffect("ingotIron", EffectFire.ID, 5);
         event.getRegistry().registerItemWithEffect("ingotGold", EffectFire.ID, 3);
     }
 

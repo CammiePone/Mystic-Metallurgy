@@ -35,6 +35,7 @@ public class RegistrationHandlerClient
     {
         registerAllItemModel(
                 Item.getItemFromBlock(ModBlocks.CRUCIBLE),
+                Item.getItemFromBlock(ModBlocks.BRAZIER),
 
                 ModItems.LADLE
                 //ModItems.INGOT

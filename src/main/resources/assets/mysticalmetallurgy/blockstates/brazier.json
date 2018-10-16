@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "coal=false,lit=false": { "model": "mysticalmetallurgy:brazier" },
+    "coal=false,lit=true": { "model": "mysticalmetallurgy:brazier" },
+    "coal=true,lit=false": { "model": "mysticalmetallurgy:brazier_coal" },
+    "coal=true,lit=true": { "model": "mysticalmetallurgy:brazier_coal" }
+  }
+}

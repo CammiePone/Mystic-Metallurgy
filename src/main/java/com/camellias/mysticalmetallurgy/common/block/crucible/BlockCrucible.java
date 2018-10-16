@@ -46,7 +46,7 @@ public class BlockCrucible extends Block
         super(Material.IRON);
         setSoundType(SoundType.METAL);
         setResistance(5.0F);
-        setHardness(3.0F);
+        setHardness(4.0F);
 
         setDefaultState(blockState.getBaseState().withProperty(COAL_LEVEL, 0).withProperty(LIT, false));
     }
@@ -110,7 +110,7 @@ public class BlockCrucible extends Block
                 }
             }
         }
-        else if (playerIn.isSneaking() && stack.isEmpty())
+        else if (playerIn.isSneaking())
         {
             for (int slot = TileCrucible.INPUT_SLOTS - 1; slot >= 0; slot--)
             {
