@@ -2,6 +2,7 @@ package com.camellias.mysticalmetallurgy.common.block.crucible;
 
 
 import com.camellias.mysticalmetallurgy.Main;
+import com.camellias.mysticalmetallurgy.api.utils.ItemUtils;
 import com.camellias.mysticalmetallurgy.network.NetworkHandler;
 import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
 import net.minecraft.block.Block;
@@ -113,9 +114,11 @@ public class BlockCrucible extends Block
         {
             for (int slot = TileCrucible.INPUT_SLOTS - 1; slot >= 0; slot--)
             {
-                if (!tile.input.getStackInSlot(slot).isEmpty())
+                ItemStack slotStack = tile.input.extractItem(slot, 1, true);
+                if (!slotStack.isEmpty())
                 {
-                    playerIn.setHeldItem(hand, tile.input.extractItem(slot, 1, false));
+                    if (ItemUtils.giveStack(playerIn, slotStack).isEmpty())
+                        tile.input.extractItem(slot, 1, false);
                     break;
                 }
             }
