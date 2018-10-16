@@ -161,7 +161,7 @@ public class TileCrucible extends TileEntity implements ITickable
         for (int slot = 0; slot < INPUT_SLOTS; slot++)
         {
             ItemStack stack = input.getStackInSlot(slot);
-            if (!EffectHandler.hasStackEffects())
+            if (!EffectHandler.hasStackEffects(stack))
                 return false;
             if (EffectHandler.getStackTier(stack) >= ConfigValues.MaxCombineTier)
                 return false;
