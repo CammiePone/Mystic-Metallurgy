@@ -83,6 +83,7 @@ public class BlockBrazier extends Block
                 double vy = rand.nextDouble() * 0.02;
                 double vz = rand.nextDouble() * 0.02 - 0.01;
                 worldIn.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + rx, pos.getY() + ry, pos.getZ() + rz, vx, vy, vz);
+                worldIn.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, pos.getX() + rx + 0.1, pos.getY() + ry + 0.1, pos.getZ() + rz + 0.1, vx, vy, vz);
             }
         }
     }
