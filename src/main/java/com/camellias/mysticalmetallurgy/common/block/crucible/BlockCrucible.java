@@ -14,6 +14,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemFlintAndSteel;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -119,6 +120,23 @@ public class BlockCrucible extends Block
                 }
             }
         }
+    }
+
+    @Override
+    public void breakBlock(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state)
+    {
+        TileCrucible tile = getTile(worldIn, pos);
+        if (tile != null)
+        {
+            for (int slot = 0; slot < tile.input.getSlots(); slot++)
+            {
+                ItemStack stack = tile.input.getStackInSlot(slot);
+                if (slot == TileCrucible.FUEL_SLOT && state.getValue(LIT))
+                    stack.shrink(1);
+                InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack);
+            }
+        }
+        super.breakBlock(worldIn, pos, state);
     }
 
     @SideOnly(Side.CLIENT)
