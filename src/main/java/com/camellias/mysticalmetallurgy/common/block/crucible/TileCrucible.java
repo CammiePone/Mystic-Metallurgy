@@ -44,8 +44,13 @@ public class TileCrucible extends TileEntity implements ITickable
 
     //region <inventory>
     InternalStackHandler input = new InternalStackHandler(3);
-    private class InternalStackHandler extends ItemStackHandler
+    class InternalStackHandler extends ItemStackHandler
     {
+        InternalStackHandler(int size)
+        {
+            super(size);
+        }
+
         @Override
         public int getSlotLimit(int slot)
         {
@@ -78,7 +83,7 @@ public class TileCrucible extends TileEntity implements ITickable
         @SuppressWarnings({"UnusedReturnValue", "SameParameterValue"})
         ItemStack extractItemInternal(int slot, int amount, boolean simulate)
         {
-            super.extractItem(slot, amount, simulate);
+            return super.extractItem(slot, amount, simulate);
         }
 
         @Override
@@ -141,7 +146,7 @@ public class TileCrucible extends TileEntity implements ITickable
             for (int slot = 0; slot < input.getSlots(); slot ++)
                 input.extractItemInternal(slot, 1, false);
         }
-        
+
         if (progress <= 100) markDirty();
     }
 
