@@ -10,17 +10,15 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.oredict.OreDictionary;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
 
 public class TileStoneAnvil extends TileEntity
 {
     private static final String NBT_INVENTORY = "inventory";
-    private static final int SLOT_PRINT = 0;
-    private static final int SLOT_STICK = 1;
-    private static final int SLOT_METAL = 2;
+    static final int SLOT_PRINT = 0;
+    static final int SLOT_INPUT = 1;
+    static final int SLOT_EXTRA = 2;
 
     private ItemStackHandler inventory = new ItemStackHandler(3)
     {
@@ -46,30 +44,30 @@ public class TileStoneAnvil extends TileEntity
 
     public ItemStack insertPrint(ItemStack stack, boolean simulate)
     {
-        return inventory.insertItem(SLOT_PRINT, stack, simulate);
-    }
-
-    public ItemStack extractStick(boolean simulate)
-    {
-        return inventory.extractItem(SLOT_STICK, 1, simulate);
-    }
-
-    public ItemStack insertStick(ItemStack stack, boolean simulate)
-    {
         //noinspection SuspiciousMethodCalls
-        if (ItemUtils.stackHasOreName(stack, "stickWood"))
-            return inventory.insertItem(SLOT_STICK, stack, simulate);
+        if (ItemUtils.stackHasOreName(stack, "paper"))
+            return inventory.insertItem(SLOT_PRINT, stack, simulate);
         return stack;
     }
 
-    public ItemStack extractMetal(boolean simulate)
+    public ItemStack extractExtra(boolean simulate)
     {
-        return inventory.extractItem(SLOT_METAL, 1, simulate);
+        return inventory.extractItem(SLOT_EXTRA, 1, simulate);
     }
 
-    public ItemStack insertMetal(ItemStack stack, boolean simulate)
+    public ItemStack insertExtra(ItemStack stack, boolean simulate)
     {
-        return inventory.insertItem(SLOT_METAL, stack, simulate);
+        return inventory.insertItem(SLOT_EXTRA, stack, simulate);
+    }
+
+    public ItemStack extractInput(boolean simulate)
+    {
+        return inventory.extractItem(SLOT_INPUT, 1, simulate);
+    }
+
+    public ItemStack insertInput(ItemStack stack, boolean simulate)
+    {
+        return inventory.insertItem(SLOT_INPUT, stack, simulate);
     }
     //endregion
 

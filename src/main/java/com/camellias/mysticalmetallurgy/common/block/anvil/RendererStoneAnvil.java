@@ -27,7 +27,7 @@ public class RendererStoneAnvil extends TileEntitySpecialRenderer<TileStoneAnvil
             itemRenderer.renderItem(print, ItemCameraTransforms.TransformType.FIXED);
             GlStateManager.popMatrix();
         }
-        ItemStack metal = te.extractMetal(true);
+        ItemStack metal = te.extractInput(true);
         if (!metal.isEmpty())
         {
             GlStateManager.pushMatrix();
@@ -41,7 +41,7 @@ public class RendererStoneAnvil extends TileEntitySpecialRenderer<TileStoneAnvil
             itemRenderer.renderItem(metal, ItemCameraTransforms.TransformType.FIXED);
             GlStateManager.popMatrix();
         }
-        ItemStack stick = te.extractStick(true);
+        ItemStack stick = te.extractExtra(true);
         if (!stick.isEmpty())
         {
             GlStateManager.pushMatrix();

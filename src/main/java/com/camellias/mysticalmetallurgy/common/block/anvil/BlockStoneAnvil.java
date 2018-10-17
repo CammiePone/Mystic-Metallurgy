@@ -1,6 +1,7 @@
 package com.camellias.mysticalmetallurgy.common.block.anvil;
 
 import com.camellias.mysticalmetallurgy.Main;
+import com.camellias.mysticalmetallurgy.api.utils.ItemUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
@@ -49,13 +50,84 @@ public class BlockStoneAnvil extends Block
             TileStoneAnvil tile = getTile(worldIn, pos);
             if (tile != null)
             {
+                int slot = getSlotHit(state.getValue(FACING), hitX, hitZ);
                 ItemStack stack = playerIn.getHeldItem(hand);
-                if (!tile.insertPrint(stack, false).isEmpty())
-                    if(!tile.insertStick(stack, false).isEmpty())
-                        tile.insertMetal(stack, false);
+                switch (slot)
+                {
+                    case TileStoneAnvil.SLOT_PRINT:
+                        if (!playerIn.isSneaking() && !stack.isEmpty())
+                            playerIn.setHeldItem(hand, tile.insertPrint(stack, false));
+                        else if (playerIn.isSneaking())
+                        {
+                            ItemStack slotStack = tile.extractPrint(true);
+                            if (!slotStack.isEmpty() && ItemUtils.giveStack(playerIn, slotStack).isEmpty())
+                                tile.extractPrint(false);
+                        }
+                        break;
+                    case TileStoneAnvil.SLOT_INPUT:
+                        if (!playerIn.isSneaking() && !stack.isEmpty())
+                            playerIn.setHeldItem(hand, tile.insertInput(stack, false));
+                        else if (playerIn.isSneaking())
+                        {
+                            ItemStack slotStack = tile.extractInput(true);
+                            if (!slotStack.isEmpty() && ItemUtils.giveStack(playerIn, slotStack).isEmpty())
+                                tile.extractInput(false);
+                        }
+                        break;
+                    case 2:
+                        if (!playerIn.isSneaking() && !stack.isEmpty())
+                            playerIn.setHeldItem(hand, tile.insertExtra(stack, false));
+                        else if (playerIn.isSneaking())
+                        {
+                            ItemStack slotStack = tile.extractExtra(true);
+                            if (!slotStack.isEmpty() && ItemUtils.giveStack(playerIn, slotStack).isEmpty())
+                                tile.extractExtra(false);
+                        }
+                        break;
+                }
             }
         }
         return true;
+    }
+
+    private static int getSlotHit(EnumFacing facing, float x, float z)
+    {
+        switch (facing)
+        {
+            case NORTH:
+                if (z >= 0.375F && x <= 0.780F && z <= 0.625F && x >= 0.530F)
+                    return TileStoneAnvil.SLOT_PRINT; //0 print
+                if (z >= 0.500F && x <= 0.500F && z <= 0.750F && x >= 0.250F)
+                    return TileStoneAnvil.SLOT_INPUT; //1 input
+                if (z >= 0.250F && x <= 0.500F && z <= 0.500F && x >= 0.250F)
+                    return TileStoneAnvil.SLOT_EXTRA; //2 extra
+                break;
+            case SOUTH:
+                if (z >= 0.375F && x >= 0.220F && z <= 0.625F && x <= 0.470F)
+                    return TileStoneAnvil.SLOT_PRINT ; //0 print
+                if (z >= 0.250F && x >= 0.500F && z <= 0.500F && x <= 0.750F)
+                    return TileStoneAnvil.SLOT_INPUT; //1 input
+                if (z >= 0.500F && x >= 0.500F && z <= 0.750F && x <= 0.750F)
+                    return TileStoneAnvil.SLOT_EXTRA; //2 extra
+                break;
+            case EAST:
+                if (x >= 0.375F && z <= 0.780F && x <= 0.625F && z >= 0.530F)
+                    return TileStoneAnvil.SLOT_PRINT; //0 print
+                if (x >= 0.250F && z <= 0.500F && x <= 0.500F && z >= 0.250F)
+                    return TileStoneAnvil.SLOT_INPUT; //1 input
+                if (x >= 0.500F && z <= 0.500F && x <= 0.750F && z >= 0.250F)
+                    return TileStoneAnvil.SLOT_EXTRA; //2 extra
+                break;
+            case WEST:
+                if (x >= 0.375F && z >= 0.220F && x <= 0.625F && z <= 0.470F)
+                    return TileStoneAnvil.SLOT_PRINT; //0 print
+                if (x >= 0.500F && z >= 0.500F && x <= 0.750F && z <= 0.750F)
+                    return TileStoneAnvil.SLOT_INPUT; //1 input
+                if (x >= 0.250F && z >= 0.500F && x <= 0.500F && z <= 0.750F)
+                    return TileStoneAnvil.SLOT_EXTRA; //2 extra
+                break;
+        }
+        return -1;
     }
 
     //region <state>
