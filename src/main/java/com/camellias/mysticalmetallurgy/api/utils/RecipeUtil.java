@@ -5,6 +5,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -18,8 +19,9 @@ public class RecipeUtil
             ItemStack stack = (ItemStack) item;
             int stackSize = stack.getCount();
             stack.setCount(1);
+            result = new ArrayList<>();
             for (int i = 0; i < stackSize; i++)
-                result = Collections.singletonList(stack);
+                result.add(stack);
         }
         else if (item instanceof Item)
             result = Collections.singletonList(new ItemStack((Item) item));
