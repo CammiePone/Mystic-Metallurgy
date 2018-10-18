@@ -13,7 +13,7 @@ public class RendererStoneAnvil extends TileEntitySpecialRenderer<TileStoneAnvil
     public void render(TileStoneAnvil te, double x, double y, double z, float partialTicks, int destroyStage, float alpha)
     {
         RenderItem itemRenderer = Minecraft.getMinecraft().getRenderItem();
-        ItemStack print = te.extractPrint(true);
+        ItemStack print = te.extract(TileStoneAnvil.SLOTS.PRINT, true);
         if (!print.isEmpty())
         {
             GlStateManager.pushMatrix();
@@ -27,7 +27,7 @@ public class RendererStoneAnvil extends TileEntitySpecialRenderer<TileStoneAnvil
             itemRenderer.renderItem(print, ItemCameraTransforms.TransformType.FIXED);
             GlStateManager.popMatrix();
         }
-        ItemStack metal = te.extractInput(true);
+        ItemStack metal = te.extract(TileStoneAnvil.SLOTS.INPUT, true);
         if (!metal.isEmpty())
         {
             GlStateManager.pushMatrix();
@@ -41,7 +41,7 @@ public class RendererStoneAnvil extends TileEntitySpecialRenderer<TileStoneAnvil
             itemRenderer.renderItem(metal, ItemCameraTransforms.TransformType.FIXED);
             GlStateManager.popMatrix();
         }
-        ItemStack stick = te.extractExtra(true);
+        ItemStack stick = te.extract(TileStoneAnvil.SLOTS.EXTRA, true);
         if (!stick.isEmpty())
         {
             GlStateManager.pushMatrix();

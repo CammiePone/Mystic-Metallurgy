@@ -16,9 +16,18 @@ import javax.annotation.Nonnull;
 public class TileStoneAnvil extends TileEntity
 {
     private static final String NBT_INVENTORY = "inventory";
-    static final int SLOT_PRINT = 0;
-    static final int SLOT_INPUT = 1;
-    static final int SLOT_EXTRA = 2;
+    public enum SLOTS
+    {
+        PRINT(0),
+        INPUT(1),
+        EXTRA(2);
+
+        private int slot;
+        SLOTS(int slot)
+        {
+            this.slot = slot;
+        }
+    }
 
     private ItemStackHandler inventory = new ItemStackHandler(3)
     {
@@ -37,37 +46,20 @@ public class TileStoneAnvil extends TileEntity
     };
 
     //region <inventory proxy>
-    public ItemStack extractPrint(boolean simulate)
+    public ItemStack extract(@Nonnull SLOTS slot, boolean simulate)
     {
-        return inventory.extractItem(SLOT_PRINT, 1, simulate);
+        return inventory.extractItem(slot.slot, 1, simulate);
     }
 
-    public ItemStack insertPrint(ItemStack stack, boolean simulate)
+    public ItemStack insert(@Nonnull SLOTS slot, @Nonnull ItemStack stack, boolean simulate)
     {
-        //noinspection SuspiciousMethodCalls
-        if (ItemUtils.stackHasOreName(stack, "paper"))
-            return inventory.insertItem(SLOT_PRINT, stack, simulate);
-        return stack;
-    }
-
-    public ItemStack extractExtra(boolean simulate)
-    {
-        return inventory.extractItem(SLOT_EXTRA, 1, simulate);
-    }
-
-    public ItemStack insertExtra(ItemStack stack, boolean simulate)
-    {
-        return inventory.insertItem(SLOT_EXTRA, stack, simulate);
-    }
-
-    public ItemStack extractInput(boolean simulate)
-    {
-        return inventory.extractItem(SLOT_INPUT, 1, simulate);
-    }
-
-    public ItemStack insertInput(ItemStack stack, boolean simulate)
-    {
-        return inventory.insertItem(SLOT_INPUT, stack, simulate);
+        if (slot == SLOTS.PRINT)
+        {
+            if (ItemUtils.stackHasOreName(stack, "paper"))
+                return inventory.insertItem(slot.slot, stack, simulate);
+            return ItemStack.EMPTY;
+        }
+        return inventory.extractItem(slot.slot, 1, simulate);
     }
     //endregion
 
