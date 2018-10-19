@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.RayTraceResult;
@@ -41,7 +42,12 @@ public class RendererStoneAnvil extends TileEntitySpecialRenderer<TileStoneAnvil
             if (!slotStack.isEmpty())
                 renderSlot(slot.getRenderOffset(), slotStack, facing, slot == slotHover, false);
             else if (slotHover == slot && !stackHeld.isEmpty())
-                renderSlot(slot.getRenderOffset(), stackHeld, facing, false, true);
+            {
+                if (slot.acceptStack(stackHeld))
+                    renderSlot(slot.getRenderOffset(), stackHeld, facing, false, true);
+                else
+                    renderSlot(slot.getRenderOffset(), new ItemStack(Blocks.BARRIER), facing, false, true);
+            }
         }
         GlStateManager.popMatrix();
     }
