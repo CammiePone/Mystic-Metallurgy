@@ -20,20 +20,15 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.client.event.DrawBlockHighlightEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-@Mod.EventBusSubscriber(Side.CLIENT)
 public class BlockStoneAnvil extends Block
 {
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "stone_anvil");
 
-    private static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
+    public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
     private static final AxisAlignedBB AABB_Z = new AxisAlignedBB(0.186D, 0.0D, 0.254D, 0.81D, 0.435D, 0.748D);
     private static final AxisAlignedBB AABB_X = new AxisAlignedBB(0.254D, 0.0D, 0.186D, 0.748D, 0.435D, 0.81D);
 
@@ -55,7 +50,7 @@ public class BlockStoneAnvil extends Block
             TileStoneAnvil tile = getTile(worldIn, pos);
             if (facing == EnumFacing.UP && tile != null)
             {
-                TileStoneAnvil.SLOTS slot = getSlotHit(state.getValue(FACING), hitX, hitZ);
+                TileStoneAnvil.Slot slot = TileStoneAnvil.Slot.getSlotHit(state.getValue(FACING), hitX, hitZ);
                 if (slot != null)
                 {
                     ItemStack stack = playerIn.getHeldItem(hand);
@@ -71,68 +66,6 @@ public class BlockStoneAnvil extends Block
             }
         }
         return true;
-    }
-
-    @Nullable
-    public static TileStoneAnvil.SLOTS getSlotHit(EnumFacing facing, float x, float z)
-    {
-        switch (facing)
-        {
-            case NORTH:
-                if (z >= 0.375F && x <= 0.780F && z <= 0.625F && x >= 0.530F)
-                    return TileStoneAnvil.SLOTS.PRINT; //0 print
-                if (z >= 0.500F && x <= 0.500F && z <= 0.750F && x >= 0.250F)
-                    return TileStoneAnvil.SLOTS.INPUT; //1 input
-                if (z >= 0.250F && x <= 0.500F && z <= 0.500F && x >= 0.250F)
-                    return TileStoneAnvil.SLOTS.EXTRA; //2 extra
-                break;
-            case SOUTH:
-                if (z >= 0.375F && x >= 0.220F && z <= 0.625F && x <= 0.470F)
-                    return TileStoneAnvil.SLOTS.PRINT ; //0 print
-                if (z >= 0.250F && x >= 0.500F && z <= 0.500F && x <= 0.750F)
-                    return TileStoneAnvil.SLOTS.INPUT; //1 input
-                if (z >= 0.500F && x >= 0.500F && z <= 0.750F && x <= 0.750F)
-                    return TileStoneAnvil.SLOTS.EXTRA; //2 extra
-                break;
-            case EAST:
-                if (x >= 0.375F && z <= 0.780F && x <= 0.625F && z >= 0.530F)
-                    return TileStoneAnvil.SLOTS.PRINT; //0 print
-                if (x >= 0.250F && z <= 0.500F && x <= 0.500F && z >= 0.250F)
-                    return TileStoneAnvil.SLOTS.INPUT; //1 input
-                if (x >= 0.500F && z <= 0.500F && x <= 0.750F && z >= 0.250F)
-                    return TileStoneAnvil.SLOTS.EXTRA; //2 extra
-                break;
-            case WEST:
-                if (x >= 0.375F && z >= 0.220F && x <= 0.625F && z <= 0.470F)
-                    return TileStoneAnvil.SLOTS.PRINT; //0 print
-                if (x >= 0.500F && z >= 0.500F && x <= 0.750F && z <= 0.750F)
-                    return TileStoneAnvil.SLOTS.INPUT; //1 input
-                if (x >= 0.250F && z >= 0.500F && x <= 0.500F && z <= 0.750F)
-                    return TileStoneAnvil.SLOTS.EXTRA; //2 extra
-                break;
-        }
-        return null;
-    }
-
-    @SubscribeEvent
-    public static void DrawBlockHover(DrawBlockHighlightEvent event)
-    {
-        EntityPlayer player = event.getPlayer();
-        BlockPos pos = event.getTarget().getBlockPos();
-        IBlockState state = player.world.getBlockState(pos);
-        ItemStack stack = player.getHeldItemMainhand();
-        TileStoneAnvil tile = getTile(player.world, pos);
-        if (tile != null && !stack.isEmpty() && event.getTarget().sideHit == EnumFacing.UP)
-        {
-            double hitX = event.getTarget().hitVec.x;
-            double hitY = event.getTarget().hitVec.y;
-
-            TileStoneAnvil.SLOTS slot = getSlotHit(state.getValue(FACING), (float)hitX, (float)hitY);
-            if (slot != null)
-            {
-                ItemStack slotStack = tile.extract(slot, true);
-            }
-        }
     }
 
     //region <state>

@@ -11,6 +11,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fluids.FluidStack;
 import org.lwjgl.opengl.GL11;
 
+import javax.annotation.Nonnull;
+
 public class RenderUtils
 {
     public static void renderFluid(FluidStack fluid, BlockPos pos, double x, double y, double z, double x1, double y1, double z1, double x2, double y2, double z2, int color, TextureAtlasSprite top, TextureAtlasSprite side)
@@ -179,7 +181,6 @@ public class RenderUtils
         }
     }
 
-
     public static void translateAgainstPlayer(BlockPos pos, boolean offset)
     {
         final float x = (float) (pos.getX() - TileEntityRendererDispatcher.staticPlayerX);
@@ -190,5 +191,27 @@ public class RenderUtils
             GlStateManager.translate(x + 0.5, y + 0.5, z + 0.5);
         else
             GlStateManager.translate(x, y, z);
+    }
+
+    public static void rotateOnFacing(@Nonnull EnumFacing facing) {
+        switch (facing)
+        {
+            case NORTH:
+                break;
+            case EAST:
+                GlStateManager.rotate(90.0F, 0.0F, 0.0F, 1.0F);
+                break;
+            case SOUTH:
+                GlStateManager.rotate(180.0F, 0.0F, 0.0F, 1.0F);
+                break;
+            case WEST:
+                GlStateManager.rotate(270.0F, 0.0F, 0.0F, 1.0F);
+                break;
+            case DOWN:
+                //GlStateManager.rotate(-90.0F, 1.0F, 0.0F, 0.0F);
+                break;
+            case UP:
+                //GlStateManager.rotate(90.0F, 1.0F, 0.0F, 0.0F);
+        }
     }
 }
