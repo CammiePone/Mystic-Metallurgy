@@ -3,7 +3,11 @@ package com.camellias.mysticalmetallurgy.common.block.anvil;
 import com.camellias.mysticalmetallurgy.api.utils.RenderUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.RenderItem;
+import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -40,38 +44,50 @@ public class RendererStoneAnvil extends TileEntitySpecialRenderer<TileStoneAnvil
         {
             ItemStack slotStack = te.extract(slot, true);
             if (!slotStack.isEmpty())
-                renderSlot(slot.getRenderOffset(), slotStack, facing, slot == slotHover, false);
+                renderSlot(player, slot.getRenderOffset(), slotStack, facing, slot == slotHover, false);
             else if (slotHover == slot && !stackHeld.isEmpty())
             {
                 if (slot.acceptStack(stackHeld))
-                    renderSlot(slot.getRenderOffset(), stackHeld, facing, false, true);
+                    renderSlot(player, slot.getRenderOffset(), stackHeld, facing, false, true);
                 else
-                    renderSlot(slot.getRenderOffset(), new ItemStack(Blocks.BARRIER), facing, false, true);
+                    renderSlot(player, slot.getRenderOffset(), new ItemStack(Blocks.BARRIER), facing, false, false);
             }
         }
         GlStateManager.popMatrix();
     }
 
-    private void renderSlot(Vec3d offset, ItemStack stack, EnumFacing facing, boolean highlight, boolean ghostly)
+    private void renderSlot(EntityPlayer player, Vec3d offset, ItemStack stack, EnumFacing facing, boolean highlight, boolean ghostly)
     {
+        RenderItem renderer = Minecraft.getMinecraft().getRenderItem();
+        TextureManager textureManager = Minecraft.getMinecraft().getTextureManager();
+
+        IBakedModel model = renderer.getItemModelWithOverrides(stack, player.world, player);
+
+        textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+        textureManager.getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false);
+
         GlStateManager.pushMatrix();
+
+        RenderHelper.enableStandardItemLighting();
+
+        GlStateManager.rotate(90.0F, 1.0F, 0.0F, 0.0F);
+        RenderUtils.rotateOnFacing(facing);
+        GlStateManager.translate(offset.x, offset.y, offset.z);
+
         if (ghostly)
         {
             GlStateManager.enableBlend();
             GlStateManager.blendFunc(GL11.GL_ONE, GL11.GL_ONE);
-            GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
         }
-        else if (highlight)
+        renderer.renderItem(stack, model);
+        if (highlight && !ghostly)
         {
             GlStateManager.enableBlend();
             GlStateManager.blendFunc(GL11.GL_ONE, GL11.GL_ONE);
             GlStateManager.depthFunc(GL11.GL_EQUAL);
+            renderer.renderItem(stack, model);
             GlStateManager.depthFunc(GL11.GL_LEQUAL);
         }
-        GlStateManager.rotate(90.0F, 1.0F, 0.0F, 0.0F);
-        RenderUtils.rotateOnFacing(facing);
-        GlStateManager.translate(offset.x, offset.y, offset.z);
-        Minecraft.getMinecraft().getRenderItem().renderItem(stack, ItemCameraTransforms.TransformType.FIXED);
         if (ghostly || highlight)
             GlStateManager.disableBlend();
         GlStateManager.popMatrix();
