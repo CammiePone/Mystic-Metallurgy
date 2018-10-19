@@ -22,26 +22,31 @@ public class TileStoneAnvil extends TileEntity
     private static final String NBT_INVENTORY = "inventory";
     public enum Slot
     {
-        PRINT(0, new Vec3d(0.530F, 0, 0.375F),
+        PRINT(0, "paper",
+                new Vec3d(0.530F, 0, 0.375F),
                 new Vec3d(0.780F, 0, 0.625F),
                 new Vec3d(0.755F, 0F, 0.25F)),
-        INPUT(1, new Vec3d(0.250F, 0, 0.500F),
+        INPUT(1, "",
+                new Vec3d(0.250F, 0, 0.500F),
                 new Vec3d(0.500F, 0, 0.750F),
                 new Vec3d(-0.5F, 0.5F, 0.25F)),
-        EXTRA(2, new Vec3d(0.250F, 0, 0.250F),
+        EXTRA(2, "",
+                new Vec3d(0.250F, 0, 0.250F),
                 new Vec3d(0.500F, 0, 0.500F),
                 new Vec3d(-0.5F, -0.5F, 0.25F));
 
         private int slot;
+        private String oreDict;
         private Vec3d bl, tr, ro;
         private static final Vec3d diff = new Vec3d(0.5, 0, 0.5);
 
-        Slot(int slot, Vec3d bl, Vec3d tr, Vec3d renderOffset)
+        Slot(int slot, String oreDict, Vec3d bl, Vec3d tr, Vec3d renderOffset)
         {
             this.slot = slot;
             this.bl = bl;
             this.tr = tr;
             this.ro = renderOffset;
+            this.oreDict = oreDict;
         }
 
         public boolean isHit(EnumFacing facing, double x, double z)
@@ -61,6 +66,13 @@ public class TileStoneAnvil extends TileEntity
         public Vec3d getRenderOffset()
         {
             return ro;
+        }
+
+        public boolean acceptStack(ItemStack stack)
+        {
+            if (!oreDict.isEmpty())
+                return ItemUtils.stackHasOreName(stack, oreDict);
+            return true;
         }
 
         private float getAngle(EnumFacing facing)
@@ -124,13 +136,9 @@ public class TileStoneAnvil extends TileEntity
 
     public ItemStack insert(@Nonnull Slot slot, @Nonnull ItemStack stack, boolean simulate)
     {
-        if (slot == Slot.PRINT)
-        {
-            if (ItemUtils.stackHasOreName(stack, "paper"))
-                return inventory.insertItem(slot.slot, stack, simulate);
-            return stack;
-        }
-        return inventory.insertItem(slot.slot, stack, simulate);
+        if (slot.acceptStack(stack))
+            return inventory.insertItem(slot.slot, stack, simulate);
+        return stack;
     }
     //endregion
 
