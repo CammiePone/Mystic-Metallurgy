@@ -1,6 +1,8 @@
 package com.camellias.mysticalmetallurgy.common.block.anvil;
 
+import com.camellias.mysticalmetallurgy.api.recipe.AnvilRecipe;
 import com.camellias.mysticalmetallurgy.api.utils.RenderUtils;
+import com.camellias.mysticalmetallurgy.common.item.tool.ItemHammer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -37,20 +39,31 @@ public class RendererStoneAnvil extends TileEntitySpecialRenderer<TileStoneAnvil
         {
             float hitX = (float) (Math.abs(rayTrace.hitVec.x) - Math.floor(Math.abs(rayTrace.hitVec.x)));
             float hitZ = (float) (Math.abs(rayTrace.hitVec.z) - Math.floor(Math.abs(rayTrace.hitVec.z)));
-            slotHover = TileStoneAnvil.Slot.getSlotHit(facing, hitX, hitZ);
+            slotHover = TileStoneAnvil.Slot.getSlotHit(facing, hitX, hitZ, te.hasOutput() ? TileStoneAnvil.Slot.SlotType.OUTPUT : TileStoneAnvil.Slot.SlotType.INPUT);
         }
 
-        for (TileStoneAnvil.Slot slot : TileStoneAnvil.Slot.values())
+        AnvilRecipe recipe = te.getActiveRecipe();
+        if (recipe != null)
         {
-            ItemStack slotStack = te.extract(slot, true);
-            if (!slotStack.isEmpty())
-                renderSlot(player, slot.getRenderOffset(), slotStack, facing, slot == slotHover, false);
-            else if (slotHover == slot && !stackHeld.isEmpty())
+            ItemStack printStack = te.getPrintForRendering();
+            if (!printStack.isEmpty())
+                renderSlot(player, TileStoneAnvil.Slot.PRINT.getRenderOffset(), printStack, facing, false, false);
+            renderSlot(player, TileStoneAnvil.Slot.OUT.getRenderOffset(), recipe.getSwingStack(te.doneSwings()), facing, false, false);
+        }
+        else
+        {
+            for (TileStoneAnvil.Slot slot : TileStoneAnvil.Slot.values())
             {
-                if (slot.acceptStack(stackHeld))
-                    renderSlot(player, slot.getRenderOffset(), stackHeld, facing, false, true);
-                else
-                    renderSlot(player, slot.getRenderOffset(), new ItemStack(Blocks.BARRIER), facing, false, false);
+                ItemStack slotStack = te.extract(slot, true);
+                if (!slotStack.isEmpty())
+                    renderSlot(player, slot.getRenderOffset(), slotStack, facing, slot == slotHover, false);
+                else if (slotHover == slot && !stackHeld.isEmpty() && !(stackHeld.getItem() instanceof ItemHammer))
+                {
+                    if (slot.acceptStack(stackHeld))
+                        renderSlot(player, slot.getRenderOffset(), stackHeld, facing, false, true);
+                    else
+                        renderSlot(player, slot.getRenderOffset(), new ItemStack(Blocks.BARRIER), facing, false, false);
+                }
             }
         }
         GlStateManager.popMatrix();

@@ -2,6 +2,7 @@ package com.camellias.mysticalmetallurgy.init;
 
 import com.camellias.mysticalmetallurgy.api.Effect;
 import com.camellias.mysticalmetallurgy.api.RegisterItemEffectsEvent;
+import com.camellias.mysticalmetallurgy.api.recipe.AnvilRecipe;
 import com.camellias.mysticalmetallurgy.common.block.BlockBrazier;
 import com.camellias.mysticalmetallurgy.common.block.anvil.BlockStoneAnvil;
 import com.camellias.mysticalmetallurgy.common.block.anvil.TileStoneAnvil;
@@ -13,11 +14,14 @@ import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemHammer;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemLadle;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockAnvil;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fluids.BlockFluidClassic;
@@ -70,6 +74,12 @@ public class RegistrationHandler
                 //        ModTabs.MYSTICAL_METALS_ITEMS)
 
         );
+    }
+
+    @SubscribeEvent
+    public static void registerRecipes(RegistryEvent.Register<IRecipe> event)
+    {
+        AnvilRecipe.register(new AnvilRecipe(new ItemStack(Items.ARROW), 4, Items.PAPER, "ingotIron", null, Items.COAL, Items.BONE, Items.APPLE, Items.BEEF));
     }
 
     @SubscribeEvent

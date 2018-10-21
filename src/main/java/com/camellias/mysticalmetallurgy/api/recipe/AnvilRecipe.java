@@ -16,8 +16,9 @@ public class AnvilRecipe
     private ItemStack printStack;
     private List<ItemStack> inputStack;
     private List<ItemStack> extraStack;
+    private List<ItemStack> progressStack = new ArrayList<>();
 
-    public AnvilRecipe(@Nonnull ItemStack craftResult, int hammerSwings, @Nullable Object print, @Nonnull Object input, @Nullable Object extra)
+    public AnvilRecipe(@Nonnull ItemStack craftResult, int hammerSwings, @Nullable Object print, @Nonnull Object input, @Nullable Object extra, Object... progress)
     {
         if (craftResult.isEmpty())
             throw new IllegalArgumentException("invalid stone anvil recipe without output");
@@ -48,16 +49,29 @@ public class AnvilRecipe
 
         temp = RecipeUtil.getStacksFromObject(extra);
         if (temp == null || temp.size() <= 0)
-            extraStack = null;
+            extraStack = new ArrayList<>();
         else
         {
             extraStack = temp;
             extraStack.forEach(stack -> stack.setCount(1));
         }
+
+        for (Object prog : progress)
+        {
+            List<ItemStack> l = RecipeUtil.getStacksFromObject(prog);
+            if (l != null && l.size() > 0)
+                progressStack.add(l.get(0));
+        }
     }
 
     public ItemStack getResult() { return result.copy(); }
     public int getSwings() { return swings; }
+    public ItemStack getSwingStack(int swing)
+    {
+        if (swing >= progressStack.size())
+            swing = progressStack.size() - 1;
+        return swing < 0 ? result : progressStack.get(swing);
+    }
 
     public boolean match(ItemStack print, ItemStack input, ItemStack extra)
     {
@@ -78,12 +92,17 @@ public class AnvilRecipe
             return false;
 
         contains = false;
-        for (ItemStack stack : extraStack)
+        if (extraStack.size() == 0)
+            contains = extra.isEmpty();
+        else
         {
-            if (stack.isItemEqual(extra))
+            for (ItemStack stack : extraStack)
             {
-                contains = true;
-                break;
+                if (stack.isItemEqual(extra))
+                {
+                    contains = true;
+                    break;
+                }
             }
         }
 

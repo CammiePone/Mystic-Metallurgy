@@ -2,6 +2,9 @@ package com.camellias.mysticalmetallurgy.common.block.anvil;
 
 import com.camellias.mysticalmetallurgy.Main;
 import com.camellias.mysticalmetallurgy.api.utils.ItemUtils;
+import com.camellias.mysticalmetallurgy.common.item.tool.ItemHammer;
+import com.camellias.mysticalmetallurgy.network.NetworkHandler;
+import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
@@ -11,11 +14,13 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
@@ -50,17 +55,32 @@ public class BlockStoneAnvil extends Block
             TileStoneAnvil tile = getTile(worldIn, pos);
             if (facing == EnumFacing.UP && tile != null)
             {
-                TileStoneAnvil.Slot slot = TileStoneAnvil.Slot.getSlotHit(state.getValue(FACING), hitX, hitZ);
-                if (slot != null)
+                ItemStack stack = playerIn.getHeldItem(hand);
+                if (stack.getItem() instanceof ItemHammer)
                 {
-                    ItemStack stack = playerIn.getHeldItem(hand);
-                    if (!playerIn.isSneaking() && !stack.isEmpty())
-                        playerIn.setHeldItem(hand, tile.insert(slot, stack, false));
-                    else if (playerIn.isSneaking())
+                    if (tile.tryHammer())
                     {
-                        ItemStack slotStack = tile.extract(slot, true);
-                        if (!slotStack.isEmpty() && ItemUtils.giveStack(playerIn, slotStack).isEmpty())
-                            tile.extract(slot, false);
+                        stack.damageItem(1, playerIn);
+                        NetworkHandler.sendAround(new PlaySoundPacket(pos, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.AMBIENT, 1F, 1.0F), pos, playerIn.dimension);
+                    }
+                }
+                else
+                {
+                    TileStoneAnvil.Slot slot = TileStoneAnvil.Slot.getSlotHit(state.getValue(FACING), hitX, hitZ,
+                            tile.hasOutput() ?
+                                    TileStoneAnvil.Slot.SlotType.OUTPUT :
+                                    TileStoneAnvil.Slot.SlotType.INPUT);
+
+                    if (slot != null)
+                    {
+                        if (!playerIn.isSneaking() && !stack.isEmpty())
+                            playerIn.setHeldItem(hand, tile.insert(slot, stack, false));
+                        else if (playerIn.isSneaking())
+                        {
+                            ItemStack slotStack = tile.extract(slot, true);
+                            if (!slotStack.isEmpty() && ItemUtils.giveStack(playerIn, slotStack).isEmpty())
+                                tile.extract(slot, false);
+                        }
                     }
                 }
             }

@@ -1,5 +1,6 @@
 package com.camellias.mysticalmetallurgy.common.block.anvil;
 
+import com.camellias.mysticalmetallurgy.api.recipe.AnvilRecipe;
 import com.camellias.mysticalmetallurgy.api.utils.ItemUtils;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
@@ -20,33 +21,47 @@ import java.awt.geom.Line2D;
 public class TileStoneAnvil extends TileEntity
 {
     private static final String NBT_INVENTORY = "inventory";
+    private static final String NBT_SWINGS = "swings";
     public enum Slot
     {
-        PRINT(0, "paper",
+        PRINT(0, SlotType.INPUT, "paper",
                 new Vec3d(0.530F, 0, 0.375F),
                 new Vec3d(0.780F, 0, 0.625F),
                 new Vec3d(0.755F, 0F, 0.25F)),
-        INPUT(1, "",
+        INPUT(1, SlotType.INPUT, "",
                 new Vec3d(0.250F, 0, 0.500F),
                 new Vec3d(0.500F, 0, 0.750F),
                 new Vec3d(-0.5F, 0.5F, 0.25F)),
-        EXTRA(2, "",
+        EXTRA(2, SlotType.INPUT, "",
                 new Vec3d(0.250F, 0, 0.250F),
                 new Vec3d(0.500F, 0, 0.500F),
-                new Vec3d(-0.5F, -0.5F, 0.25F));
+                new Vec3d(-0.5F, -0.5F, 0.25F)),
+        OUT(3, SlotType.OUTPUT, "",
+                new Vec3d(0.375F, 0, 0.250F),
+                new Vec3d(0.635F, 0, 0.500F),
+                new Vec3d(-0.5F, 0, 0.25F));
+
+
+        public enum SlotType
+        {
+            INPUT,
+            OUTPUT
+        }
 
         private int slot;
+        private SlotType type;
         private String oreDict;
         private Vec3d bl, tr, ro;
         private static final Vec3d diff = new Vec3d(0.5, 0, 0.5);
 
-        Slot(int slot, String oreDict, Vec3d bl, Vec3d tr, Vec3d renderOffset)
+        Slot(int slot, SlotType type, String oreDict, Vec3d bl, Vec3d tr, Vec3d renderOffset)
         {
             this.slot = slot;
             this.bl = bl;
             this.tr = tr;
             this.ro = renderOffset;
             this.oreDict = oreDict;
+            this.type = type;
         }
 
         public boolean isHit(EnumFacing facing, double x, double z)
@@ -96,18 +111,24 @@ public class TileStoneAnvil extends TileEntity
         }
 
         @Nullable
-        public static Slot getSlotHit(EnumFacing facing, float x, float z) { return getSlotHit(facing, (double)x, z); }
+        public static Slot getSlotHit(EnumFacing facing, float x, float z, @Nullable SlotType type)
+        {
+            return getSlotHit(facing, (double) x, z, type);
+        }
+
         @Nullable
-        public static Slot getSlotHit(EnumFacing facing, double x, double z)
+        public static Slot getSlotHit(EnumFacing facing, double x, double z, @Nullable SlotType type)
         {
             for (Slot slot : values())
-                if (slot.isHit(facing, x, z))
+                if ((type == null || type == slot.type) && slot.isHit(facing, x, z))
                     return slot;
             return null;
         }
     }
 
-    private ItemStackHandler inventory = new ItemStackHandler(3)
+    private int swings = 0;
+    private AnvilRecipe recipe;
+    private ItemStackHandler inventory = new ItemStackHandler(Slot.values().length)
     {
         @Override
         public int getSlotLimit(int slot)
@@ -118,7 +139,11 @@ public class TileStoneAnvil extends TileEntity
         @Override
         protected void onContentsChanged(int slot)
         {
-            super.onContentsChanged(slot);
+            if (slot == Slot.OUT.slot)
+            {
+                recipe = null;
+                swings = 0;
+            }
             markDirty();
         }
     };
@@ -128,15 +153,65 @@ public class TileStoneAnvil extends TileEntity
         return world.getBlockState(pos);
     }
 
-    //region <inventory proxy>
+    public boolean tryHammer()
+    {
+        AnvilRecipe recipe = AnvilRecipe.getMatching(inventory.getStackInSlot(Slot.PRINT.slot),
+                inventory.getStackInSlot(Slot.INPUT.slot),
+                inventory.getStackInSlot(Slot.EXTRA.slot));
+
+        if (recipe != null)
+        {
+            if (++swings >= recipe.getSwings())
+            {
+                inventory.setStackInSlot(Slot.INPUT.slot, ItemStack.EMPTY);
+                inventory.setStackInSlot(Slot.EXTRA.slot, ItemStack.EMPTY);
+                inventory.setStackInSlot(Slot.OUT.slot, recipe.getResult());
+            }
+            markDirty();
+            return true;
+        }
+        return false;
+    }
+
+    @Nullable
+    public AnvilRecipe getActiveRecipe()
+    {
+        if (swings > 0)
+        {
+            if (recipe == null)
+            {
+                recipe = AnvilRecipe.getMatching(inventory.getStackInSlot(Slot.PRINT.slot),
+                        inventory.getStackInSlot(Slot.INPUT.slot),
+                        inventory.getStackInSlot(Slot.EXTRA.slot));
+            }
+            return recipe;
+        }
+        return null;
+    }
+
+    public int doneSwings() { return swings; }
+
+    ItemStack getPrintForRendering()
+    {
+        return inventory.getStackInSlot(Slot.PRINT.slot);
+    }
+
+    //region <inventory>
+    public boolean hasOutput()
+    {
+        return !inventory.getStackInSlot(Slot.OUT.slot).isEmpty();
+    }
+
     public ItemStack extract(@Nonnull Slot slot, boolean simulate)
     {
+        if (swings > 0 && slot != Slot.OUT )
+            return ItemStack.EMPTY;
         return inventory.extractItem(slot.slot, 1, simulate);
     }
 
     public ItemStack insert(@Nonnull Slot slot, @Nonnull ItemStack stack, boolean simulate)
     {
-        if (slot.acceptStack(stack))
+        if (slot.acceptStack(stack) && !hasOutput())
             return inventory.insertItem(slot.slot, stack, simulate);
         return stack;
     }
@@ -181,6 +256,7 @@ public class TileStoneAnvil extends TileEntity
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         compound = super.writeToNBT(compound);
         compound.setTag(NBT_INVENTORY, inventory.serializeNBT());
+        compound.setInteger(NBT_SWINGS, swings);
         return compound;
     }
 
@@ -188,6 +264,7 @@ public class TileStoneAnvil extends TileEntity
     public void readFromNBT(@Nonnull NBTTagCompound cmp) {
         super.readFromNBT(cmp);
         if (cmp.hasKey(NBT_INVENTORY)) inventory.deserializeNBT(cmp.getCompoundTag(NBT_INVENTORY));
+        if (cmp.hasKey(NBT_INVENTORY)) swings = cmp.getInteger(NBT_SWINGS);
     }
     //endregion
 }
