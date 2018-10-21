@@ -2,13 +2,17 @@ package com.camellias.mysticalmetallurgy.common.block.anvil;
 
 import com.camellias.mysticalmetallurgy.api.recipe.AnvilRecipe;
 import com.camellias.mysticalmetallurgy.api.utils.ItemUtils;
+import com.camellias.mysticalmetallurgy.network.NetworkHandler;
+import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -166,6 +170,7 @@ public class TileStoneAnvil extends TileEntity
                 inventory.setStackInSlot(Slot.INPUT.slot, ItemStack.EMPTY);
                 inventory.setStackInSlot(Slot.EXTRA.slot, ItemStack.EMPTY);
                 inventory.setStackInSlot(Slot.OUT.slot, recipe.getResult());
+                NetworkHandler.sendAround(new PlaySoundPacket(pos, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.AMBIENT, 1F, 1.0F), pos, world.provider.getDimension());
             }
             markDirty();
             return true;

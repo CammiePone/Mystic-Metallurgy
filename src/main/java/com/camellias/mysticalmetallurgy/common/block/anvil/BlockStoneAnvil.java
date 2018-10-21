@@ -61,7 +61,7 @@ public class BlockStoneAnvil extends Block
                     if (tile.tryHammer())
                     {
                         stack.damageItem(1, playerIn);
-                        NetworkHandler.sendAround(new PlaySoundPacket(pos, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.AMBIENT, 1F, 1.0F), pos, playerIn.dimension);
+                        NetworkHandler.sendAround(new PlaySoundPacket(pos, SoundEvents.BLOCK_ANVIL_HIT, SoundCategory.AMBIENT, 1F, 1.0F), pos, playerIn.dimension);
                     }
                 }
                 else
