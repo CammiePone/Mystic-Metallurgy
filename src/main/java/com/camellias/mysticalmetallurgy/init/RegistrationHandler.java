@@ -1,5 +1,6 @@
 package com.camellias.mysticalmetallurgy.init;
 
+import com.camellias.mysticalmetallurgy.Main;
 import com.camellias.mysticalmetallurgy.api.Effect;
 import com.camellias.mysticalmetallurgy.api.RegisterItemEffectsEvent;
 import com.camellias.mysticalmetallurgy.api.recipe.AnvilRecipe;
@@ -11,6 +12,7 @@ import com.camellias.mysticalmetallurgy.common.block.crucible.TileCrucible;
 import com.camellias.mysticalmetallurgy.common.effect.*;
 import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
 
+import com.camellias.mysticalmetallurgy.common.item.ItemMetalClump;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemHammer;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemLadle;
 import net.minecraft.block.Block;
@@ -61,11 +63,21 @@ public class RegistrationHandler
     public static void registerItems(RegistryEvent.Register<Item> event)
     {
         event.getRegistry().registerAll(
+                //Blocks
                 asItem(ModBlocks.CRUCIBLE, BlockCrucible.LOC),
                 asItem(ModBlocks.BRAZIER, BlockBrazier.LOC),
                 asItem(ModBlocks.STONE_ANVIL, BlockStoneAnvil.LOC),
                 asItem(ModBlocks.MYSTICAL_LIQUID_METAL, FluidMysticMetal.ID),
 
+                //Items
+                asDefault(new ItemMetalClump()
+                                .addVariant(0, ItemMetalClump.CLUMP_0_LOC)
+                                .addVariant(1, ItemMetalClump.CLUMP_1_LOC)
+                                .addVariant(2, ItemMetalClump.CLUMP_2_LOC),
+                        ItemMetalClump.LOC,
+                        ModTabs.MYSTICAL_METALS_ITEMS),
+
+                //Tools
                 asDefault(new ItemLadle(), ItemLadle.LOC, ModTabs.MYSTICAL_METALS_ITEMS),
                 asDefault(new ItemHammer(), ItemHammer.LOC, ModTabs.MYSTICAL_METALS_ITEMS)
                 //asDefault(new ItemIngot()

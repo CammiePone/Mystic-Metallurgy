@@ -2,7 +2,10 @@ package com.camellias.mysticalmetallurgy.common.block.anvil;
 
 import com.camellias.mysticalmetallurgy.Main;
 import com.camellias.mysticalmetallurgy.api.utils.ItemUtils;
+import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemHammer;
+import com.camellias.mysticalmetallurgy.common.item.tool.ItemLadle;
+import com.camellias.mysticalmetallurgy.init.ModItems;
 import com.camellias.mysticalmetallurgy.network.NetworkHandler;
 import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
 import net.minecraft.block.Block;
@@ -25,9 +28,13 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 public class BlockStoneAnvil extends Block
 {
@@ -74,7 +81,15 @@ public class BlockStoneAnvil extends Block
                     if (slot != null)
                     {
                         if (!playerIn.isSneaking() && !stack.isEmpty())
-                            playerIn.setHeldItem(hand, tile.insert(slot, stack, false));
+                        {
+                            if (IsValidFluidInput(stack))
+                            {
+                                Objects.requireNonNull(FluidUtil.getFluidHandler(stack)).drain(ItemLadle.CAPACITY, true);
+                                tile.insert(slot, new ItemStack(ModItems.METAL_CLUMP, 1, 0), false);
+                            }
+                            else
+                                playerIn.setHeldItem(hand, tile.insert(slot, stack, false));
+                        }
                         else if (playerIn.isSneaking())
                         {
                             ItemStack slotStack = tile.extract(slot, true);
@@ -86,6 +101,20 @@ public class BlockStoneAnvil extends Block
             }
         }
         return true;
+    }
+
+    private boolean IsValidFluidInput(ItemStack stack)
+    {
+        IFluidHandler handler = FluidUtil.getFluidHandler(stack);
+        if (handler == null)
+            return false;
+
+        FluidStack fluid = handler.drain(ItemLadle.CAPACITY, false);
+
+        if (fluid == null)
+            return false;
+
+        return fluid.getFluid() instanceof FluidMysticMetal && fluid.amount == ItemLadle.CAPACITY;
     }
 
     //region <state>

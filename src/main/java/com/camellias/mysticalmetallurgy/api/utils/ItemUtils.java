@@ -46,6 +46,11 @@ public class ItemUtils
         return -1;
     }
 
+    public static int getFirstOccupiedSlot(IItemHandler inventory) {
+        for (int i = 0; i < inventory.getSlots(); ++i) if (!inventory.getStackInSlot(i).isEmpty()) return i;
+        return -1;
+    }
+
     public static boolean stackHasOreName(ItemStack stack, String oreName)
     {
         if (stack.isEmpty())

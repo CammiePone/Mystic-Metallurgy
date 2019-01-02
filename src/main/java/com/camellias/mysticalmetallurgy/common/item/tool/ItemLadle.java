@@ -4,14 +4,9 @@ import com.camellias.mysticalmetallurgy.Main;
 import com.camellias.mysticalmetallurgy.api.Effect;
 import com.camellias.mysticalmetallurgy.common.effect.EffectHandler;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fluids.FluidStack;
@@ -28,10 +23,11 @@ import java.util.List;
 public class ItemLadle extends ItemFluidContainer
 {
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "ladle");
+    public static final int CAPACITY = 144;
 
     public ItemLadle()
     {
-        super(144);
+        super(CAPACITY);
     }
 
     @Override
@@ -72,11 +68,11 @@ public class ItemLadle extends ItemFluidContainer
         return new FluidHandlerItemStack(stack, capacity) {
             @Override
             public int fill(FluidStack resource, boolean doFill) {
-                if (container.getCount() != 1 || resource == null || resource.amount < capacity || getFluid() != null || !canFillFluidType(resource)) {
+                if (container.getCount() != 1 || resource == null || resource.amount < capacity || getFluid() != null || !canFillFluidType(resource))
                     return 0;
-                }
 
-                if (doFill) {
+                if (doFill)
+                {
                     FluidStack filled = resource.copy();
                     filled.amount = 144;
                     setFluid(filled);
@@ -87,16 +83,15 @@ public class ItemLadle extends ItemFluidContainer
 
             @Nullable
             @Override
-            public FluidStack drain(FluidStack resource, boolean doDrain) {
-                if (resource == null || resource.amount < capacity) {
+            public FluidStack drain(FluidStack resource, boolean doDrain)
+            {
+                if (resource == null || resource.amount < capacity)
                     return null;
-                }
 
                 FluidStack fluidStack = getFluid();
                 if (fluidStack != null && fluidStack.isFluidEqual(resource)) {
-                    if (doDrain) {
+                    if (doDrain)
                         setContainerToEmpty();
-                    }
                     return fluidStack;
                 }
 
@@ -105,14 +100,12 @@ public class ItemLadle extends ItemFluidContainer
 
             @Override
             public FluidStack drain(int maxDrain, boolean doDrain) {
-                if (container.getCount() != 1 || maxDrain <= 0) {
+                if (container.getCount() != 1 || maxDrain <= 0)
                     return null;
-                }
 
                 FluidStack contained = getFluid();
-                if (contained == null || contained.amount <= 0 || !canDrainFluidType(contained)) {
+                if (contained == null || contained.amount <= 0 || !canDrainFluidType(contained))
                     return null;
-                }
                 if (maxDrain < capacity)
                     return null;
 
@@ -123,11 +116,10 @@ public class ItemLadle extends ItemFluidContainer
 
                 if (doDrain) {
                     contained.amount -= drainAmount;
-                    if (contained.amount == 0) {
+                    if (contained.amount == 0)
                         setContainerToEmpty();
-                    } else {
+                    else
                         setFluid(contained);
-                    }
                 }
 
                 return drained;

@@ -1,10 +1,11 @@
 package com.camellias.mysticalmetallurgy.common.item.tool.pickaxe;
 
 import net.minecraft.item.ItemPickaxe;
+import net.minecraft.item.ItemTool;
 
-public class ItemMysticalPick extends ItemPickaxe
+public class ItemMysticalTool extends ItemPickaxe
 {
-    protected ItemMysticalPick(ToolMaterial material)
+    protected ItemMysticalTool(ToolMaterial material)
     {
         super(material);
     }
