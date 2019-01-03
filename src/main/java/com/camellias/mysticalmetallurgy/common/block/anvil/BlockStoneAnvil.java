@@ -18,6 +18,7 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -169,6 +170,18 @@ public class BlockStoneAnvil extends Block
     //endregion
 
     //region <other>
+    @Override
+    public void breakBlock(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state)
+    {
+        TileStoneAnvil tile = getTile(worldIn, pos);
+        if (tile != null)
+        {
+            for (int slot = 0; slot < tile.inventory.getSlots(); slot++)
+                InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), tile.inventory.getStackInSlot(slot));
+        }
+        super.breakBlock(worldIn, pos, state);
+    }
+
     @Nonnull
     @Override
     @SuppressWarnings("deprecation")

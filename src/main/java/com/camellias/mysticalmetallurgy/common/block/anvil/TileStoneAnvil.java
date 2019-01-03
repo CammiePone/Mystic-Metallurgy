@@ -132,7 +132,7 @@ public class TileStoneAnvil extends TileEntity
 
     private int swings = 0;
     private AnvilRecipe recipe;
-    private ItemStackHandler inventory = new ItemStackHandler(Slot.values().length)
+    ItemStackHandler inventory = new ItemStackHandler(Slot.values().length)
     {
         @Override
         public int getSlotLimit(int slot)
@@ -152,7 +152,7 @@ public class TileStoneAnvil extends TileEntity
         }
     };
 
-    public IBlockState getBlockState()
+    IBlockState getBlockState()
     {
         return world.getBlockState(pos);
     }
