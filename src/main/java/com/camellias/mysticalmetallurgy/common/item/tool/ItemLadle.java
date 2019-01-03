@@ -42,9 +42,7 @@ public class ItemLadle extends ItemFluidContainer
         if (props.getContents() != null && props.getContents().tag != null)
         {
             for (EffectHandler.EffectLevelPair effectPair : EffectHandler.readEffectsFromNBT(props.getContents().tag))
-            {
                 tooltip.add(String.format("%s %d",Effect.getEffect(effectPair.effect).getAttributeInfo(), effectPair.level));
-            }
         }
     }
 
@@ -64,17 +62,20 @@ public class ItemLadle extends ItemFluidContainer
     }
 
     @Override
-    public ICapabilityProvider initCapabilities(@Nonnull ItemStack stack, NBTTagCompound nbt) {
-        return new FluidHandlerItemStack(stack, capacity) {
+    public ICapabilityProvider initCapabilities(@Nonnull ItemStack stack, NBTTagCompound nbt)
+    {
+        return new FluidHandlerItemStack(stack, capacity)
+        {
             @Override
-            public int fill(FluidStack resource, boolean doFill) {
+            public int fill(FluidStack resource, boolean doFill)
+            {
                 if (container.getCount() != 1 || resource == null || resource.amount < capacity || getFluid() != null || !canFillFluidType(resource))
                     return 0;
 
                 if (doFill)
                 {
                     FluidStack filled = resource.copy();
-                    filled.amount = 144;
+                    filled.amount = CAPACITY;
                     setFluid(filled);
                 }
 
@@ -89,7 +90,8 @@ public class ItemLadle extends ItemFluidContainer
                     return null;
 
                 FluidStack fluidStack = getFluid();
-                if (fluidStack != null && fluidStack.isFluidEqual(resource)) {
+                if (fluidStack != null && fluidStack.isFluidEqual(resource))
+                {
                     if (doDrain)
                         setContainerToEmpty();
                     return fluidStack;
@@ -114,7 +116,8 @@ public class ItemLadle extends ItemFluidContainer
                 FluidStack drained = contained.copy();
                 drained.amount = drainAmount;
 
-                if (doDrain) {
+                if (doDrain)
+                {
                     contained.amount -= drainAmount;
                     if (contained.amount == 0)
                         setContainerToEmpty();
