@@ -2,6 +2,8 @@ package com.camellias.mysticalmetallurgy.init;
 
 import com.camellias.mysticalmetallurgy.common.block.anvil.RendererStoneAnvil;
 import com.camellias.mysticalmetallurgy.common.block.anvil.TileStoneAnvil;
+import com.camellias.mysticalmetallurgy.common.block.basin.RendererQuenchingBasin;
+import com.camellias.mysticalmetallurgy.common.block.basin.TileQuenchingBasin;
 import com.camellias.mysticalmetallurgy.common.block.crucible.RendererCrucible;
 import com.camellias.mysticalmetallurgy.common.block.crucible.TileCrucible;
 
@@ -39,6 +41,7 @@ public class RegistrationHandlerClient
                 Item.getItemFromBlock(ModBlocks.CRUCIBLE),
                 Item.getItemFromBlock(ModBlocks.BRAZIER),
                 Item.getItemFromBlock(ModBlocks.STONE_ANVIL),
+                Item.getItemFromBlock(ModBlocks.BASIN),
 
                 ModItems.LADLE,
                 ModItems.HAMMER
@@ -49,6 +52,7 @@ public class RegistrationHandlerClient
 
         ClientRegistry.bindTileEntitySpecialRenderer(TileCrucible.class, new RendererCrucible());
         ClientRegistry.bindTileEntitySpecialRenderer(TileStoneAnvil.class, new RendererStoneAnvil());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileQuenchingBasin.class, new RendererQuenchingBasin());
     }
 
     @SubscribeEvent

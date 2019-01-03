@@ -1,6 +1,7 @@
 package com.camellias.mysticalmetallurgy.common.block.basin;
 
 import com.camellias.mysticalmetallurgy.Main;
+import com.camellias.mysticalmetallurgy.api.utils.ItemUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
@@ -10,18 +11,26 @@ import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryHelper;
+import net.minecraft.item.ItemBucket;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fluids.FluidUtil;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Random;
 
 public class BlockQuenchingBasin extends Block
 {
@@ -39,6 +48,61 @@ public class BlockQuenchingBasin extends Block
 
         setDefaultState(blockState.getBaseState().withProperty(COOLING, false).withProperty(FACING, EnumFacing.NORTH));
     }
+
+    @Override
+    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
+    {
+        if (!worldIn.isRemote)
+        {
+            TileQuenchingBasin tile = getTile(worldIn, pos);
+
+            if (tile != null)
+            {
+                if (FluidUtil.interactWithFluidHandler(playerIn, hand, tile.tank))
+                {
+                    worldIn.setBlockState(pos, state.withProperty(COOLING, true));
+                }
+                else
+                {
+                    TileQuenchingBasin.Slot slot = TileQuenchingBasin.Slot.getSlotHit(state.getValue(FACING), hitX, hitZ);
+
+                    if (slot != null)
+                    {
+                        ItemStack stack = playerIn.getHeldItem(hand);
+                        if (!playerIn.isSneaking() && !stack.isEmpty())
+                            playerIn.setHeldItem(hand, tile.insert(slot, stack, false));
+                        else if (playerIn.isSneaking())
+                        {
+                            ItemStack slotStack = tile.extract(slot, true);
+                            if (!slotStack.isEmpty() && ItemUtils.giveStack(playerIn, slotStack).isEmpty())
+                                tile.extract(slot, false);
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void randomDisplayTick(IBlockState stateIn, World worldIn, BlockPos pos, Random rand)
+    {
+        if (stateIn.getValue(COOLING))
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                double ry = rand.nextDouble() * 0.5 + 0.15;
+                double rx = rand.nextDouble() * 0.4 + 0.3;
+                double rz = rand.nextDouble() * 0.4 + 0.3;
+
+                double vx = rand.nextDouble() * 0.02 - 0.01;
+                double vy = rand.nextDouble() * 0.05 + 0.03;
+                double vz = rand.nextDouble() * 0.02 - 0.01;
+                worldIn.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, pos.getX() + rx, pos.getY() + ry, pos.getZ() + rz, vx, vy, vz);
+            }
+        }
+    }
+
 
     //region <tileentity>
     @Override
