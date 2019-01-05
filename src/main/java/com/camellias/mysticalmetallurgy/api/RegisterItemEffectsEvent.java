@@ -1,18 +1,18 @@
 package com.camellias.mysticalmetallurgy.api;
 
-import com.camellias.mysticalmetallurgy.common.effect.EffectHandler;
+import com.camellias.mysticalmetallurgy.api.effect.EffectLinker;
 import net.minecraftforge.fml.common.eventhandler.Event;
 
 public class RegisterItemEffectsEvent extends Event
 {
-    private EffectHandler handler;
+    private EffectLinker handler;
     
-    public RegisterItemEffectsEvent(EffectHandler registry)
+    public RegisterItemEffectsEvent(EffectLinker registry)
     {
         handler = registry;
     }
 
-    public EffectHandler getRegistry()
+    public EffectLinker getRegistry()
     {
     	return handler;
     }

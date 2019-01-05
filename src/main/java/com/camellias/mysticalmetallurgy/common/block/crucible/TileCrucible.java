@@ -1,7 +1,8 @@
 package com.camellias.mysticalmetallurgy.common.block.crucible;
 
 import com.camellias.mysticalmetallurgy.api.ConfigValues;
-import com.camellias.mysticalmetallurgy.common.effect.EffectHandler;
+import com.camellias.mysticalmetallurgy.api.effect.EffectLinker;
+import com.camellias.mysticalmetallurgy.api.effect.Trait;
 import com.camellias.mysticalmetallurgy.init.ModFluids;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Items;
@@ -134,12 +135,14 @@ public class TileCrucible extends TileEntity implements ITickable
             for (int slot = 0; slot < INPUT_SLOTS; slot ++)
             {
                 ItemStack stack = input.getStackInSlot(slot);
-                tier = Math.max(tier, EffectHandler.getStackTier(stack));
+                tier = Math.max(tier, EffectLinker.getStackTier(stack));
                 stacks.add(stack);
             }
 
-            NBTTagCompound fluidTag = EffectHandler.combineStackEffectsToNBT(stacks.toArray(new ItemStack[0]));
-            EffectHandler.writeTierToNBT(fluidTag, tier + 1);
+            List<Trait> effects = EffectLinker.combineStackTraits(stacks.toArray(new ItemStack[0]));
+            NBTTagCompound fluidTag = new NBTTagCompound();
+            Trait.toNBT(fluidTag, effects);
+            EffectLinker.writeTierToNBT(fluidTag, tier + 1);
 
             output.fillInternal(new FluidStack(ModFluids.MYSTICAL_METAL, 144, fluidTag), true);
 
@@ -168,9 +171,9 @@ public class TileCrucible extends TileEntity implements ITickable
         for (int slot = 0; slot < INPUT_SLOTS; slot++)
         {
             ItemStack stack = input.getStackInSlot(slot);
-            if (!EffectHandler.hasStackEffects(stack))
+            if (!EffectLinker.hasStackRegisteredTraits(stack))
                 return false;
-            if (EffectHandler.getStackTier(stack) >= ConfigValues.MaxCombineTier)
+            if (EffectLinker.getStackTier(stack) >= ConfigValues.MaxCombineTier)
                 return false;
         }
 

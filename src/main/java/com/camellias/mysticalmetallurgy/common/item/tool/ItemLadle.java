@@ -1,8 +1,7 @@
 package com.camellias.mysticalmetallurgy.common.item.tool;
 
 import com.camellias.mysticalmetallurgy.Main;
-import com.camellias.mysticalmetallurgy.api.Effect;
-import com.camellias.mysticalmetallurgy.common.effect.EffectHandler;
+import com.camellias.mysticalmetallurgy.api.effect.Trait;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -41,8 +40,8 @@ public class ItemLadle extends ItemFluidContainer
         IFluidTankProperties props = handler.getTankProperties()[0];
         if (props.getContents() != null && props.getContents().tag != null)
         {
-            for (EffectHandler.EffectLevelPair effectPair : EffectHandler.readEffectsFromNBT(props.getContents().tag))
-                tooltip.add(String.format("%s %d",Effect.getEffect(effectPair.effect).getAttributeInfo(), effectPair.level));
+            for (Trait trait : Trait.fromNBT(props.getContents().tag))
+                tooltip.add(String.format("%s %d", trait.getEffect().getAttributeInfo(), trait.level));
         }
     }
 

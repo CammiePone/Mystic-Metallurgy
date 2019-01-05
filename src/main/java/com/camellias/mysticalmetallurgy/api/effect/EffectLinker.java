@@ -1,18 +1,15 @@
-package com.camellias.mysticalmetallurgy.common.effect;
+package com.camellias.mysticalmetallurgy.api.effect;
 
 import com.camellias.mysticalmetallurgy.Main;
-import com.camellias.mysticalmetallurgy.api.Effect;
 import com.camellias.mysticalmetallurgy.api.RegisterItemEffectsEvent;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.oredict.OreDictionary;
@@ -20,26 +17,24 @@ import net.minecraftforge.oredict.OreDictionary;
 import javax.annotation.Nonnull;
 import java.util.*;
 
-public class EffectHandler
+public class EffectLinker
 {
     public static void raiseRegisterEvent()
     {
         MinecraftForge.EVENT_BUS.post(new RegisterItemEffectsEvent(INSTANCE));
     }
 
-    private EffectHandler() {}
+    private EffectLinker() {}
 
-    public static EffectHandler INSTANCE = new EffectHandler();
-
-    public static final String NBT_EFFECTS = "mystical_effects";
+    public static EffectLinker INSTANCE = new EffectLinker();
 
     private static final String NBT_TIER = "mystic_tier";
 
-    private Map<ItemMeta, List<EffectLevelPair>> itemEffects = new HashMap<>();
-    private Map<String, List<EffectLevelPair>> oreDictEffects = new HashMap<>();
+    private Map<ItemMeta, List<Trait>> itemEffects = new HashMap<>();
+    private Map<String, List<Trait>> oreDictEffects = new HashMap<>();
 
     @SuppressWarnings("unchecked")
-    public void registerItemWithEffect(@Nonnull Item item, int meta, @Nonnull ResourceLocation effect, int level)
+    public void registerItemWithTrait(@Nonnull Item item, int meta, @Nonnull ResourceLocation effect, int level)
     {
         if (Effect.exists(effect))
         {
@@ -47,11 +42,11 @@ public class EffectHandler
 
             if (itemEffects.containsKey(im))
             {
-                itemEffects.get(im).add(new EffectLevelPair(effect, level));
+                itemEffects.get(im).add(new Trait(effect, level));
             }
             else
             {
-                itemEffects.put(im, new ArrayList<>(Collections.singletonList(new EffectLevelPair(effect, level))));
+                itemEffects.put(im, new ArrayList<>(Collections.singletonList(new Trait(effect, level))));
             }
             Main.logger.info(String.format("successfully registered %s effect to item %s:%d", effect.toString(), item.getRegistryName().toString(), meta));
         }
@@ -60,7 +55,7 @@ public class EffectHandler
     }
 
     @SuppressWarnings("unchecked")
-    public void registerItemWithEffect(@Nonnull String oreDict, @Nonnull ResourceLocation effect, int level)
+    public void registerItemWithTrait(@Nonnull String oreDict, @Nonnull ResourceLocation effect, int level)
     {
         if (Effect.exists(effect))
         {
@@ -68,11 +63,11 @@ public class EffectHandler
             {
                 if (oreDictEffects.containsKey(oreDict))
                 {
-                    oreDictEffects.get(oreDict).add(new EffectLevelPair(effect, level));
+                    oreDictEffects.get(oreDict).add(new Trait(effect, level));
                 }
                 else
                 {
-                    oreDictEffects.put(oreDict, new ArrayList<>(Collections.singletonList(new EffectLevelPair(effect, level))));
+                    oreDictEffects.put(oreDict, new ArrayList<>(Collections.singletonList(new Trait(effect, level))));
                 }
                 Main.logger.info(String.format("successfully registered %s effect to oredict %s", effect.toString(), oreDict));
             }
@@ -84,9 +79,9 @@ public class EffectHandler
     }
 
     @Nonnull
-    public static List<EffectLevelPair> getItemEffects(ItemStack stack)
+    public static List<Trait> getItemRegisteredTraits(ItemStack stack)
     {
-        List<EffectLevelPair> effects = new ArrayList<>();
+        List<Trait> effects = new ArrayList<>();
         for (int id : OreDictionary.getOreIDs(stack))
         {
             String oreDictEntry = OreDictionary.getOreName(id);
@@ -101,7 +96,7 @@ public class EffectHandler
         return effects;
     }
 
-    public static boolean hasStackEffects(ItemStack stack)
+    public static boolean hasStackRegisteredTraits(ItemStack stack)
     {
         if (stack.isEmpty()) return false;
         for (int id : OreDictionary.getOreIDs(stack))
@@ -115,60 +110,32 @@ public class EffectHandler
     }
 
     @Nonnull
-    public static List<EffectLevelPair> readEffectsFromNBT(NBTTagCompound tag)
+    public static List<Trait> combineStackTraits(ItemStack... stacks)
     {
-        List<EffectLevelPair> list = new ArrayList<>();
-        if (tag.hasKey(NBT_EFFECTS))
-        {
-            NBTTagList tagList = (NBTTagList)tag.getTag(NBT_EFFECTS);
-            tagList.forEach(nbt ->
-                    list.add(EffectLevelPair.fromNBT((NBTTagCompound) nbt)));
-        }
-        return list;
-    }
-
-    @Nonnull
-    public static List<EffectLevelPair> combineStackEffects(ItemStack... stacks)
-    {
-        List<EffectLevelPair> allStackEffects = new ArrayList<>();
+        List<Trait> allStackEffects = new ArrayList<>();
         for (ItemStack stack : stacks)
         {
             if (!stack.isEmpty())
             {
-                allStackEffects.addAll(getItemEffects(stack));
+                allStackEffects.addAll(getItemRegisteredTraits(stack));
             }
         }
 
         allStackEffects.sort((o1, o2) -> Integer.compare(o2.level, o1.level));
 
-        List<EffectLevelPair> combinedEffects = new ArrayList<>();
-        for (EffectLevelPair pair : allStackEffects)
+        List<Trait> combinedEffects = new ArrayList<>();
+        for (Trait pair : allStackEffects)
         {
             if (!combinedEffects.contains(pair))
             {
                 int freq = Collections.frequency(allStackEffects, pair);
                 int newLevel = freq > 1 ? pair.level + freq - 1 : pair.level - stacks.length;
                 if (newLevel > 0)
-                    combinedEffects.add(new EffectLevelPair(pair.effect, newLevel));
+                    combinedEffects.add(new Trait(pair.effect, newLevel));
             }
         }
 
         return combinedEffects;
-    }
-
-    public static NBTTagCompound combineStackEffectsToNBT(ItemStack... stacks)
-    {
-        List<EffectLevelPair> effects = combineStackEffects(stacks);
-
-        NBTTagList tagList = new NBTTagList();
-        for (EffectHandler.EffectLevelPair el : effects)
-        {
-            tagList.appendTag(el.serializeNBT());
-        }
-
-        NBTTagCompound cmp = new NBTTagCompound();
-        cmp.setTag(NBT_EFFECTS, tagList);
-        return cmp;
     }
 
     public static int getStackTier(ItemStack stack)
@@ -210,62 +177,13 @@ public class EffectHandler
         }
     }
 
-    public static class EffectLevelPair implements INBTSerializable<NBTTagCompound>
-    {
-        private static final String NBT_EFFECT = "effect_id";
-        private static final String NBT_LEVEL = "effect_level";
-
-        public ResourceLocation effect;
-        public int level;
-
-        EffectLevelPair(ResourceLocation effect, int level)
-        {
-            this.effect = effect;
-            this.level = level;
-        }
-
-        private EffectLevelPair() {}
-
-        @Override
-        public boolean equals(Object other)
-        {
-            if (other == this) return true;
-            if (!(other instanceof EffectLevelPair))return false;
-            EffectLevelPair otherMyClass = (EffectLevelPair)other;
-            return otherMyClass.effect.equals(effect);
-        }
-
-        @Override
-        public NBTTagCompound serializeNBT()
-        {
-            NBTTagCompound tag = new NBTTagCompound();
-            tag.setString(NBT_EFFECT, effect.toString());
-            tag.setInteger(NBT_LEVEL, level);
-            return tag;
-        }
-
-        @Override
-        public void deserializeNBT(NBTTagCompound nbt)
-        {
-            effect = new ResourceLocation(nbt.getString(NBT_EFFECT));
-            level = nbt.getInteger(NBT_LEVEL);
-        }
-
-        public static EffectLevelPair fromNBT(NBTTagCompound nbt)
-        {
-            EffectLevelPair elp = new EffectLevelPair();
-            elp.deserializeNBT(nbt);
-            return elp;
-        }
-    }
-
     @SubscribeEvent
     public void addToolTip(ItemTooltipEvent event)
     {
         ItemStack stack = event.getItemStack();
         List<String> tooltip = event.getToolTip();
 
-        if (hasStackEffects(stack))
+        if (hasStackRegisteredTraits(stack))
         {
             //<Hold Shift For More Info>
             if (!GuiScreen.isShiftKeyDown())
@@ -277,9 +195,9 @@ public class EffectHandler
                 //Attributes:
                 tooltip.add(TextFormatting.GOLD + TextFormatting.BOLD.toString() + I18n.format("info.mysticalmetallurgy.attributes"));
 
-                for (EffectLevelPair effectPair : getItemEffects(stack))
+                for (Trait trait : getItemRegisteredTraits(stack))
                 {
-                    tooltip.add(String.format("%s %d",Effect.getEffect(effectPair.effect).getAttributeInfo(), effectPair.level));
+                    tooltip.add(String.format("%s %d", trait.getEffect().getAttributeInfo(), trait.level));
                 }
             }
         }

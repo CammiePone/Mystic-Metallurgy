@@ -1,7 +1,6 @@
 package com.camellias.mysticalmetallurgy.init;
 
-import com.camellias.mysticalmetallurgy.Main;
-import com.camellias.mysticalmetallurgy.api.Effect;
+import com.camellias.mysticalmetallurgy.api.effect.Effect;
 import com.camellias.mysticalmetallurgy.api.RegisterItemEffectsEvent;
 import com.camellias.mysticalmetallurgy.api.recipe.AnvilRecipe;
 import com.camellias.mysticalmetallurgy.common.block.BlockBrazier;
@@ -18,7 +17,6 @@ import com.camellias.mysticalmetallurgy.common.item.ItemMetalClump;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemHammer;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemLadle;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockAnvil;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
@@ -34,7 +32,6 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.registries.*;
 
 @Mod.EventBusSubscriber
@@ -111,9 +108,9 @@ public class RegistrationHandler
     @SubscribeEvent
     public static void registerItemEffects(RegisterItemEffectsEvent event)
     {
-        event.getRegistry().registerItemWithEffect("ingotIron", EffectDense.ID, 3);
-        event.getRegistry().registerItemWithEffect("ingotIron", EffectFire.ID, 5);
-        event.getRegistry().registerItemWithEffect("ingotGold", EffectFire.ID, 3);
+        event.getRegistry().registerItemWithTrait("ingotIron", EffectDense.ID, 3);
+        event.getRegistry().registerItemWithTrait("ingotIron", EffectFire.ID, 5);
+        event.getRegistry().registerItemWithTrait("ingotGold", EffectFire.ID, 3);
     }
 
     public static void registerOreDict()

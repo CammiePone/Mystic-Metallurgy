@@ -1,6 +1,6 @@
 package com.camellias.mysticalmetallurgy;
 
-import com.camellias.mysticalmetallurgy.common.effect.EffectHandler;
+import com.camellias.mysticalmetallurgy.api.effect.EffectLinker;
 import com.camellias.mysticalmetallurgy.init.RegistrationHandler;
 import com.camellias.mysticalmetallurgy.network.NetworkHandler;
 import net.minecraftforge.common.MinecraftForge;
@@ -48,7 +48,7 @@ public class Main
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent event)
 	{
-		EffectHandler.raiseRegisterEvent();
-		MinecraftForge.EVENT_BUS.register(EffectHandler.INSTANCE);
+		EffectLinker.raiseRegisterEvent();
+		MinecraftForge.EVENT_BUS.register(EffectLinker.INSTANCE);
 	}
 }

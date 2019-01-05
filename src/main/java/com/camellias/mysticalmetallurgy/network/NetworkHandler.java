@@ -2,7 +2,11 @@ package com.camellias.mysticalmetallurgy.network;
 
 import com.camellias.mysticalmetallurgy.Main;
 import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
+import com.camellias.mysticalmetallurgy.network.packet.ToolBreakAnimationPacket;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.Packet;
 import net.minecraft.util.IThreadListener;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
@@ -24,6 +28,7 @@ public class NetworkHandler
      */
     public static void registerPackets() {
         dispatcher.registerMessage(PlaySoundPacket.class, PlaySoundPacket.class, packetId++, Side.CLIENT);
+        dispatcher.registerMessage(ToolBreakAnimationPacket.class, ToolBreakAnimationPacket.class, packetId++, Side.CLIENT);
     }
 
     public static IThreadListener getThreadListener(MessageContext ctx) {
@@ -49,5 +54,15 @@ public class NetworkHandler
 
     public static void sendAround(IMessage message, BlockPos pos, int dimId) {
         dispatcher.sendToAllAround(message, new NetworkRegistry.TargetPoint(dimId, pos.getX(), pos.getY(), pos.getZ(), 64));
+    }
+
+    public static void sendTo(IMessage message, EntityPlayerMP playerMP) {
+        dispatcher.sendTo(message, playerMP);
+    }
+
+    public static void sendPacket(Entity player, Packet<?> packet) {
+        if(player instanceof EntityPlayerMP && ((EntityPlayerMP) player).connection != null) {
+            ((EntityPlayerMP) player).connection.sendPacket(packet);
+        }
     }
 }
