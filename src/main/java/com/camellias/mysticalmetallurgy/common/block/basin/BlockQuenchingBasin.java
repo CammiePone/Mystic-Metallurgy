@@ -144,13 +144,13 @@ public class BlockQuenchingBasin extends Block
     @SuppressWarnings("deprecation")
     public IBlockState getStateFromMeta(int meta)
     {
-        return getDefaultState().withProperty(FACING, EnumFacing.HORIZONTALS[meta & 7]).withProperty(COOLING, (meta >> 3) == 1);
+        return getDefaultState().withProperty(FACING, EnumFacing.HORIZONTALS[meta >> 1]).withProperty(COOLING, (meta & 1) == 1);
     }
 
     @Override
     public int getMetaFromState(IBlockState state)
     {
-        return state.getValue(FACING).ordinal() - 2 + (state.getValue(COOLING) ? 0 : 1) << 3;
+        return (state.getValue(COOLING) ? 0 : 1) + ((state.getValue(FACING).ordinal() - 2) << 1);
     }
     //endregion
 

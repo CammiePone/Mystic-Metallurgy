@@ -37,8 +37,8 @@ public class RendererStoneAnvil extends TileEntitySpecialRenderer<TileStoneAnvil
         TileStoneAnvil.Slot slotHover = null;
         if (rayTrace != null && rayTrace.hitVec != null && rayTrace.sideHit == EnumFacing.UP && rayTrace.getBlockPos().equals(te.getPos()))
         {
-            float hitX = (float) (Math.abs(rayTrace.hitVec.x) - Math.floor(Math.abs(rayTrace.hitVec.x)));
-            float hitZ = (float) (Math.abs(rayTrace.hitVec.z) - Math.floor(Math.abs(rayTrace.hitVec.z)));
+            float hitX = (float)(rayTrace.hitVec.x - (double)rayTrace.getBlockPos().getX());
+            float hitZ = (float)(rayTrace.hitVec.z - (double)rayTrace.getBlockPos().getZ());
             slotHover = TileStoneAnvil.Slot.getSlotHit(facing, hitX, hitZ, te.hasOutput() ? TileStoneAnvil.Slot.SlotType.OUTPUT : TileStoneAnvil.Slot.SlotType.INPUT);
         }
 
