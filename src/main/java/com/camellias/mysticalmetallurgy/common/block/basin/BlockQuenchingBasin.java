@@ -37,7 +37,7 @@ public class BlockQuenchingBasin extends Block
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "basin");
     public static final PropertyBool COOLING = PropertyBool.create("cooling");
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
-    private static final AxisAlignedBB AABB = new AxisAlignedBB(0.125D, 0.0D, 0.125D, 0.875D, 0.875D, 0.875D);
+    private static final AxisAlignedBB AABB = new AxisAlignedBB(0.0D, 0.0D, 0.07D, 1.0D, 0.62D, 0.93D);
 
     public BlockQuenchingBasin()
     {
