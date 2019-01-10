@@ -7,6 +7,8 @@ import com.camellias.mysticalmetallurgy.common.block.basin.TileQuenchingBasin;
 import com.camellias.mysticalmetallurgy.common.block.crucible.RendererCrucible;
 import com.camellias.mysticalmetallurgy.common.block.crucible.TileCrucible;
 
+import com.camellias.mysticalmetallurgy.common.block.rack.RendererRack;
+import com.camellias.mysticalmetallurgy.common.block.rack.TileRack;
 import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
 import com.camellias.mysticalmetallurgy.common.item.ItemVariant;
 import net.minecraft.block.Block;
@@ -42,6 +44,7 @@ public class RegistrationHandlerClient
                 Item.getItemFromBlock(ModBlocks.BRAZIER),
                 Item.getItemFromBlock(ModBlocks.STONE_ANVIL),
                 Item.getItemFromBlock(ModBlocks.BASIN),
+                Item.getItemFromBlock(ModBlocks.RACK),
 
                 ModItems.LADLE,
                 ModItems.HAMMER
@@ -50,6 +53,7 @@ public class RegistrationHandlerClient
 
         registerFluidModel(ModBlocks.MYSTICAL_LIQUID_METAL, ModFluids.MYSTICAL_METAL, FluidMysticMetal.ID);
 
+        ClientRegistry.bindTileEntitySpecialRenderer(TileRack.class, new RendererRack());
         ClientRegistry.bindTileEntitySpecialRenderer(TileCrucible.class, new RendererCrucible());
         ClientRegistry.bindTileEntitySpecialRenderer(TileStoneAnvil.class, new RendererStoneAnvil());
         ClientRegistry.bindTileEntitySpecialRenderer(TileQuenchingBasin.class, new RendererQuenchingBasin());

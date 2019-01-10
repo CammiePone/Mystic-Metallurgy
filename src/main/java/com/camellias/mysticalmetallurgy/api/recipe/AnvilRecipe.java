@@ -1,7 +1,13 @@
 package com.camellias.mysticalmetallurgy.api.recipe;
 
-import com.camellias.mysticalmetallurgy.api.utils.RecipeUtil;
+import com.camellias.mysticalmetallurgy.api.IMysticalItem;
+import com.camellias.mysticalmetallurgy.api.effect.Effect;
+import com.camellias.mysticalmetallurgy.api.effect.EffectLinker;
+import com.camellias.mysticalmetallurgy.api.effect.Trait;
+import com.camellias.mysticalmetallurgy.common.item.tool.ItemMysticalTool;
+import com.camellias.mysticalmetallurgy.library.utils.RecipeUtil;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -65,6 +71,7 @@ public class AnvilRecipe
     }
 
     public ItemStack getResult() { return result.copy(); }
+
     public int getSwings() { return swings; }
     public ItemStack getSwingStack(int swing)
     {
@@ -122,5 +129,34 @@ public class AnvilRecipe
             if (recipe.match(print, input, extra))
                 return recipe;
         return null;
+    }
+
+    public ItemStack craft(@Nonnull ItemStack input, @Nonnull ItemStack extra)
+    {
+        ItemStack res = getResult();
+        if (res.getItem() instanceof IMysticalItem)
+        {
+            NBTTagCompound nbtResult = new NBTTagCompound();
+
+            int diminish = 0;
+            List<Trait> traits = new ArrayList<>();
+            NBTTagCompound nbtIn = input.getTagCompound();
+            if (nbtIn != null)
+                traits.addAll(Trait.fromNBT(nbtIn));
+
+            NBTTagCompound nbtExtra = extra.getTagCompound();
+            if (nbtExtra != null)
+            {
+                int cnt = traits.size();
+                traits.addAll(Trait.fromNBT(nbtExtra));
+                if (cnt > 0 && traits.size() > cnt)
+                    diminish = 1;
+            }
+
+            Trait.toNBT(nbtResult, Trait.combine(traits, diminish));
+            res.setTagCompound(nbtResult);
+        }
+
+        return res;
     }
 }

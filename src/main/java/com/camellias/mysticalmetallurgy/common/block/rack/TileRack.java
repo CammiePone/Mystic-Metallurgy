@@ -1,6 +1,8 @@
 package com.camellias.mysticalmetallurgy.common.block.rack;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
@@ -26,7 +28,18 @@ public class TileRack extends TileEntity
         {
             return 1;
         }
+
+        @Override
+        public boolean isItemValid(int slot, @Nonnull ItemStack stack)
+        {
+            return !(stack.getItem() instanceof ItemBlock);
+        }
     };
+
+    IBlockState getBlockState()
+    {
+        return world.getBlockState(pos);
+    }
 
     //region <caps>
     @Override

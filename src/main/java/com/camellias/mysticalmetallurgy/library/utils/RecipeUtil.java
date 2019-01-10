@@ -1,4 +1,4 @@
-package com.camellias.mysticalmetallurgy.api.utils;
+package com.camellias.mysticalmetallurgy.library.utils;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;

@@ -8,6 +8,7 @@ import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -64,7 +65,7 @@ public class Trait implements INBTSerializable<NBTTagCompound>
     }
 
     @Nonnull
-    public static List<Trait> fromNBT(NBTTagCompound tag)
+    public static List<Trait> fromNBT(@Nonnull NBTTagCompound tag)
     {
         List<Trait> list = new ArrayList<>();
         if (tag.hasKey(NBT_TRAITS))
@@ -85,6 +86,25 @@ public class Trait implements INBTSerializable<NBTTagCompound>
             tagList.appendTag(trait.serializeNBT());
 
         tag.setTag(NBT_TRAITS, tagList);
+    }
+
+    public static List<Trait> combine(List<Trait> traits, int diminish)
+    {
+        traits.sort((o1, o2) -> Integer.compare(o2.level, o1.level));
+
+        List<Trait> combinedEffects = new ArrayList<>();
+        for (Trait pair : traits)
+        {
+            if (!combinedEffects.contains(pair))
+            {
+                int freq = Collections.frequency(traits, pair);
+                int newLevel = freq > 1 ? pair.level + freq - 1 : pair.level - diminish;
+                if (newLevel > 0)
+                    combinedEffects.add(new Trait(pair.effect, newLevel));
+            }
+        }
+
+        return combinedEffects;
     }
 }
 

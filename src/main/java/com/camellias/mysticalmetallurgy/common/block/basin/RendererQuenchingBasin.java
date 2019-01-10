@@ -1,6 +1,7 @@
 package com.camellias.mysticalmetallurgy.common.block.basin;
 
-import com.camellias.mysticalmetallurgy.api.utils.RenderUtils;
+import com.camellias.mysticalmetallurgy.library.utils.RenderUtils;
+import com.camellias.mysticalmetallurgy.library.tileslottedinventory.InventorySlot;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -59,15 +60,15 @@ public class RendererQuenchingBasin extends TileEntitySpecialRenderer<TileQuench
         GlStateManager.translate(0.5F, 0.5F, 0.5F);
         GlStateManager.scale(0.2F, 0.2F, 0.2F);
 
-        TileQuenchingBasin.Slot slotHover = null;
+        InventorySlot slotHover = null;
         if (rayTrace != null && rayTrace.hitVec != null && rayTrace.sideHit == EnumFacing.UP && rayTrace.getBlockPos().equals(te.getPos()))
         {
             float hitX = (float) (Math.abs(rayTrace.hitVec.x) - Math.floor(Math.abs(rayTrace.hitVec.x)));
             float hitZ = (float) (Math.abs(rayTrace.hitVec.z) - Math.floor(Math.abs(rayTrace.hitVec.z)));
-            slotHover = TileQuenchingBasin.Slot.getSlotHit(facing, hitX, hitZ);
+            slotHover = te.getSlotHit(facing, hitX, hitZ);
         }
 
-        for (TileQuenchingBasin.Slot slot : TileQuenchingBasin.Slot.values())
+        for (InventorySlot slot : te.getSlots())
         {
             ItemStack slotStack = te.extract(slot, true);
             if (!slotStack.isEmpty())

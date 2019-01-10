@@ -1,7 +1,7 @@
 package com.camellias.mysticalmetallurgy.common.block.anvil;
 
 import com.camellias.mysticalmetallurgy.api.recipe.AnvilRecipe;
-import com.camellias.mysticalmetallurgy.api.utils.RenderUtils;
+import com.camellias.mysticalmetallurgy.library.utils.RenderUtils;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemHammer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -34,12 +34,12 @@ public class RendererStoneAnvil extends TileEntitySpecialRenderer<TileStoneAnvil
         GlStateManager.translate(0.5F, 0.5F, 0.5F);
         GlStateManager.scale(0.2F, 0.2F, 0.2F);
 
-        TileStoneAnvil.Slot slotHover = null;
+        TileStoneAnvil.InventorySlotTyped slotHover = null;
         if (rayTrace != null && rayTrace.hitVec != null && rayTrace.sideHit == EnumFacing.UP && rayTrace.getBlockPos().equals(te.getPos()))
         {
             float hitX = (float)(rayTrace.hitVec.x - (double)rayTrace.getBlockPos().getX());
             float hitZ = (float)(rayTrace.hitVec.z - (double)rayTrace.getBlockPos().getZ());
-            slotHover = TileStoneAnvil.Slot.getSlotHit(facing, hitX, hitZ, te.hasOutput() ? TileStoneAnvil.Slot.SlotType.OUTPUT : TileStoneAnvil.Slot.SlotType.INPUT);
+            slotHover = te.getSlotHit(facing, hitX, hitZ, te.hasOutput() ? TileStoneAnvil.InventorySlotTyped.SlotType.OUTPUT : TileStoneAnvil.InventorySlotTyped.SlotType.INPUT);
         }
 
         AnvilRecipe recipe = te.getActiveRecipe();
@@ -47,12 +47,12 @@ public class RendererStoneAnvil extends TileEntitySpecialRenderer<TileStoneAnvil
         {
             ItemStack printStack = te.getPrintForRendering();
             if (!printStack.isEmpty())
-                renderSlot(player, TileStoneAnvil.Slot.PRINT.getRenderOffset(), printStack, facing, false, false);
-            renderSlot(player, TileStoneAnvil.Slot.OUT.getRenderOffset(), recipe.getSwingStack(te.doneSwings()), facing, false, false);
+                renderSlot(player, te.slotPrint.getRenderOffset(), printStack, facing, false, false);
+            renderSlot(player, te.slotOut.getRenderOffset(), recipe.getSwingStack(te.doneSwings()), facing, false, false);
         }
         else
         {
-            for (TileStoneAnvil.Slot slot : TileStoneAnvil.Slot.values())
+            for (TileStoneAnvil.InventorySlotTyped slot : te.getSlots())
             {
                 ItemStack slotStack = te.extract(slot, true);
                 if (!slotStack.isEmpty())

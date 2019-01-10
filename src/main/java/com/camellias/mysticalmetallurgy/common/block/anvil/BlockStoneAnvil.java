@@ -1,11 +1,13 @@
 package com.camellias.mysticalmetallurgy.common.block.anvil;
 
 import com.camellias.mysticalmetallurgy.Main;
-import com.camellias.mysticalmetallurgy.api.utils.ItemUtils;
+import com.camellias.mysticalmetallurgy.api.effect.Trait;
 import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemHammer;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemLadle;
 import com.camellias.mysticalmetallurgy.init.ModItems;
+import com.camellias.mysticalmetallurgy.library.utils.AABBUtils;
+import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import com.camellias.mysticalmetallurgy.network.NetworkHandler;
 import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
 import net.minecraft.block.Block;
@@ -20,6 +22,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -35,15 +38,13 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Objects;
 
 public class BlockStoneAnvil extends Block
 {
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "stone_anvil");
 
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
-    private static final AxisAlignedBB AABB_Z = new AxisAlignedBB(0.186D, 0.0D, 0.254D, 0.81D, 0.435D, 0.748D);
-    private static final AxisAlignedBB AABB_X = new AxisAlignedBB(0.254D, 0.0D, 0.186D, 0.748D, 0.435D, 0.81D);
+    private static final AxisAlignedBB AABB = new AxisAlignedBB(0.186D, 0.0D, 0.254D, 0.81D, 0.435D, 0.748D);
 
     public BlockStoneAnvil()
     {
@@ -74,10 +75,10 @@ public class BlockStoneAnvil extends Block
                 }
                 else
                 {
-                    TileStoneAnvil.Slot slot = TileStoneAnvil.Slot.getSlotHit(state.getValue(FACING), hitX, hitZ,
+                    TileStoneAnvil.InventorySlotTyped slot = tile.getSlotHit(state.getValue(FACING), hitX, hitZ,
                             tile.hasOutput() ?
-                                    TileStoneAnvil.Slot.SlotType.OUTPUT :
-                                    TileStoneAnvil.Slot.SlotType.INPUT);
+                                    TileStoneAnvil.InventorySlotTyped.SlotType.OUTPUT :
+                                    TileStoneAnvil.InventorySlotTyped.SlotType.INPUT);
 
                     if (slot != null)
                     {
@@ -85,8 +86,11 @@ public class BlockStoneAnvil extends Block
                         {
                             if (IsValidFluidInput(stack))
                             {
-                                Objects.requireNonNull(FluidUtil.getFluidHandler(stack)).drain(ItemLadle.CAPACITY, true);
-                                tile.insert(slot, new ItemStack(ModItems.METAL_CLUMP, 1, 0), false);
+                                FluidStack fluid = FluidUtil.getFluidHandler(stack).drain(ItemLadle.CAPACITY, true);
+                                NBTTagCompound nbt = new NBTTagCompound();
+                                Trait.toNBT(nbt, Trait.fromNBT(fluid.tag));
+
+                                tile.insert(slot, new ItemStack(ModItems.METAL_CLUMP, 1, 0, nbt), false);
                             }
                             else
                                 playerIn.setHeldItem(hand, tile.insert(slot, stack, false));
@@ -175,10 +179,7 @@ public class BlockStoneAnvil extends Block
     {
         TileStoneAnvil tile = getTile(worldIn, pos);
         if (tile != null)
-        {
-            for (int slot = 0; slot < tile.inventory.getSlots(); slot++)
-                InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), tile.inventory.getStackInSlot(slot));
-        }
+            tile.getSlots().forEach(slot -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), slot.getStack()));
         super.breakBlock(worldIn, pos, state);
     }
 
@@ -189,10 +190,10 @@ public class BlockStoneAnvil extends Block
     {
         switch (state.getValue(FACING).getAxis())
         {
-            case X:
-                return AABB_X;
             case Z:
-                return AABB_Z;
+                return AABB;
+            case X:
+                return AABBUtils.rotateH90(AABB);
         }
         return FULL_BLOCK_AABB;
     }

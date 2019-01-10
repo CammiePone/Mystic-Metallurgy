@@ -7,6 +7,7 @@ tile.mysticalmetallurgy.brazier.name=Brazier
 tile.mysticalmetallurgy.stone_anvil.name=Stone Anvil
 tile.mysticalmetallurgy.mystical_liquid_metal.name=Mystical Liquid Metal
 tile.mysticalmetallurgy.basin.name=Quenching Basin
+tile.mysticalmetallurgy.rack.name=Item Rack
 
 info.mysticalmetallurgy.shift=<Hold Shift For More Info>
 info.mysticalmetallurgy.attributes=Attributes:

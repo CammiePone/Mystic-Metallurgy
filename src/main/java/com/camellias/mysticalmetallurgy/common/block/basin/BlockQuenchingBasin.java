@@ -1,7 +1,9 @@
 package com.camellias.mysticalmetallurgy.common.block.basin;
 
 import com.camellias.mysticalmetallurgy.Main;
-import com.camellias.mysticalmetallurgy.api.utils.ItemUtils;
+import com.camellias.mysticalmetallurgy.library.utils.AABBUtils;
+import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
+import com.camellias.mysticalmetallurgy.library.tileslottedinventory.InventorySlot;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
@@ -13,7 +15,6 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.item.ItemBucket;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -64,7 +65,7 @@ public class BlockQuenchingBasin extends Block
                 }
                 else
                 {
-                    TileQuenchingBasin.Slot slot = TileQuenchingBasin.Slot.getSlotHit(state.getValue(FACING), hitX, hitZ);
+                    InventorySlot slot = tile.getSlotHit(state.getValue(FACING), hitX, hitZ);
 
                     if (slot != null)
                     {
@@ -160,10 +161,7 @@ public class BlockQuenchingBasin extends Block
     {
         TileQuenchingBasin tile = getTile(worldIn, pos);
         if (tile != null)
-        {
-            for (int slot = 0; slot < tile.inventory.getSlots(); slot++)
-                InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), tile.inventory.getStackInSlot(slot));
-        }
+            tile.getSlots().forEach(slot -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), slot.getStack()));
         super.breakBlock(worldIn, pos, state);
     }
 
@@ -172,7 +170,14 @@ public class BlockQuenchingBasin extends Block
     @SuppressWarnings("deprecation")
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos)
     {
-        return AABB;
+        switch (state.getValue(FACING).getAxis())
+        {
+            case Z:
+                return AABB;
+            case X:
+                return AABBUtils.rotateH90(AABB);
+        }
+        return FULL_BLOCK_AABB;
     }
 
     @Override

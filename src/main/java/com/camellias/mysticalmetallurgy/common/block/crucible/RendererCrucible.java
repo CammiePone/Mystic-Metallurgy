@@ -1,6 +1,6 @@
 package com.camellias.mysticalmetallurgy.common.block.crucible;
 
-import com.camellias.mysticalmetallurgy.api.utils.RenderUtils;
+import com.camellias.mysticalmetallurgy.library.utils.RenderUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;

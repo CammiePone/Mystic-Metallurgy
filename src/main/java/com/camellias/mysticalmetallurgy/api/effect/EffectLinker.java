@@ -121,21 +121,7 @@ public class EffectLinker
             }
         }
 
-        allStackEffects.sort((o1, o2) -> Integer.compare(o2.level, o1.level));
-
-        List<Trait> combinedEffects = new ArrayList<>();
-        for (Trait pair : allStackEffects)
-        {
-            if (!combinedEffects.contains(pair))
-            {
-                int freq = Collections.frequency(allStackEffects, pair);
-                int newLevel = freq > 1 ? pair.level + freq - 1 : pair.level - stacks.length;
-                if (newLevel > 0)
-                    combinedEffects.add(new Trait(pair.effect, newLevel));
-            }
-        }
-
-        return combinedEffects;
+        return Trait.combine(allStackEffects, stacks.length);
     }
 
     public static int getStackTier(ItemStack stack)

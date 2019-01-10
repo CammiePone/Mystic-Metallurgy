@@ -1,5 +1,6 @@
 package com.camellias.mysticalmetallurgy.common.item.tool;
 
+import com.camellias.mysticalmetallurgy.api.IMysticalItem;
 import com.camellias.mysticalmetallurgy.api.effect.Effect;
 import com.camellias.mysticalmetallurgy.api.effect.Trait;
 import com.camellias.mysticalmetallurgy.network.NetworkHandler;
@@ -33,7 +34,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ItemMysticalTool extends Item
+public class ItemMysticalTool extends Item implements IMysticalItem
 {
 
     @Override
