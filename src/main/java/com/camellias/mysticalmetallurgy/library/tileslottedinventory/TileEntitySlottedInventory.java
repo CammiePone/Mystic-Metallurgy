@@ -3,6 +3,7 @@ package com.camellias.mysticalmetallurgy.library.tileslottedinventory;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.EnumFacing;
@@ -19,6 +20,9 @@ import java.util.List;
 public abstract class TileEntitySlottedInventory<T extends InventorySlot> extends IInventoryAccess<T>
 {
     private static final String NBT_INVENTORY = "inventory";
+    private static final String NBT_SLOTID = "slotid";
+    private static final String NBT_SLOT = "slot";
+    private static final String NBT_SLOTLIST = "slot_list";
 
     private List<T> slots = new ArrayList<>();
     private boolean isInit = false;
@@ -46,7 +50,9 @@ public abstract class TileEntitySlottedInventory<T extends InventorySlot> extend
 
             @Override
             protected void onContentsChanged(int slot) {
-                onSlotContentChanged(slots.get(slot));
+                T s = slots.get(slot);
+                s.onChanged();
+                onSlotContentChanged(s);
             }
 
             @Override
@@ -162,6 +168,18 @@ public abstract class TileEntitySlottedInventory<T extends InventorySlot> extend
     {
         compound = super.writeToNBT(compound);
         compound.setTag(NBT_INVENTORY, inventory.serializeNBT());
+        NBTTagList list = new NBTTagList();
+        for (T slot : slots)
+        {
+            if (slot.hasNBT())
+            {
+                NBTTagCompound slotNbt = new NBTTagCompound();
+                slotNbt.setInteger(NBT_SLOTID, slot.slot);
+                slotNbt.setTag(NBT_SLOT, slot.serializeNBT());
+                list.appendTag(slotNbt);
+            }
+        }
+        compound.setTag(NBT_SLOTLIST, list);
         return compound;
     }
 
@@ -170,6 +188,21 @@ public abstract class TileEntitySlottedInventory<T extends InventorySlot> extend
     {
         super.readFromNBT(cmp);
         if (cmp.hasKey(NBT_INVENTORY)) inventory.deserializeNBT(cmp.getCompoundTag(NBT_INVENTORY));
+        if (cmp.hasKey(NBT_SLOTLIST))
+        {
+            NBTTagList list = (NBTTagList)cmp.getTag(NBT_SLOTLIST);
+            list.forEach(nbtBase -> {
+                NBTTagCompound nbt = (NBTTagCompound)nbtBase;
+                if (nbt.hasKey(NBT_SLOTID) && nbt.hasKey(NBT_SLOT))
+                {
+                    int slotid = nbt.getInteger(NBT_SLOTID);
+                    if (slotid < slots.size() && slotid >= 0)
+                    {
+                        slots.get(slotid).deserializeNBT((NBTTagCompound)nbt.getTag(NBT_SLOT));
+                    }
+                }
+            });
+        }
     }
     //endregion
 }

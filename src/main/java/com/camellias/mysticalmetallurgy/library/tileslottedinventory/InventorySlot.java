@@ -1,13 +1,16 @@
 package com.camellias.mysticalmetallurgy.library.tileslottedinventory;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.common.util.INBTSerializable;
 
+import javax.annotation.Nonnull;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
-public class InventorySlot
+public class InventorySlot implements INBTSerializable<NBTTagCompound>
 {
     int slot;
     IInventoryAccess inventory;
@@ -67,6 +70,8 @@ public class InventorySlot
         return true;
     }
 
+    public void onChanged() {}
+
     public ItemStack extract(int amount, boolean simulate)
     {
         return inventory.extractInternal(this, amount, simulate);
@@ -82,4 +87,21 @@ public class InventorySlot
     public ItemStack getStack() { return inventory.getStackInSlotInternal(this); }
 
     public void setStack(ItemStack stack) { inventory.setStackInSlotInternal(this, stack); }
+
+    public boolean hasNBT() {
+        return false;
+    }
+
+    @Nonnull
+    @Override
+    public NBTTagCompound serializeNBT()
+    {
+        return new NBTTagCompound();
+    }
+
+    @Override
+    public void deserializeNBT(NBTTagCompound nbt)
+    {
+
+    }
 }
