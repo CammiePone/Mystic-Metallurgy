@@ -1,12 +1,13 @@
 package com.camellias.mysticalmetallurgy.common.block.basin;
 
+import com.camellias.mysticalmetallurgy.api.IMysticalItem;
 import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
-import com.camellias.mysticalmetallurgy.common.item.tool.ItemMysticalTool;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.InventorySlot;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.TileEntitySlottedInventory;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.Vec3d;
@@ -20,8 +21,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.awt.geom.Point2D;
 
+import static com.camellias.mysticalmetallurgy.common.block.basin.BlockQuenchingBasin.COOLING;
+
 public class TileQuenchingBasin extends TileEntitySlottedInventory<InventorySlot> implements ITickable
 {
+    private static final String NBT_ISCOOLING = "iscooling";
+    private boolean isCooling = false;
 
     public TileQuenchingBasin()
     {
@@ -46,16 +51,38 @@ public class TileQuenchingBasin extends TileEntitySlottedInventory<InventorySlot
     public void update()
     {
         if (world.isRemote) return;
-        if (world.getTotalWorldTime() % 10 != 0) return;
+        if (world.getTotalWorldTime() % 20 != 0) return;
         if (ItemUtils.getFirstOccupiedSlot(inventory) < 0) return;
 
-        for (int slot = 0; slot < inventory.getSlots(); slot++)
+        boolean isCooling = false;
+        if (tank.getFluid() != null)
         {
-            ItemStack stack = inventory.getStackInSlot(slot);
-            if (!stack.isEmpty() && stack.getItem() instanceof ItemMysticalTool)
+            int temp = tank.getFluid().getFluid().getTemperature();
+            if (temp <= 300)
             {
-                //TODO implement cooling
+                for (InventorySlot slot : getSlots())
+                {
+                    ItemStack stack = slot.getStack();
+                    if (!stack.isEmpty() && stack.getItem() instanceof IMysticalItem)
+                    {
+                        int coolTime = ((IMysticalItem) stack.getItem()).getRemainingCoolingTime(stack);
+                        if (coolTime > 0)
+                        {
+                            isCooling = true;
+                            coolTime -= Math.floor((300 - temp) / 50d) + 1;
+                            ((IMysticalItem) stack.getItem()).setRemainingCoolingTime(stack, --coolTime);
+                            tank.drain(2, true);
+                        }
+                    }
+                }
             }
+        }
+
+        if (this.isCooling != isCooling)
+        {
+            world.setBlockState(pos, getBlockState().withProperty(COOLING, isCooling));
+            this.isCooling = isCooling;
+            markDirty();
         }
     }
 
@@ -63,7 +90,6 @@ public class TileQuenchingBasin extends TileEntitySlottedInventory<InventorySlot
     {
         return world.getBlockState(pos);
     }
-
 
     //region <inventory>
     public ItemStack extract(@Nonnull InventorySlot slot, boolean simulate)
@@ -107,6 +133,22 @@ public class TileQuenchingBasin extends TileEntitySlottedInventory<InventorySlot
                 return (T) tank;
         }
         return super.getCapability(capability, facing);
+    }
+    //endregion
+
+    //region <syncing>
+    @Nonnull
+    @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+        compound = super.writeToNBT(compound);
+        compound.setBoolean(NBT_ISCOOLING, isCooling);
+        return compound;
+    }
+
+    @Override
+    public void readFromNBT(@Nonnull NBTTagCompound cmp) {
+        super.readFromNBT(cmp);
+        if (cmp.hasKey(NBT_ISCOOLING)) isCooling = cmp.getBoolean(NBT_ISCOOLING);
     }
     //endregion
 }

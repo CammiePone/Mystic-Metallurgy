@@ -34,9 +34,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ItemMysticalTool extends Item implements IMysticalItem
+public abstract class ItemMysticalTool extends Item implements IMysticalItem
 {
-
     @Override
     public int getMaxDamage(ItemStack stack)
     {

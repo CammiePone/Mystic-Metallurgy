@@ -1,10 +1,7 @@
 package com.camellias.mysticalmetallurgy.api.recipe;
 
 import com.camellias.mysticalmetallurgy.api.IMysticalItem;
-import com.camellias.mysticalmetallurgy.api.effect.Effect;
-import com.camellias.mysticalmetallurgy.api.effect.EffectLinker;
 import com.camellias.mysticalmetallurgy.api.effect.Trait;
-import com.camellias.mysticalmetallurgy.common.item.tool.ItemMysticalTool;
 import com.camellias.mysticalmetallurgy.library.utils.RecipeUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -154,6 +151,9 @@ public class AnvilRecipe
             }
 
             Trait.toNBT(nbtResult, Trait.combine(traits, diminish));
+
+            nbtResult.setInteger(IMysticalItem.NBT_COOLINGTIME, ((IMysticalItem) res.getItem()).getCoolingTime());
+
             res.setTagCompound(nbtResult);
         }
 
