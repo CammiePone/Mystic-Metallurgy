@@ -1,6 +1,10 @@
 package com.camellias.mysticalmetallurgy.common.block.anvil;
 
+import com.camellias.mysticalmetallurgy.api.effect.Trait;
 import com.camellias.mysticalmetallurgy.api.recipe.AnvilRecipe;
+import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
+import com.camellias.mysticalmetallurgy.common.item.tool.ItemLadle;
+import com.camellias.mysticalmetallurgy.init.ModItems;
 import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.InventorySlot;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.TileEntitySlottedInventory;
@@ -13,6 +17,9 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import javax.activity.InvalidActivityException;
 import javax.annotation.Nonnull;
@@ -82,9 +89,56 @@ public class TileStoneAnvil extends TileEntitySlottedInventory<TileStoneAnvil.In
         @Override
         public boolean acceptStack(ItemStack stack)
         {
+            if (type == SlotType.OUTPUT)
+                return false;
+
             if (!oreDict.isEmpty())
                 return ItemUtils.stackHasOreName(stack, oreDict);
             return true;
+        }
+
+        @Override
+        public ItemStack insert(ItemStack stack, boolean simulate)
+        {
+            if (type == SlotType.INPUT && !tryInsertFluid(stack, simulate))
+                return super.insert(stack, simulate);
+
+            return stack;
+        }
+
+        private boolean tryInsertFluid(ItemStack stack, boolean simulate)
+        {
+            if (getStack().isEmpty() && IsValidFluidInput(stack))
+            {
+                if (simulate)
+                    return true;
+
+                FluidStack fluid = FluidUtil.getFluidHandler(stack).drain(ItemLadle.CAPACITY, true);
+                NBTTagCompound nbt = new NBTTagCompound();
+                Trait.toNBT(nbt, Trait.fromNBT(fluid.tag));
+
+                insert(new ItemStack(ModItems.METAL_CLUMP, 1, 0, nbt), false);
+                return true;
+            }
+
+            return false;
+        }
+
+        private boolean IsValidFluidInput(ItemStack stack)
+        {
+            IFluidHandler handler = FluidUtil.getFluidHandler(stack);
+            if (handler == null)
+                return false;
+
+            if (type != SlotType.INPUT)
+                return false;
+
+            FluidStack fluid = handler.drain(ItemLadle.CAPACITY, false);
+
+            if (fluid == null)
+                return false;
+
+            return fluid.getFluid() instanceof FluidMysticMetal && fluid.amount == ItemLadle.CAPACITY;
         }
     }
 
@@ -168,18 +222,9 @@ public class TileStoneAnvil extends TileEntitySlottedInventory<TileStoneAnvil.In
         return !slotOut.getStack().isEmpty();
     }
 
-    public ItemStack extract(@Nonnull InventorySlotTyped slot, boolean simulate)
+    public boolean canExtract(InventorySlotTyped slot)
     {
-        if (swings > 0 && slot != slotOut )
-            return ItemStack.EMPTY;
-        return slot.extract(1, simulate);
-    }
-
-    public ItemStack insert(@Nonnull InventorySlotTyped slot, @Nonnull ItemStack stack, boolean simulate)
-    {
-        if (!hasOutput())
-            slot.insert(stack, simulate);
-        return stack;
+        return swings > 0 && slot != slotOut;
     }
     //endregion
 

@@ -1,11 +1,7 @@
 package com.camellias.mysticalmetallurgy.common.block.anvil;
 
 import com.camellias.mysticalmetallurgy.Main;
-import com.camellias.mysticalmetallurgy.api.effect.Trait;
-import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemHammer;
-import com.camellias.mysticalmetallurgy.common.item.tool.ItemLadle;
-import com.camellias.mysticalmetallurgy.init.ModItems;
 import com.camellias.mysticalmetallurgy.library.utils.AABBUtils;
 import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import com.camellias.mysticalmetallurgy.network.NetworkHandler;
@@ -22,7 +18,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -32,9 +27,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -84,42 +76,23 @@ public class BlockStoneAnvil extends Block
                     {
                         if (!playerIn.isSneaking() && !stack.isEmpty())
                         {
-                            if (IsValidFluidInput(stack))
-                            {
-                                FluidStack fluid = FluidUtil.getFluidHandler(stack).drain(ItemLadle.CAPACITY, true);
-                                NBTTagCompound nbt = new NBTTagCompound();
-                                Trait.toNBT(nbt, Trait.fromNBT(fluid.tag));
-
-                                tile.insert(slot, new ItemStack(ModItems.METAL_CLUMP, 1, 0, nbt), false);
-                            }
-                            else
-                                playerIn.setHeldItem(hand, tile.insert(slot, stack, false));
+                            if (!tile.hasOutput())
+                                playerIn.setHeldItem(hand, slot.insert(stack, false));
                         }
                         else if (playerIn.isSneaking())
                         {
-                            ItemStack slotStack = tile.extract(slot, true);
-                            if (!slotStack.isEmpty() && ItemUtils.giveStack(playerIn, slotStack).isEmpty())
-                                tile.extract(slot, false);
+                            if (tile.canExtract(slot))
+                            {
+                                ItemStack slotStack = slot.extract( 1, true);
+                                if (!slotStack.isEmpty() && ItemUtils.giveStack(playerIn, slotStack).isEmpty())
+                                    slot.extract(1, false);
+                            }
                         }
                     }
                 }
             }
         }
         return true;
-    }
-
-    private boolean IsValidFluidInput(ItemStack stack)
-    {
-        IFluidHandler handler = FluidUtil.getFluidHandler(stack);
-        if (handler == null)
-            return false;
-
-        FluidStack fluid = handler.drain(ItemLadle.CAPACITY, false);
-
-        if (fluid == null)
-            return false;
-
-        return fluid.getFluid() instanceof FluidMysticMetal && fluid.amount == ItemLadle.CAPACITY;
     }
 
     //region <state>

@@ -54,7 +54,7 @@ public class RendererStoneAnvil extends TileEntitySpecialRenderer<TileStoneAnvil
         {
             for (TileStoneAnvil.InventorySlotTyped slot : te.getSlots())
             {
-                ItemStack slotStack = te.extract(slot, true);
+                ItemStack slotStack = slot.extract(1, true);
                 if (!slotStack.isEmpty())
                     renderSlot(player, slot.getRenderOffset(), slotStack, facing, slot == slotHover, false);
                 else if (slotHover == slot && !stackHeld.isEmpty() && !(stackHeld.getItem() instanceof ItemHammer))
