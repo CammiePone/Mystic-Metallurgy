@@ -13,9 +13,9 @@ public interface IMysticalItem
     {
         if (stack.isEmpty()) return 0;
 
-        NBTTagCompound nbt = stack.getTagCompound();
-        if (nbt != null && nbt.hasKey(IMysticalItem.NBT_COOLINGTIME))
-            return nbt.getInteger(IMysticalItem.NBT_COOLINGTIME);
+        NBTTagCompound nbt = stack.getTag();
+        if (nbt != null && nbt.hasUniqueId(IMysticalItem.NBT_COOLINGTIME))
+            return nbt.getInt(IMysticalItem.NBT_COOLINGTIME);
         return 0;
     }
 
@@ -23,8 +23,8 @@ public interface IMysticalItem
     {
         if (stack.isEmpty()) return;
 
-        NBTTagCompound nbt = stack.getTagCompound();
-        if (nbt != null && nbt.hasKey(IMysticalItem.NBT_COOLINGTIME))
-            nbt.setInteger(IMysticalItem.NBT_COOLINGTIME, coolingTime);
+        NBTTagCompound nbt = stack.getTag();
+        if (nbt != null && nbt.hasUniqueId(IMysticalItem.NBT_COOLINGTIME))
+            nbt.putInt(IMysticalItem.NBT_COOLINGTIME, coolingTime);
     }
 }

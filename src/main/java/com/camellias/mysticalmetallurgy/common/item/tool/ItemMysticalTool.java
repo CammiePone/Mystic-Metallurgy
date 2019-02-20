@@ -10,12 +10,12 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.IProjectile;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.MobEffects;
+import net.minecraft.init.Particles;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -23,11 +23,11 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.SPacketEntityVelocity;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.ToolType;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nonnull;
@@ -36,6 +36,10 @@ import java.util.List;
 
 public abstract class ItemMysticalTool extends Item implements IMysticalItem
 {
+    public ItemMysticalTool(Properties properties) {
+        super(properties);
+    }
+
     @Override
     public int getMaxDamage(ItemStack stack)
     {
@@ -70,7 +74,7 @@ public abstract class ItemMysticalTool extends Item implements IMysticalItem
         if (state == null)
             return 0f;
 
-        if (!stack.hasTagCompound())
+        if (!stack.hasTag())
             return 1f;
 
         ToolStats stats = ToolStats.get(stack);
@@ -79,7 +83,7 @@ public abstract class ItemMysticalTool extends Item implements IMysticalItem
             return 0.3f;
 
         // check if the tool has the correct class and harvest level
-        if (!canHarvestBlock(state, stack))
+        if (!canHarvestBlock(stack, state))
             return 0f;
 
         // calculate attackSpeed depending on stats
@@ -127,24 +131,24 @@ public abstract class ItemMysticalTool extends Item implements IMysticalItem
     }
 
     @Override
-    public int getHarvestLevel(ItemStack stack, @Nonnull String toolClass, @Nullable EntityPlayer player, @Nullable IBlockState blockState)
+    public int getHarvestLevel(ItemStack stack, ToolType tool, @Nullable EntityPlayer player, @Nullable IBlockState blockState)
     {
         ToolStats stats = ToolStats.get(stack);
 
         if (stats.broken)
             return -1;
 
-        if (getToolClasses(stack).contains(toolClass))
+        if (getToolTypes(stack).contains(tool))
         {
             // will return 0 if the tag has no info anyway
             return Math.max(stats.harvestLevel, 0);
         }
 
-        return super.getHarvestLevel(stack, toolClass, player, blockState);
+        return super.getHarvestLevel(stack, tool, player, blockState);
     }
 
     @Override
-    public boolean canHarvestBlock(@Nonnull IBlockState state, ItemStack stack)
+    public boolean canHarvestBlock(ItemStack stack, IBlockState state)
     {
         Block block = state.getBlock();
 
@@ -152,17 +156,17 @@ public abstract class ItemMysticalTool extends Item implements IMysticalItem
         if (state.getMaterial().isToolNotRequired())
             return true;
 
-        String type = block.getHarvestTool(state);
+        ToolType type = block.getHarvestTool(state);
         int level = block.getHarvestLevel(state);
 
         return stack.getItem().getHarvestLevel(stack, type, null, state) >= level;
     }
 
-    @Override
+    /*@Override
     public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected)
     {
         super.onUpdate(stack, worldIn, entityIn, itemSlot, isSelected);
-    }
+    }*/
 
     @Override
     public boolean onBlockDestroyed(ItemStack stack, World worldIn, IBlockState state, BlockPos pos, EntityLivingBase entityLiving)
@@ -171,7 +175,7 @@ public abstract class ItemMysticalTool extends Item implements IMysticalItem
         if (stats.broken)
             return false;
 
-        boolean effective = canHarvestBlock(state, stack);
+        boolean effective = canHarvestBlock(stack, state);
 
         stats.traits.forEach(trait -> trait.getEffect().onBlockDestroyed(stack, worldIn, state, pos, entityLiving, effective, trait.level));
 
@@ -195,7 +199,7 @@ public abstract class ItemMysticalTool extends Item implements IMysticalItem
 
         // ensure we never deal more damage than durability
         actualAmount = Math.min(actualAmount, getDurability(stack));
-        stack.setItemDamage(stack.getItemDamage() + actualAmount);
+        stack.setDamage(stack.getDamage() + actualAmount);
 
         if (getDurability(stack) == 0)
             setBroken(stack, entity);
@@ -203,7 +207,7 @@ public abstract class ItemMysticalTool extends Item implements IMysticalItem
 
     public int getDurability(ItemStack stack)
     {
-        return stack.getMaxDamage() - stack.getItemDamage();
+        return stack.getMaxDamage() - stack.getDamage();
     }
 
     public void setBroken(ItemStack stack, @Nullable EntityLivingBase entity)
@@ -223,7 +227,7 @@ public abstract class ItemMysticalTool extends Item implements IMysticalItem
     public boolean attackEntity(ItemStack stack, @Nullable EntityLivingBase attacker, @Nullable Entity targetEntity, @Nullable Entity projectileEntity, boolean applyCooldown)
     {
         // nothing to do, no target?
-        if (targetEntity == null || !targetEntity.canBeAttackedWithItem() || targetEntity.hitByEntity(attacker) || !stack.hasTagCompound())
+        if (targetEntity == null || !targetEntity.canBeAttackedWithItem() || targetEntity.hitByEntity(attacker) || !stack.hasTag())
             return false;
         ToolStats stats = ToolStats.get(stack);
 
@@ -251,7 +255,7 @@ public abstract class ItemMysticalTool extends Item implements IMysticalItem
         }
 
         // players base damage (includes tools damage stat)
-        float baseDamage = (float) attacker.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getAttributeValue();
+        float baseDamage = (float) attacker.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getValue();
 
         float baseKnockback = attacker.isSprinting() ? 1 : 0;
 
@@ -260,7 +264,7 @@ public abstract class ItemMysticalTool extends Item implements IMysticalItem
                 !attacker.onGround && !attacker.isOnLadder() &&
                 !attacker.isInWater() &&
                 !attacker.isPotionActive(MobEffects.BLINDNESS) &&
-                !attacker.isRiding();
+                !attacker.isOnePlayerRiding();
 
         if (!isCritical)
         {
@@ -395,7 +399,7 @@ public abstract class ItemMysticalTool extends Item implements IMysticalItem
             if (player != null)
             {
                 stack.hitEntity(target, player);
-                if (!player.capabilities.isCreativeMode && !isProjectile)
+                if (!player.isCreative() && !isProjectile)
                     reduceDurabilityOnHit(stack, player, damage);
 
                 player.addStat(StatList.DAMAGE_DEALT, Math.round(damageDealt * 10f));
@@ -404,7 +408,7 @@ public abstract class ItemMysticalTool extends Item implements IMysticalItem
                 if (player.getEntityWorld() instanceof WorldServer && damageDealt > 2f)
                 {
                     int k = (int) (damageDealt * 0.5);
-                    ((WorldServer) player.getEntityWorld()).spawnParticle(EnumParticleTypes.DAMAGE_INDICATOR, targetEntity.posX, targetEntity.posY + targetEntity.height * 0.5F, targetEntity.posZ, k, 0.1D, 0.0D, 0.1D, 0.2D);
+                    ((WorldServer) player.getEntityWorld()).spawnParticle(Particles.DAMAGE_INDICATOR, targetEntity.posX, targetEntity.posY + targetEntity.height * 0.5F, targetEntity.posZ, k, 0.1D, 0.0D, 0.1D, 0.2D);
                 }
 
                 // cooldown for non-projectiles
@@ -523,10 +527,10 @@ public abstract class ItemMysticalTool extends Item implements IMysticalItem
 
         public static ToolStats get(ItemStack stack)
         {
-            if (stack.isEmpty() || !stack.hasTagCompound())
+            if (stack.isEmpty() || !stack.hasTag())
                 return new ToolStats();
 
-            return get(stack.getTagCompound().getCompoundTag(NBT_DATA));
+            return get(stack.getTag().getCompound(NBT_DATA));
         }
 
         public float getActualAttack()
@@ -574,22 +578,22 @@ public abstract class ItemMysticalTool extends Item implements IMysticalItem
         public static void write(ItemStack stack, ToolStats stats)
         {
             NBTTagCompound nbt = new NBTTagCompound();
-            if (!stack.isEmpty() && stack.hasTagCompound())
-                nbt = stack.getTagCompound();
+            if (!stack.isEmpty() && stack.hasTag())
+                nbt = stack.getTag();
 
-            nbt.setTag(NBT_DATA, stats.serializeNBT());
+            nbt.put(NBT_DATA, stats.serializeNBT());
         }
 
         @Override
         public NBTTagCompound serializeNBT()
         {
             NBTTagCompound nbt = new NBTTagCompound();
-            nbt.setInteger(NBT_DURABILITY, durability);
-            nbt.setFloat(NBT_ATTACK, attack);
-            nbt.setFloat(NBT_ASPEED, attackSpeed);
-            nbt.setFloat(NBT_MSPEED, miningSpeed);
-            nbt.setBoolean(NBT_BROKEN, broken);
-            nbt.setShort(NBT_LEVEL, harvestLevel);
+            nbt.putInt(NBT_DURABILITY, durability);
+            nbt.putFloat(NBT_ATTACK, attack);
+            nbt.putFloat(NBT_ASPEED, attackSpeed);
+            nbt.putFloat(NBT_MSPEED, miningSpeed);
+            nbt.putBoolean(NBT_BROKEN, broken);
+            nbt.putShort(NBT_LEVEL, harvestLevel);
             Trait.toNBT(nbt, traits);
             return nbt;
         }
@@ -597,12 +601,12 @@ public abstract class ItemMysticalTool extends Item implements IMysticalItem
         @Override
         public void deserializeNBT(NBTTagCompound nbt)
         {
-            if (nbt.hasKey(NBT_DURABILITY)) durability = nbt.getInteger(NBT_DURABILITY);
-            if (nbt.hasKey(NBT_ATTACK)) attack = nbt.getFloat(NBT_ATTACK);
-            if (nbt.hasKey(NBT_ASPEED)) attackSpeed = nbt.getFloat(NBT_ASPEED);
-            if (nbt.hasKey(NBT_MSPEED)) miningSpeed = nbt.getFloat(NBT_MSPEED);
-            if (nbt.hasKey(NBT_BROKEN)) broken = nbt.getBoolean(NBT_BROKEN);
-            if (nbt.hasKey(NBT_LEVEL)) harvestLevel = nbt.getShort(NBT_LEVEL);
+            if (nbt.hasUniqueId(NBT_DURABILITY)) durability = nbt.getInt(NBT_DURABILITY);
+            if (nbt.hasUniqueId(NBT_ATTACK)) attack = nbt.getFloat(NBT_ATTACK);
+            if (nbt.hasUniqueId(NBT_ASPEED)) attackSpeed = nbt.getFloat(NBT_ASPEED);
+            if (nbt.hasUniqueId(NBT_MSPEED)) miningSpeed = nbt.getFloat(NBT_MSPEED);
+            if (nbt.hasUniqueId(NBT_BROKEN)) broken = nbt.getBoolean(NBT_BROKEN);
+            if (nbt.hasUniqueId(NBT_LEVEL)) harvestLevel = nbt.getShort(NBT_LEVEL);
             traits = Trait.fromNBT(nbt);
         }
     }

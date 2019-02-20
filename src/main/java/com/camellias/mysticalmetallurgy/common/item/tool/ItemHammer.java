@@ -12,9 +12,9 @@ public class ItemHammer extends ItemPickaxe
 {
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "hammer");
 
-    public ItemHammer()
+    public ItemHammer(Properties props)
     {
-        super(ToolMaterial.IRON);
+        super(props);
     }
 
     @Override

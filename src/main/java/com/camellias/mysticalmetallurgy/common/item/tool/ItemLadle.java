@@ -6,6 +6,8 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fluids.FluidStack;
@@ -18,46 +20,47 @@ import net.minecraftforge.fluids.capability.templates.FluidHandlerItemStack;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Properties;
 
 public class ItemLadle extends ItemFluidContainer
 {
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "ladle");
     public static final int CAPACITY = 144;
 
-    public ItemLadle()
+    public ItemLadle(Properties props)
     {
-        super(CAPACITY);
+        super(props, CAPACITY);
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn)
+    public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn)
     {
         super.addInformation(stack, worldIn, tooltip, flagIn);
 
-        IFluidHandler handler = FluidUtil.getFluidHandler(stack);
+        IFluidHandler handler = FluidUtil.getFluidHandler(stack).orElse(null);
         assert handler != null;
 
         IFluidTankProperties props = handler.getTankProperties()[0];
         if (props.getContents() != null && props.getContents().tag != null)
         {
             for (Trait trait : Trait.fromNBT(props.getContents().tag))
-                tooltip.add(String.format("%s %d", trait.getEffect().getAttributeInfo(), trait.level));
+                tooltip.add(new TextComponentString(String.format("%s %d", trait.getEffect().getAttributeInfo(), trait.level)));
         }
     }
 
     @Nonnull
     @Override
-    public String getItemStackDisplayName(@Nonnull ItemStack stack)
+    public ITextComponent getDisplayName(@Nonnull ItemStack stack)
     {
-        IFluidHandler handler = FluidUtil.getFluidHandler(stack);
+        IFluidHandler handler = FluidUtil.getFluidHandler(stack).orElse(null);
         assert handler != null;
 
         IFluidTankProperties props = handler.getTankProperties()[0];
-        String itemStackDisplayName = super.getItemStackDisplayName(stack);
+        ITextComponent displayName = super.getDisplayName(stack);
         if (props.getContents() != null)
-            itemStackDisplayName += " " + props.getContents().getLocalizedName();
+            displayName.appendText(" " + props.getContents().getLocalizedName());
 
-        return itemStackDisplayName;
+        return displayName;
     }
 
     @Override
