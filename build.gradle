@@ -47,7 +47,6 @@ minecraft {
             workingDirectory project.file('run/server').canonicalPath
             source sourceSets.main
         }
-}
     }
 
     //replace '@GRADLE:VERSION@', "$mod_version"
@@ -56,35 +55,10 @@ minecraft {
 }
 
 repositories {
-    /*mavenCentral()
-    maven {
-        name = "thiakil"
-        url = "http://maven.thiakil.com"
-    }
-
-    maven {
-        url = "https://minecraft.curseforge.com/api/maven/"
-    }
-
-    maven {
-        name = "Progwml6 maven"
-        url = "http://dvs1.progwml6.com/files/maven"
-    }
-
-    maven {
-        name = "ModMaven"
-        url = "modmaven.k-4u.nl"
-    }*/
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
-    //deobfCompile "com.azanor.baubles:Baubles:$baubles_version"
-
-    //deobfProvided "mezz.jei:jei_$mc_version:$jei_version:api"
-    //runtime "mezz.jei:jei_$mc_version:$jei_version"
-
-    //compile "thaumcraft:Thaumcraft:$mc_version:$thaumcraft_version"
+    minecraft "net.minecraftforge:forge:1.13.2-25.0.44"
 }
 
 processResources {
@@ -97,6 +71,7 @@ processResources {
     }
     from(sourceSets.main.resources.srcDirs) {
         exclude '**/*.toml'
+    }
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
