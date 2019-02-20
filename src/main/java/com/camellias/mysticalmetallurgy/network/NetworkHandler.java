@@ -3,23 +3,19 @@ package com.camellias.mysticalmetallurgy.network;
 import com.camellias.mysticalmetallurgy.Main;
 import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
 import com.camellias.mysticalmetallurgy.network.packet.ToolBreakAnimationPacket;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.Packet;
-import net.minecraft.util.IThreadListener;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.dimension.DimensionType;
+import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraftforge.fml.network.NetworkRegistry;
+import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 public class NetworkHandler
 {
-    private static final SimpleNetworkWrapper dispatcher = NetworkRegistry.INSTANCE.newSimpleChannel(Main.CHANNEL);
+    private static final SimpleChannel dispatcher = NetworkRegistry.ChannelBuilder.named(Main.CHANNEL).simpleChannel();
 
     private static int packetId = 0;
 
@@ -27,37 +23,24 @@ public class NetworkHandler
      * Registers all packets and handlers - call this during {@link net.minecraftforge.fml.common.event.FMLPreInitializationEvent}
      */
     public static void registerPackets() {
-        dispatcher.registerMessage(PlaySoundPacket.class, PlaySoundPacket.class, packetId++, Side.CLIENT);
-        dispatcher.registerMessage(ToolBreakAnimationPacket.class, ToolBreakAnimationPacket.class, packetId++, Side.CLIENT);
+        dispatcher.registerMessage(packetId++, PlaySoundPacket.class, PlaySoundPacket::encode, PlaySoundPacket::decode, PlaySoundPacket::handle);
+        dispatcher.registerMessage(packetId++, ToolBreakAnimationPacket.class, ToolBreakAnimationPacket::encode, ToolBreakAnimationPacket::decode, ToolBreakAnimationPacket::handle);
     }
 
-    public static IThreadListener getThreadListener(MessageContext ctx) {
-        return ctx.side == Side.SERVER ? (WorldServer) ctx.getServerHandler().player.world : getClientThreadListener();
+    public static void sendToAll(Object message) {
+        dispatcher.send(PacketDistributor.ALL.noArg(), message);
     }
 
-    @SideOnly(Side.CLIENT)
-    public static IThreadListener getClientThreadListener() {
-        return Minecraft.getMinecraft();
-    }
-
-    /**
-     * Send this message to everyone.
-     * See {@link SimpleNetworkWrapper#sendToAll(IMessage)}
-     */
-    public static void sendToAll(IMessage message) {
-        dispatcher.sendToAll(message);
-    }
-
-    public static void sendToServer(IMessage message) {
+    public static void sendToServer(Object message) {
         dispatcher.sendToServer(message);
     }
 
-    public static void sendAround(IMessage message, BlockPos pos, int dimId) {
-        dispatcher.sendToAllAround(message, new NetworkRegistry.TargetPoint(dimId, pos.getX(), pos.getY(), pos.getZ(), 64));
+    public static void sendAround(Object message, BlockPos pos, DimensionType dimType) {
+        dispatcher.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(pos.getX(), pos.getY(), pos.getZ(), 64, dimType)), message);
     }
 
-    public static void sendTo(IMessage message, EntityPlayerMP playerMP) {
-        dispatcher.sendTo(message, playerMP);
+    public static void sendTo(Object message, EntityPlayerMP playerMP) {
+        dispatcher.sendTo(message, playerMP.connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
     }
 
     public static void sendPacket(Entity player, Packet<?> packet) {

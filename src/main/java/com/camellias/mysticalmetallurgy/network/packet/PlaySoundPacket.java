@@ -1,67 +1,52 @@
 package com.camellias.mysticalmetallurgy.network.packet;
 
-import com.camellias.mysticalmetallurgy.network.NetworkHandler;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.audio.SimpleSound;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.registries.GameData;
 
-public class PlaySoundPacket implements IMessage, IMessageHandler<PlaySoundPacket, IMessage>
+import java.util.function.Supplier;
+
+public class PlaySoundPacket
 {
-    private String soundId;
+    private SoundEvent sound;
     private BlockPos pos;
-    private String soundCategory;
+    private SoundCategory soundCategory;
     private float volume;
     private float pitch;
 
-    public PlaySoundPacket() {
-    }
-
     public PlaySoundPacket(BlockPos pos, SoundEvent sound, SoundCategory soundCategory, float volume, float pitch) {
-        this.soundId = sound.getSoundName().toString();
+        this.sound = sound;
         this.pos = pos;
-        this.soundCategory = soundCategory.getName();
+        this.soundCategory = soundCategory;
         this.volume = volume;
         this.pitch = pitch;
     }
 
-    @Override
-    public void fromBytes(ByteBuf buf) {
-        pos = BlockPos.fromLong(buf.readLong());
-        soundId = ByteBufUtils.readUTF8String(buf);
-        soundCategory = ByteBufUtils.readUTF8String(buf);
-        volume = buf.readFloat();
-        pitch = buf.readFloat();
+    public static void encode(PlaySoundPacket msg, PacketBuffer buf) {
+        buf.writeLong(msg.pos.toLong());
+        buf.writeResourceLocation(msg.sound.getRegistryName());
+        buf.writeString(msg.soundCategory.getName());
+        buf.writeFloat(msg.volume);
+        buf.writeFloat(msg.pitch);
     }
 
-    @Override
-    public void toBytes(ByteBuf buf) {
-        buf.writeLong(pos.toLong());
-        ByteBufUtils.writeUTF8String(buf, soundId);
-        ByteBufUtils.writeUTF8String(buf, soundCategory);
-        buf.writeFloat(volume);
-        buf.writeFloat(pitch);
+    public static PlaySoundPacket decode(PacketBuffer buf) {
+        return new PlaySoundPacket(
+                BlockPos.fromLong(buf.readLong()),
+                GameData.getWrapper(SoundEvent.class).get(buf.readResourceLocation()),
+                SoundCategory.valueOf(buf.readString(32767)),
+                buf.readFloat(),
+                buf.readFloat()
+        );
     }
 
-    @Override
-    @SideOnly(Side.CLIENT)
-    public IMessage onMessage(PlaySoundPacket message, MessageContext ctx) {
-        NetworkHandler.getThreadListener(ctx).addScheduledTask(() -> {
-            SoundEvent sound = SoundEvent.REGISTRY.getObject(new ResourceLocation(message.soundId));
-            SoundCategory category = SoundCategory.getByName(message.soundCategory);
-            if (sound != null) {
-                Minecraft.getMinecraft().getSoundHandler().playSound(new PositionedSoundRecord(sound, category, message.volume, message.pitch, message.pos));
-            }
-        });
-        return null;
+    public static void handle(PlaySoundPacket msg, Supplier<NetworkEvent.Context> ctx) {
+        ctx.get().enqueueWork(() -> Minecraft.getInstance().getSoundHandler()
+                .play(new SimpleSound(msg.sound, msg.soundCategory, msg.volume, msg.pitch, msg.pos)));
     }
 }

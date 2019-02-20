@@ -1,50 +1,32 @@
 package com.camellias.mysticalmetallurgy.network.packet;
 
-import com.camellias.mysticalmetallurgy.network.NetworkHandler;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.fml.network.NetworkEvent;
 
-public class ToolBreakAnimationPacket implements IMessage, IMessageHandler<ToolBreakAnimationPacket, IMessage>
+import java.util.function.Supplier;
+
+public class ToolBreakAnimationPacket
 {
     private ItemStack breakingTool;
-
-    public ToolBreakAnimationPacket()
-    {
-    }
 
     public ToolBreakAnimationPacket(ItemStack breakingTool)
     {
         this.breakingTool = breakingTool;
     }
 
-    @Override
-    public void fromBytes(ByteBuf buf)
-    {
-        breakingTool = ByteBufUtils.readItemStack(buf);
+    public static void encode(ToolBreakAnimationPacket msg, PacketBuffer buf) {
+        buf.writeItemStack(msg.breakingTool);
     }
 
-    @Override
-    public void toBytes(ByteBuf buf)
-    {
-        ByteBufUtils.writeItemStack(buf, breakingTool);
+    public static ToolBreakAnimationPacket decode(PacketBuffer buf) {
+        return new ToolBreakAnimationPacket(
+                buf.readItemStack()
+        );
     }
 
-    @Override
-    @SideOnly(Side.CLIENT)
-    public IMessage onMessage(ToolBreakAnimationPacket message, MessageContext ctx)
-    {
-        NetworkHandler.getThreadListener(ctx).addScheduledTask(() -> Minecraft.getMinecraft().player.renderBrokenItemStack(breakingTool));
-        return null;
+    public static void handle(ToolBreakAnimationPacket msg, Supplier<NetworkEvent.Context> ctx) {
+        ctx.get().enqueueWork(() -> Minecraft.getInstance().player.renderBrokenItemStack(msg.breakingTool));
     }
 }
