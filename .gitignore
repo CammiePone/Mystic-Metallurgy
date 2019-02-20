@@ -30,3 +30,4 @@ run
 .gradle
 build
 classes
+out

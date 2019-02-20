@@ -1,19 +1,18 @@
 buildscript {
     repositories {
+        maven { url = 'https://files.minecraftforge.net/maven' }
         jcenter()
-        maven { url = "http://files.minecraftforge.net/maven" }
+        mavenCentral()
     }
-
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
     }
 }
+apply plugin: 'net.minecraftforge.gradle'
 
-apply plugin: 'net.minecraftforge.gradle.forge'
-
-version = "$mod_version"
-group = "com.camellias.$mod_name"
-archivesBaseName = "$mod_name-$mc_version"
+version = "${mod_version}"
+group = "com.camellias.${mod_name}"
+archivesBaseName = "${mod_name}-${mc_version}"
 
 sourceCompatibility = targetCompatibility = '1.8'
 compileJava {
@@ -21,18 +20,43 @@ compileJava {
 }
 
 minecraft {
-    version = "$mc_version-$forge_version"
-    runDir = "run"
+    // The mappings can be changed at any time, and must be in the following format.
+    // snapshot_YYYYMMDD   Snapshot are built nightly.
+    // stable_#            Stables are built at the discretion of the MCP team.
+    // Use non-default mappings at your own risk. they may not always work.
+    // Simply re-run your setup task after changing the mappings to update your workspace.
+    mappings channel: 'snapshot', version: "20190216-1.13.1" // FIXME - Use properties when Forge fixes lack of GString support
+    // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
+    
+    // accessTransformer = file('build/resources/main/META-INF/accesstransformer.cfg')
 
-    mappings = "$mcp_mapping"
+    // Default run configurations.
+    // These can be tweaked, removed, or duplicated as needed.
 
-    replace '@GRADLE:VERSION@', "$mod_version"
+    runs {
+        client = {
+            properties 'forge.logging.markers': 'REGISTRIES,REGISTRYDUMP'
+            properties 'forge.logging.console.level': 'info'
+            properties 'username': 'MysticalMetallurgy'
+            workingDirectory project.file('run').canonicalPath
+            source sourceSets.main
+        }
+        server = {
+            properties 'forge.logging.markers': 'REGISTRIES,REGISTRYDUMP'
+            properties 'forge.logging.console.level': 'info'
+            workingDirectory project.file('run/server').canonicalPath
+            source sourceSets.main
+        }
+}
+    }
 
-    replaceIn 'Main.java'
+    //replace '@GRADLE:VERSION@', "$mod_version"
+
+    //replaceIn 'Main.java'
 }
 
 repositories {
-    mavenCentral()
+    /*mavenCentral()
     maven {
         name = "thiakil"
         url = "http://maven.thiakil.com"
@@ -50,33 +74,62 @@ repositories {
     maven {
         name = "ModMaven"
         url = "modmaven.k-4u.nl"
-    }
+    }*/
 }
 
 dependencies {
+    minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
     //deobfCompile "com.azanor.baubles:Baubles:$baubles_version"
 
-    deobfProvided "mezz.jei:jei_$mc_version:$jei_version:api"
-    runtime "mezz.jei:jei_$mc_version:$jei_version"
+    //deobfProvided "mezz.jei:jei_$mc_version:$jei_version:api"
+    //runtime "mezz.jei:jei_$mc_version:$jei_version"
 
     //compile "thaumcraft:Thaumcraft:$mc_version:$thaumcraft_version"
 }
 
 processResources {
-    // this will ensure that this task is redone when the versions change.
     inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
 
-    // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
+        include '**/*.toml'
 
-        // replace version and mcversion
-        expand 'version':project.version, 'mcversion':project.minecraft.version
+        expand 'version': project.version
     }
-
-    // copy everything else except the mcmod.info
     from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
+        exclude '**/*.toml'
+}
+
+// Example for how to get properties into the manifest for reading by the runtime..
+jar {
+    from sourceSets.main.output
+    manifest {
+        attributes([
+            "Specification-Title": "MysticalMetalurgy",
+            "Specification-Vendor": "Shyrik",
+            "Specification-Version": "1", // We are version 1 of ourselves
+            "Implementation-Title": project.name,
+            "Implementation-Version": project.version,
+            "Implementation-Vendor" :"Shyrik",
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
     }
+}
+
+// API jar
+task apiJar(type: Jar) {
+    classifier = 'api'
+    include 'com/camellias/mysticalmetallurgy/api/**/*'
+    from sourceSets.main.allSource
+    from sourceSets.main.output
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allJava
+}
+
+tasks.build.dependsOn apiJar, sourcesJar
+
+tasks.withType(JavaCompile) { task ->
+    task.options.encoding = 'UTF-8'
 }
