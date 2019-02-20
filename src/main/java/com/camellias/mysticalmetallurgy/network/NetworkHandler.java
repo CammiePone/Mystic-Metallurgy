@@ -19,9 +19,6 @@ public class NetworkHandler
 
     private static int packetId = 0;
 
-    /**
-     * Registers all packets and handlers - call this during {@link net.minecraftforge.fml.common.event.FMLPreInitializationEvent}
-     */
     public static void registerPackets() {
         dispatcher.registerMessage(packetId++, PlaySoundPacket.class, PlaySoundPacket::encode, PlaySoundPacket::decode, PlaySoundPacket::handle);
         dispatcher.registerMessage(packetId++, ToolBreakAnimationPacket.class, ToolBreakAnimationPacket::encode, ToolBreakAnimationPacket::decode, ToolBreakAnimationPacket::handle);

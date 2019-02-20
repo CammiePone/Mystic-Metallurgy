@@ -7,11 +7,15 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.Tag;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.oredict.OreDictionary;
 
 import javax.annotation.Nonnull;
@@ -30,68 +34,66 @@ public class EffectLinker
 
     private static final String NBT_TIER = "mystic_tier";
 
-    private Map<ItemMeta, List<Trait>> itemEffects = new HashMap<>();
-    private Map<String, List<Trait>> oreDictEffects = new HashMap<>();
+    private Map<ResourceLocation, List<Trait>> itemEffects = new HashMap<>();
+    private Map<ResourceLocation, List<Trait>> oreDictEffects = new HashMap<>();
 
     @SuppressWarnings("unchecked")
-    public void registerItemWithTrait(@Nonnull Item item, int meta, @Nonnull ResourceLocation effect, int level)
+    public void registerItemWithTrait(@Nonnull Item item, @Nonnull ResourceLocation effect, int level)
     {
         if (Effect.exists(effect))
         {
-            ItemMeta im = new ItemMeta(item, meta);
-
-            if (itemEffects.containsKey(im))
+            if (itemEffects.containsKey(item.getRegistryName()))
             {
-                itemEffects.get(im).add(new Trait(effect, level));
+                itemEffects.get(item.getRegistryName()).add(new Trait(effect, level));
             }
             else
             {
-                itemEffects.put(im, new ArrayList<>(Collections.singletonList(new Trait(effect, level))));
+                itemEffects.put(item.getRegistryName(), new ArrayList<>(Collections.singletonList(new Trait(effect, level))));
             }
-            Main.logger.info(String.format("successfully registered %s effect to item %s:%d", effect.toString(), item.getRegistryName().toString(), meta));
+            Main.logger.info(String.format("successfully registered %s effect to item %s", effect.toString(), item.getRegistryName().toString()));
         }
         else
-            Main.logger.warn(String.format("failed to register %s effect to item %s:%d - effect does not exist",  effect.toString(), item.getRegistryName().toString(), meta));
+            Main.logger.warn(String.format("failed to register %s effect to item %s - effect does not exist",  effect.toString(), item.getRegistryName().toString()));
     }
 
     @SuppressWarnings("unchecked")
-    public void registerItemWithTrait(@Nonnull String oreDict, @Nonnull ResourceLocation effect, int level)
+    public void registerTagWithTrait(@Nonnull ResourceLocation tag, @Nonnull ResourceLocation effect, int level)
     {
         if (Effect.exists(effect))
         {
-            if (OreDictionary.doesOreNameExist(oreDict))
+            if (ItemTags.getCollection().get(tag) != null)
             {
-                if (oreDictEffects.containsKey(oreDict))
+                if (oreDictEffects.containsKey(tag))
                 {
-                    oreDictEffects.get(oreDict).add(new Trait(effect, level));
+                    oreDictEffects.get(tag).add(new Trait(effect, level));
                 }
                 else
                 {
-                    oreDictEffects.put(oreDict, new ArrayList<>(Collections.singletonList(new Trait(effect, level))));
+                    oreDictEffects.put(tag, new ArrayList<>(Collections.singletonList(new Trait(effect, level))));
                 }
-                Main.logger.info(String.format("successfully registered %s effect to oredict %s", effect.toString(), oreDict));
+                Main.logger.info(String.format("successfully registered %s effect to oredict %s", effect.toString(), tag.toString()));
             }
             else
-                Main.logger.warn(String.format("failed to register %s effect to oredict %s - oredict entry does not exist", effect.toString(), oreDict));
+                Main.logger.warn(String.format("failed to register %s effect to oredict %s - oredict entry does not exist", effect.toString(), tag.toString()));
         }
         else
-            Main.logger.warn(String.format("failed to register %s effect to oredict %s - effect does not exist", effect.toString(), oreDict));
+            Main.logger.warn(String.format("failed to register %s effect to oredict %s - effect does not exist", effect.toString(), tag.toString()));
     }
 
     @Nonnull
     public static List<Trait> getItemRegisteredTraits(ItemStack stack)
     {
         List<Trait> effects = new ArrayList<>();
-        for (int id : OreDictionary.getOreIDs(stack))
+
+        for (Map.Entry<ResourceLocation, List<Trait>> entry : INSTANCE.oreDictEffects.entrySet())
         {
-            String oreDictEntry = OreDictionary.getOreName(id);
-            if (INSTANCE.oreDictEffects.containsKey(oreDictEntry))
-                effects.addAll(INSTANCE.oreDictEffects.get(oreDictEntry));
+            Tag<Item> tag = ItemTags.getCollection().get(entry.getKey());
+            if (tag != null && tag.contains(stack.getItem()))
+                effects.addAll(entry.getValue());
         }
 
-        ItemMeta im = new ItemMeta(stack.getItem(), stack.getMetadata());
-        if (INSTANCE.itemEffects.containsKey(im))
-            effects.addAll(INSTANCE.itemEffects.get(im));
+        if (INSTANCE.itemEffects.containsKey(stack.getItem().getRegistryName()))
+            effects.addAll(INSTANCE.itemEffects.get(stack.getItem().getRegistryName()));
 
         return effects;
     }
@@ -99,14 +101,15 @@ public class EffectLinker
     public static boolean hasStackRegisteredTraits(ItemStack stack)
     {
         if (stack.isEmpty()) return false;
-        for (int id : OreDictionary.getOreIDs(stack))
+
+        for (Map.Entry<ResourceLocation, List<Trait>> entry : INSTANCE.oreDictEffects.entrySet())
         {
-            String oreDictEntry = OreDictionary.getOreName(id);
-            if (INSTANCE.oreDictEffects.containsKey(oreDictEntry))
+            Tag<Item> tag = ItemTags.getCollection().get(entry.getKey());
+            if (tag != null && tag.contains(stack.getItem()))
                 return true;
         }
 
-        return INSTANCE.itemEffects.containsKey(new ItemMeta(stack.getItem(), stack.getMetadata()));
+        return INSTANCE.itemEffects.containsKey(stack.getItem().getRegistryName());
     }
 
     @Nonnull
@@ -126,11 +129,11 @@ public class EffectLinker
 
     public static int getStackTier(ItemStack stack)
     {
-        NBTTagCompound nbt = stack.getTagCompound();
-        if (nbt == null || !nbt.hasKey(NBT_TIER))
+        NBTTagCompound nbt = stack.getTag();
+        if (nbt == null || !nbt.hasUniqueId(NBT_TIER))
             return 0;
 
-        return nbt.getInteger(NBT_TIER);
+        return nbt.getInt(NBT_TIER);
     }
 
     public static NBTTagCompound writeTierToNBT(NBTTagCompound nbt, int tier)
@@ -138,52 +141,31 @@ public class EffectLinker
         if (nbt == null)
             nbt = new NBTTagCompound();
 
-        nbt.setInteger(NBT_TIER, tier);
+        nbt.putInt(NBT_TIER, tier);
         return nbt;
-    }
-
-    private static class ItemMeta
-    {
-        private Item item;
-        private int meta;
-
-        ItemMeta(Item item, int meta)
-        {
-            this.item = item;
-            this.meta = meta;
-        }
-
-        @Override
-        public boolean equals(Object other)
-        {
-            if (other == this) return true;
-            if (!(other instanceof ItemMeta))return false;
-            ItemMeta otherMyClass = (ItemMeta)other;
-            return otherMyClass.meta == meta && otherMyClass.item == item;
-        }
     }
 
     @SubscribeEvent
     public void addToolTip(ItemTooltipEvent event)
     {
         ItemStack stack = event.getItemStack();
-        List<String> tooltip = event.getToolTip();
+        List<ITextComponent> tooltip = event.getToolTip();
 
         if (hasStackRegisteredTraits(stack))
         {
             //<Hold Shift For More Info>
             if (!GuiScreen.isShiftKeyDown())
             {
-                tooltip.add(TextFormatting.GOLD + I18n.format("info.mysticalmetallurgy.shift"));
+                tooltip.add(new TextComponentString(TextFormatting.GOLD + I18n.format("info.mysticalmetallurgy.shift")));
             }
             else
             {
                 //Attributes:
-                tooltip.add(TextFormatting.GOLD + TextFormatting.BOLD.toString() + I18n.format("info.mysticalmetallurgy.attributes"));
+                tooltip.add(new TextComponentString(TextFormatting.GOLD + TextFormatting.BOLD.toString() + I18n.format("info.mysticalmetallurgy.attributes")));
 
                 for (Trait trait : getItemRegisteredTraits(stack))
                 {
-                    tooltip.add(String.format("%s %d", trait.getEffect().getAttributeInfo(), trait.level));
+                    tooltip.add(new TextComponentString(String.format("%s %d", trait.getEffect().getAttributeInfo(), trait.level)));
                 }
             }
         }

@@ -17,7 +17,7 @@ import net.minecraftforge.registries.*;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public abstract class Effect extends IForgeRegistryEntry.Impl<Effect>
+public abstract class Effect extends ForgeRegistryEntry<Effect>
 {
     public static final int MAX_ID = Integer.MAX_VALUE - 1;
     public static final ResourceLocation REGISTRY_NAME = new ResourceLocation(Main.MODID, "effects");

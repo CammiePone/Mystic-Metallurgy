@@ -1,7 +1,7 @@
 package com.camellias.mysticalmetallurgy.api;
 
 import com.camellias.mysticalmetallurgy.api.effect.EffectLinker;
-import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.eventbus.api.Event;
 
 public class RegisterItemEffectsEvent extends Event
 {

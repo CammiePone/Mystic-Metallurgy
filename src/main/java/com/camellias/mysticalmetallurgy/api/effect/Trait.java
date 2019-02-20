@@ -52,8 +52,8 @@ public class Trait implements INBTSerializable<NBTTagCompound>
     public NBTTagCompound serializeNBT()
     {
         NBTTagCompound tag = new NBTTagCompound();
-        tag.setString(NBT_EFFECT, effect.toString());
-        tag.setInteger(NBT_LEVEL, level);
+        tag.putString(NBT_EFFECT, effect.toString());
+        tag.putInt(NBT_LEVEL, level);
         return tag;
     }
 
@@ -61,16 +61,16 @@ public class Trait implements INBTSerializable<NBTTagCompound>
     public void deserializeNBT(NBTTagCompound nbt)
     {
         effect = new ResourceLocation(nbt.getString(NBT_EFFECT));
-        level = nbt.getInteger(NBT_LEVEL);
+        level = nbt.getInt(NBT_LEVEL);
     }
 
     @Nonnull
     public static List<Trait> fromNBT(@Nonnull NBTTagCompound tag)
     {
         List<Trait> list = new ArrayList<>();
-        if (tag.hasKey(NBT_TRAITS))
+        if (tag.hasUniqueId(NBT_TRAITS))
         {
-            NBTTagList tagList = (NBTTagList)tag.getTag(NBT_TRAITS);
+            NBTTagList tagList = (NBTTagList)tag.get(NBT_TRAITS);
             tagList.forEach(nbt ->
                     list.add(new Trait((NBTTagCompound) nbt)));
 
@@ -83,9 +83,9 @@ public class Trait implements INBTSerializable<NBTTagCompound>
     {
         NBTTagList tagList = new NBTTagList();
         for (Trait trait : effects)
-            tagList.appendTag(trait.serializeNBT());
+            tagList.add(trait.serializeNBT());
 
-        tag.setTag(NBT_TRAITS, tagList);
+        tag.put(NBT_TRAITS, tagList);
     }
 
     public static List<Trait> combine(List<Trait> traits, int diminish)
