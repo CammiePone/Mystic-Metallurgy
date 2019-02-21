@@ -8,26 +8,28 @@ import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.PropertyBool;
-import net.minecraft.block.properties.PropertyInteger;
-import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntitySpawnPlacementRegistry;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Particles;
 import net.minecraft.init.SoundEvents;
-import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemFlintAndSteel;
 import net.minecraft.item.ItemStack;
+import net.minecraft.state.BooleanProperty;
+import net.minecraft.state.IntegerProperty;
+import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorldReader;
+import net.minecraft.world.IWorldReaderBase;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,23 +38,21 @@ import java.util.Random;
 public class BlockCrucible extends Block
 {
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "crucible");
-    public static final PropertyInteger COAL_LEVEL = PropertyInteger.create("coallevel", 0, 4);
-    public static final PropertyBool LIT = PropertyBool.create("lit");
+    public static final IntegerProperty COAL_LEVEL = IntegerProperty.create("coallevel", 0, 4);
+    public static final BooleanProperty LIT = BooleanProperty.create("lit");
 
-    private static final AxisAlignedBB AABB = new AxisAlignedBB(0.125D, 0.0D, 0.125D, 0.875D, 0.875D, 0.875D);
+    private static final VoxelShape AABB = Block.makeCuboidShape(0.125D, 0.0D, 0.125D, 0.875D, 0.875D, 0.875D);
 
     public BlockCrucible()
     {
-        super(Material.IRON);
-        setSoundType(SoundType.METAL);
-        setResistance(5.0F);
-        setHardness(4.0F);
+        super(Properties.create(Material.IRON).sound(SoundType.METAL).hardnessAndResistance(5F));
 
-        setDefaultState(blockState.getBaseState().withProperty(COAL_LEVEL, 0).withProperty(LIT, false));
+        setDefaultState(getDefaultState().with(COAL_LEVEL, 0).with(LIT, false));
     }
 
     @Override
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
+    @SuppressWarnings("deprecation")
+    public boolean onBlockActivated(IBlockState state, World worldIn, BlockPos pos, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
     {
         if (!worldIn.isRemote)
         {
@@ -66,7 +66,7 @@ public class BlockCrucible extends Block
                     {
                         tile.setLit();
                         stack.damageItem(1, playerIn);
-                        NetworkHandler.sendAround(new PlaySoundPacket(pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.PLAYERS, 0.4F, 0.7F), pos, worldIn.provider.getDimension());
+                        NetworkHandler.sendAround(new PlaySoundPacket(pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.PLAYERS, 0.4F, 0.7F), pos, worldIn.dimension.getType());
                         tile.markDirty();
                     }
                 }
@@ -81,7 +81,7 @@ public class BlockCrucible extends Block
     {
         if (!stack.isEmpty())
         {
-            IFluidHandler fluidHandler = FluidUtil.getFluidHandler(stack);
+            IFluidHandler fluidHandler = FluidUtil.getFluidHandler(stack).orElse(null);
             if (fluidHandler != null)
             {
                 FluidUtil.interactWithFluidHandler(playerIn, hand, tile.output);
@@ -125,10 +125,10 @@ public class BlockCrucible extends Block
         }
     }
 
-    @SideOnly(Side.CLIENT)
-    public void randomDisplayTick(IBlockState stateIn, World worldIn, BlockPos pos, Random rand)
+    @Override
+    public void animateTick(IBlockState stateIn, World worldIn, BlockPos pos, Random rand)
     {
-        if (stateIn.getValue(LIT))
+        if (stateIn.get(LIT))
         {
             for (int i = 0; i < 3; i++)
             {
@@ -139,7 +139,7 @@ public class BlockCrucible extends Block
                 double vx = rand.nextDouble() * 0.02 - 0.01;
                 double vy = rand.nextDouble() * 0.05 + 0.03;
                 double vz = rand.nextDouble() * 0.02 - 0.01;
-                worldIn.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + rx, pos.getY() + ry, pos.getZ() + rz, vx, vy, vz);
+                worldIn.addParticle(Particles.FLAME, pos.getX() + rx, pos.getY() + ry, pos.getZ() + rz, vx, vy, vz);
             }
         }
     }
@@ -153,7 +153,7 @@ public class BlockCrucible extends Block
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(@Nonnull World world, @Nonnull IBlockState state)
+    public TileEntity createTileEntity(@Nonnull IBlockState state, @Nonnull IBlockReader world)
     {
         return new TileCrucible();
     }
@@ -165,56 +165,39 @@ public class BlockCrucible extends Block
     //endregion
 
     //region <state>
-    @Nonnull
     @Override
-    protected BlockStateContainer createBlockState()
-    {
-        return new BlockStateContainer(this, COAL_LEVEL, LIT);
-    }
-
-    @Nonnull
-    @Override
-    @SuppressWarnings("deprecation")
-    public IBlockState getStateFromMeta(int meta)
-    {
-        return getDefaultState().withProperty(COAL_LEVEL, meta & 7).withProperty(LIT, (meta >> 3) == 1);//getDefaultState().withProperty(COAL_LEVEL, meta);
-    }
-
-    @Override
-    public int getMetaFromState(IBlockState state)
-    {
-        return (state.getValue(COAL_LEVEL)) + ((state.getValue(LIT) ? 0 : 1) << 3);//state.getValue(COAL_LEVEL);
+    protected void fillStateContainer(StateContainer.Builder<Block, IBlockState> builder) {
+        builder.add(COAL_LEVEL).add(LIT);
     }
     //endregion
 
     //region <other>
     @Override
-    public void breakBlock(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state)
+    public void getDrops(IBlockState state, NonNullList<ItemStack> drops, World world, BlockPos pos, int fortune)
     {
-        TileCrucible tile = getTile(worldIn, pos);
+        TileCrucible tile = getTile(world, pos);
         if (tile != null)
         {
             for (int slot = 0; slot < tile.input.getSlots(); slot++)
             {
                 ItemStack stack = tile.input.getStackInSlot(slot);
-                if (slot == TileCrucible.FUEL_SLOT && state.getValue(LIT))
+                if (slot == TileCrucible.FUEL_SLOT && state.get(LIT))
                     stack.shrink(1);
-                InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack);
+                drops.add(stack);
             }
         }
-        super.breakBlock(worldIn, pos, state);
     }
 
     @Override
-    public int getLightValue(IBlockState state, IBlockAccess world, BlockPos pos)
+    public int getLightValue(IBlockState state, IWorldReader world, BlockPos pos)
     {
-        return state.getActualState(world, pos).getValue(LIT) ? 15 : 0;
+        return state.get(LIT) ? 15 : 0;
     }
 
     @Nonnull
     @Override
     @SuppressWarnings("deprecation")
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos)
+    public VoxelShape getShape(IBlockState state, IBlockReader source, BlockPos pos)
     {
         return AABB;
     }
@@ -227,20 +210,13 @@ public class BlockCrucible extends Block
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public boolean isOpaqueCube(IBlockState state)
+    public boolean canCreatureSpawn(IBlockState state, IWorldReaderBase world, BlockPos pos, EntitySpawnPlacementRegistry.SpawnPlacementType type, @Nullable EntityType<? extends EntityLiving> entityType)
     {
         return false;
     }
 
     @Override
-    public boolean canCreatureSpawn(@Nonnull IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos, EntityLiving.SpawnPlacementType type)
-    {
-        return false;
-    }
-
-    @Override
-    public boolean canPlaceTorchOnTop(IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos)
+    public boolean canPlaceTorchOnTop(IBlockState state, IWorldReaderBase world, BlockPos pos)
     {
         return false;
     }

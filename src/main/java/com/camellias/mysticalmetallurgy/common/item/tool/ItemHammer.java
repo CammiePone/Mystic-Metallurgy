@@ -3,6 +3,7 @@ package com.camellias.mysticalmetallurgy.common.item.tool;
 import com.camellias.mysticalmetallurgy.Main;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemTier;
 import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nonnull;
@@ -14,7 +15,7 @@ public class ItemHammer extends ItemPickaxe
 
     public ItemHammer(Properties props)
     {
-        super(props);
+        super(ItemTier.IRON, 6, 4, props);
     }
 
     @Override

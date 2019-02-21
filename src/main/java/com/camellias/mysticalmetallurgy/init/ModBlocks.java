@@ -2,9 +2,9 @@ package com.camellias.mysticalmetallurgy.init;
 
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
-import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.registries.ObjectHolder;
 
-@GameRegistry.ObjectHolder("mysticalmetallurgy")
+@ObjectHolder("mysticalmetallurgy")
 public class ModBlocks
 {
 	public static final Block CRUCIBLE = Blocks.AIR;

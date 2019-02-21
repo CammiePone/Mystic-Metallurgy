@@ -2,15 +2,13 @@ package com.camellias.mysticalmetallurgy.common.block.anvil;
 
 import com.camellias.mysticalmetallurgy.api.effect.Trait;
 import com.camellias.mysticalmetallurgy.api.recipe.AnvilRecipe;
-import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemLadle;
 import com.camellias.mysticalmetallurgy.init.ModItems;
-import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.InventorySlot;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.TileEntitySlottedInventory;
+import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import com.camellias.mysticalmetallurgy.network.NetworkHandler;
 import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -19,12 +17,12 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import javax.activity.InvalidActivityException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.awt.geom.Point2D;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TileStoneAnvil extends TileEntitySlottedInventory<TileStoneAnvil.InventorySlotTyped>
 {
@@ -108,37 +106,25 @@ public class TileStoneAnvil extends TileEntitySlottedInventory<TileStoneAnvil.In
 
         private boolean tryInsertFluid(ItemStack stack, boolean simulate)
         {
-            if (getStack().isEmpty() && IsValidFluidInput(stack))
+            AtomicBoolean inserted = new AtomicBoolean(false);
+            if (getStack().isEmpty() && type == SlotType.INPUT)
             {
-                if (simulate)
-                    return true;
+                FluidUtil.getFluidHandler(stack).ifPresent(fluidHandler -> {
+                    FluidStack fluid = fluidHandler.drain(ItemLadle.CAPACITY, false);
+                    if (fluid != null && fluid.amount == ItemLadle.CAPACITY)
+                    {
+                        inserted.set(true);
+                        if (!simulate) {
+                            NBTTagCompound nbt = new NBTTagCompound();
+                            Trait.toNBT(nbt, Trait.fromNBT(fluid.tag));
 
-                FluidStack fluid = FluidUtil.getFluidHandler(stack).drain(ItemLadle.CAPACITY, true);
-                NBTTagCompound nbt = new NBTTagCompound();
-                Trait.toNBT(nbt, Trait.fromNBT(fluid.tag));
-
-                insert(new ItemStack(ModItems.METAL_CLUMP, 1, 0, nbt), false);
-                return true;
+                            insert(new ItemStack(ModItems.METAL_CLUMP, 0, nbt), false);
+                        }
+                    }
+                });
             }
 
-            return false;
-        }
-
-        private boolean IsValidFluidInput(ItemStack stack)
-        {
-            IFluidHandler handler = FluidUtil.getFluidHandler(stack).orElse( null);
-            if (handler == null)
-                return false;
-
-            if (type != SlotType.INPUT)
-                return false;
-
-            FluidStack fluid = handler.drain(ItemLadle.CAPACITY, false);
-
-            if (fluid == null)
-                return false;
-
-            return fluid.getFluid() instanceof FluidMysticMetal && fluid.amount == ItemLadle.CAPACITY;
+            return inserted.get();
         }
     }
 
@@ -156,11 +142,6 @@ public class TileStoneAnvil extends TileEntitySlottedInventory<TileStoneAnvil.In
         markDirty();
     }
 
-    IBlockState getBlockState()
-    {
-        return world.getBlockState(pos);
-    }
-
     public boolean tryHammer()
     {
         AnvilRecipe recipe = AnvilRecipe.getMatching(slotPrint.getStack(),
@@ -175,7 +156,7 @@ public class TileStoneAnvil extends TileEntitySlottedInventory<TileStoneAnvil.In
                 slotExtra.empty();
                 slotOut.setStack(result);
 
-                NetworkHandler.sendAround(new PlaySoundPacket(pos, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.AMBIENT, 1F, 1.0F), pos, world.provider.getDimension());
+                NetworkHandler.sendAround(new PlaySoundPacket(pos, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.AMBIENT, 1F, 1.0F), pos, world.dimension.getType());
             }
 
             markDirty();
@@ -233,14 +214,14 @@ public class TileStoneAnvil extends TileEntitySlottedInventory<TileStoneAnvil.In
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         compound = super.writeToNBT(compound);
-        compound.setInteger(NBT_SWINGS, swings);
+        compound.putInt(NBT_SWINGS, swings);
         return compound;
     }
 
     @Override
     public void readFromNBT(@Nonnull NBTTagCompound cmp) {
         super.readFromNBT(cmp);
-        if (cmp.hasKey(NBT_SWINGS)) swings = cmp.getInteger(NBT_SWINGS);
+        if (cmp.hasUniqueId(NBT_SWINGS)) swings = cmp.getInt(NBT_SWINGS);
     }
     //endregion
 }

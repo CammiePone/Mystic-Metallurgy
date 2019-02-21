@@ -7,71 +7,76 @@ import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.PropertyBool;
-import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntitySpawnPlacementRegistry;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Particles;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemFlintAndSteel;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.*;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.state.BooleanProperty;
+import net.minecraft.state.StateContainer;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorldReader;
+import net.minecraft.world.IWorldReaderBase;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Random;
 
 public class BlockBrazier extends Block
 {
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "brazier");
-    public static final PropertyBool COAL = PropertyBool.create("coal");
-    public static final PropertyBool LIT = PropertyBool.create("lit");
+    public static final BooleanProperty COAL = BooleanProperty.create("coal");
+    public static final BooleanProperty LIT = BooleanProperty.create("lit");
 
-    private static final AxisAlignedBB AABB = new AxisAlignedBB(0.3D, 0.0D, 0.3D, 0.7D, 0.55D, 0.7D);
+    private static final VoxelShape AABB = Block.makeCuboidShape(0.3D, 0.0D, 0.3D, 0.7D, 0.55D, 0.7D);
 
     public BlockBrazier()
     {
-        super(Material.ROCK);
-        setSoundType(SoundType.STONE);
-        setHardness(3.0F);
-        setResistance(5.0F);
+        super(Properties.create(Material.ROCK).sound(SoundType.STONE).hardnessAndResistance(3F));
 
-        setDefaultState(blockState.getBaseState().withProperty(COAL, false).withProperty(LIT, false));
+        setDefaultState(getDefaultState().with(COAL, false).with(LIT, false));
     }
 
     @Override
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
+    @SuppressWarnings("deprecation")
+    public boolean onBlockActivated(IBlockState state, World worldIn, BlockPos pos, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
     {
         if (!worldIn.isRemote)
         {
             ItemStack stack = playerIn.getHeldItem(hand);
             if (stack.getItem() instanceof ItemFlintAndSteel)
             {
-                if (state.getValue(COAL) && !state.getValue(LIT))
+                if (state.get(COAL) && !state.get(LIT))
                 {
                     stack.damageItem(1, playerIn);
-                    NetworkHandler.sendAround(new PlaySoundPacket(pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.PLAYERS, 0.4F, 0.7F), pos, worldIn.provider.getDimension());
-                    worldIn.setBlockState(pos, state.withProperty(LIT, true));
+                    NetworkHandler.sendAround(new PlaySoundPacket(pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.PLAYERS, 0.4F, 0.7F), pos, worldIn.dimension.getType());
+                    worldIn.setBlockState(pos, state.with(LIT, true));
                 }
             }
-            else if (!state.getValue(COAL) && TileCrucible.isValidFuel(stack))
+            else if (!state.get(COAL) && TileCrucible.isValidFuel(stack))
             {
                 stack.shrink(1);
-                worldIn.setBlockState(pos, state.withProperty(COAL, true));
+                worldIn.setBlockState(pos, state.with(COAL, true));
             }
         }
         return true;
     }
 
-    @SideOnly(Side.CLIENT)
-    public void randomDisplayTick(IBlockState stateIn, World worldIn, BlockPos pos, Random rand)
+    @Override
+    public void animateTick(IBlockState stateIn, World worldIn, BlockPos pos, Random rand)
     {
-        if (stateIn.getValue(LIT))
+        if (stateIn.get(LIT))
         {
             for (int i = 0; i < 3; i++)
             {
@@ -82,75 +87,41 @@ public class BlockBrazier extends Block
                 double vx = rand.nextDouble() * 0.02 - 0.01;
                 double vy = rand.nextDouble() * 0.02;
                 double vz = rand.nextDouble() * 0.02 - 0.01;
-                worldIn.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + rx, pos.getY() + ry, pos.getZ() + rz, vx, vy, vz);
-                worldIn.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, pos.getX() + rx + 0.1, pos.getY() + ry + 0.1, pos.getZ() + rz + 0.1, vx, vy, vz);
+                worldIn.addParticle(Particles.FLAME, pos.getX() + rx, pos.getY() + ry, pos.getZ() + rz, vx, vy, vz);
+                worldIn.addParticle(Particles.SMOKE, pos.getX() + rx + 0.1, pos.getY() + ry + 0.1, pos.getZ() + rz + 0.1, vx, vy, vz);
             }
         }
     }
 
     //region <state>
-    @Nonnull
     @Override
-    protected BlockStateContainer createBlockState()
-    {
-        return new BlockStateContainer(this, COAL, LIT);
-    }
-
-    @Nonnull
-    @Override
-    @SuppressWarnings("deprecation")
-    public IBlockState getStateFromMeta(int meta)
-    {
-        return getDefaultState().withProperty(COAL, (meta & 1) == 1).withProperty(LIT, (meta >> 3) == 1);//getDefaultState().withProperty(COAL_LEVEL, meta);
-    }
-
-    @Override
-    public int getMetaFromState(IBlockState state)
-    {
-        return (state.getValue(COAL) ? 0 : 1) + ((state.getValue(LIT) ? 0 : 1) << 3);//state.getValue(COAL_LEVEL);
+    protected void fillStateContainer(StateContainer.Builder<Block, IBlockState> builder) {
+        builder.add(COAL).add(LIT);
     }
     //endregion
 
-
-
     //region <other>
+
     @Override
-    public int getLightValue(IBlockState state, IBlockAccess world, BlockPos pos)
+    public int getLightValue(IBlockState state, IWorldReader world, BlockPos pos)
     {
-        return state.getActualState(world, pos).getValue(LIT) ? 15 : 0;
+        return state.get(LIT) ? 15 : 0;
     }
 
     @Nonnull
     @Override
     @SuppressWarnings("deprecation")
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos)
-    {
+    public VoxelShape getShape(IBlockState state, IBlockReader source, BlockPos pos) {
         return AABB;
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public boolean isFullCube(IBlockState state)
-    {
+    public boolean canPlaceTorchOnTop(IBlockState state, IWorldReaderBase world, BlockPos pos) {
         return false;
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public boolean isOpaqueCube(IBlockState state)
-    {
-        return false;
-    }
-
-    @Override
-    public boolean canCreatureSpawn(@Nonnull IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos, EntityLiving.SpawnPlacementType type)
-    {
-        return false;
-    }
-
-    @Override
-    public boolean canPlaceTorchOnTop(IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos)
-    {
+    public boolean canCreatureSpawn(IBlockState state, IWorldReaderBase world, BlockPos pos, EntitySpawnPlacementRegistry.SpawnPlacementType type, @Nullable EntityType<? extends EntityLiving> entityType) {
         return false;
     }
     //endregion

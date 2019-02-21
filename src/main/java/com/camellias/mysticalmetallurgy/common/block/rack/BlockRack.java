@@ -1,27 +1,30 @@
 package com.camellias.mysticalmetallurgy.common.block.rack;
 
 import com.camellias.mysticalmetallurgy.Main;
-import com.camellias.mysticalmetallurgy.library.utils.AABBUtils;
 import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockRedstoneDiode;
+import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.PropertyDirection;
-import net.minecraft.block.state.BlockStateContainer;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EntitySpawnPlacementRegistry;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.InventoryHelper;
+import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.state.DirectionProperty;
+import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorldReaderBase;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
@@ -30,21 +33,19 @@ import javax.annotation.Nullable;
 public class BlockRack extends Block
 {
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "rack");
-    public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
-    private static final AxisAlignedBB AABB = new AxisAlignedBB(0.0D, 0.875D, 0.0D, 1.0D, 1.0D, 0.125D);
+    public static final DirectionProperty FACING = BlockHorizontal.HORIZONTAL_FACING;
+    private static final VoxelShape AABB = Block.makeCuboidShape(0.0D, 0.875D, 0.0D, 1.0D, 1.0D, 0.125D);
 
     public BlockRack()
     {
-        super(Material.WOOD);
-        setSoundType(SoundType.WOOD);
-        setResistance(2.0F);
-        setHardness(1.0F);
+        super(Properties.create(Material.WOOD).sound(SoundType.WOOD).hardnessAndResistance(2F));
 
-        setDefaultState(getDefaultState().withProperty(FACING, EnumFacing.NORTH));
+        setDefaultState(getDefaultState().with(FACING, EnumFacing.NORTH));
     }
 
     @Override
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
+    @SuppressWarnings("deprecation")
+    public boolean onBlockActivated(IBlockState state, World worldIn, BlockPos pos, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
     {
         TileRack tile = getTile(worldIn, pos);
         if (tile != null)
@@ -62,34 +63,17 @@ public class BlockRack extends Block
 
         return true;
     }
-
     //region <state>
-    @Nonnull
-    @Override
-    protected BlockStateContainer createBlockState()
-    {
-        return new BlockStateContainer(this, FACING);
-    }
-
-    @Nonnull
-    @Override
-    public IBlockState getStateForPlacement(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ, int meta, @Nonnull EntityLivingBase placer, EnumHand hand)
-    {
-        return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing());
-    }
-
-    @Nonnull
-    @Override
-    @SuppressWarnings("deprecation")
-    public IBlockState getStateFromMeta(int meta)
-    {
-        return getDefaultState().withProperty(FACING,  EnumFacing.HORIZONTALS[meta & 3]);
-    }
 
     @Override
-    public int getMetaFromState(IBlockState state)
-    {
-        return state.getValue(FACING).ordinal() - 2;
+    protected void fillStateContainer(StateContainer.Builder<Block, IBlockState> builder) {
+        builder.add(FACING);
+    }
+
+    @Nullable
+    @Override
+    public IBlockState getStateForPlacement(BlockItemUseContext ctx) {
+        return getDefaultState().with(FACING, ctx.getNearestLookingDirection().getOpposite());
     }
     //endregion
 
@@ -102,8 +86,7 @@ public class BlockRack extends Block
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(@Nonnull World world, @Nonnull IBlockState state)
-    {
+    public TileEntity createTileEntity(IBlockState state, IBlockReader world) {
         return new TileRack();
     }
 
@@ -115,29 +98,34 @@ public class BlockRack extends Block
 
     //region <other>
     @Override
-    public void breakBlock(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state)
-    {
-        TileRack tile = getTile(worldIn, pos);
+    public void getDrops(IBlockState state, NonNullList<ItemStack> drops, World world, BlockPos pos, int fortune) {
+        TileRack tile = getTile(world, pos);
         if (tile != null)
-            InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), tile.inventory.getStackInSlot(0));
-        super.breakBlock(worldIn, pos, state);
+            drops.add(tile.inventory.getStackInSlot(0));
+        super.getDrops(state, drops, world, pos, fortune);
     }
 
     @Override
-    public boolean canPlaceBlockOnSide(@Nonnull World worldIn, @Nonnull BlockPos pos, EnumFacing side) {
-        BlockPos adjacent = pos.offset(side.getOpposite());
-        IBlockState state = worldIn.getBlockState(adjacent);
-        return (state.isSideSolid(worldIn, adjacent, side) || state.getMaterial().isSolid()) && !BlockRedstoneDiode.isDiode(state) && side != EnumFacing.UP; //side.getAxis().isHorizontal();
+    @SuppressWarnings("deprecation")
+    public boolean isValidPosition(IBlockState state, IWorldReaderBase worldIn, BlockPos pos) {
+        EnumFacing side = state.get(FACING);
+        return canAttachTo(worldIn, pos.offset(side.getOpposite()), side);
+    }
+
+    public boolean canAttachTo(@Nonnull IBlockReader worldIn, @Nonnull BlockPos pos, EnumFacing side) {
+        IBlockState state = worldIn.getBlockState(pos);
+        boolean flag = isExceptBlockForAttachWithPiston(state.getBlock());
+        return !flag && state.getBlockFaceShape(worldIn, pos, side) == BlockFaceShape.SOLID;
     }
 
     @Override
     @SuppressWarnings("deprecation")
     public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
         if (!worldIn.isRemote) {
-            EnumFacing facing = state.getValue(FACING);
-            if (!canPlaceBlockOnSide(worldIn, pos, facing.getOpposite()) && !canPlaceBlockOnSide(worldIn, pos.up(), EnumFacing.DOWN)) {
-                dropBlockAsItem(worldIn, pos, state, 0);
-                worldIn.setBlockToAir(pos);
+            EnumFacing facing = state.get(FACING);
+            if (!canAttachTo(worldIn, pos, facing.getOpposite()) && !canAttachTo(worldIn, pos.up(), EnumFacing.DOWN)) {
+                dropBlockAsItemWithChance(state, worldIn, pos, 0, 100);
+                worldIn.removeBlock(pos);
             }
         }
     }
@@ -145,20 +133,19 @@ public class BlockRack extends Block
     @Nonnull
     @Override
     @SuppressWarnings("deprecation")
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos)
-    {
-        switch (state.getValue(FACING))
+    public VoxelShape getShape(IBlockState state, IBlockReader source, BlockPos pos) {
+        switch (state.get(FACING))
         {
             case NORTH:
                 return AABB;
             case EAST:
-                return AABBUtils.rotateH90(AABB);
+                return AABB;//AABBUtils.rotateH90(AABB);
             case SOUTH:
-                return AABBUtils.rotateH180(AABB);
+                return AABB;//AABBUtils.rotateH180(AABB);
             case WEST:
-                return AABBUtils.rotateH270(AABB);
+                return AABB;//AABBUtils.rotateH270(AABB);
         }
-        return FULL_BLOCK_AABB;
+        return super.getShape(state, source, pos);
     }
 
     @Override
@@ -169,21 +156,12 @@ public class BlockRack extends Block
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public boolean isOpaqueCube(IBlockState state)
-    {
+    public boolean canCreatureSpawn(IBlockState state, IWorldReaderBase world, BlockPos pos, EntitySpawnPlacementRegistry.SpawnPlacementType type, @Nullable EntityType<? extends EntityLiving> entityType) {
         return false;
     }
 
     @Override
-    public boolean canCreatureSpawn(@Nonnull IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos, EntityLiving.SpawnPlacementType type)
-    {
-        return false;
-    }
-
-    @Override
-    public boolean canPlaceTorchOnTop(IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos)
-    {
+    public boolean canPlaceTorchOnTop(IBlockState state, IWorldReaderBase world, BlockPos pos) {
         return false;
     }
     //endregion

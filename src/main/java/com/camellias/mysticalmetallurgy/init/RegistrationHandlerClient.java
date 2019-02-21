@@ -10,7 +10,6 @@ import com.camellias.mysticalmetallurgy.common.block.crucible.TileCrucible;
 import com.camellias.mysticalmetallurgy.common.block.rack.RendererRack;
 import com.camellias.mysticalmetallurgy.common.block.rack.TileRack;
 import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
-import com.camellias.mysticalmetallurgy.common.item.ItemVariant;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.ItemMeshDefinition;

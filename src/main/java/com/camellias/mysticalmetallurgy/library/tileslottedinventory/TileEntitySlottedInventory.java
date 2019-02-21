@@ -7,8 +7,6 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.ItemStackHandler;
 
 import javax.activity.InvalidActivityException;
@@ -130,7 +128,7 @@ public abstract class TileEntitySlottedInventory<T extends InventorySlot> extend
         IBlockState state = world.getBlockState(pos);
         world.markBlockRangeForRenderUpdate(pos, pos);
         world.notifyBlockUpdate(pos, state, state, 3);
-        world.scheduleBlockUpdate(pos, blockType, 0, 0);
+        world.getPendingBlockTicks().scheduleTick(pos, state.getBlock(), 0);
         super.markDirty();
     }
 
@@ -145,60 +143,59 @@ public abstract class TileEntitySlottedInventory<T extends InventorySlot> extend
     @Override
     public NBTTagCompound getUpdateTag()
     {
-        return writeToNBT(new NBTTagCompound());
+        return write(new NBTTagCompound());
     }
 
     @Override
     public SPacketUpdateTileEntity getUpdatePacket()
     {
-        return new SPacketUpdateTileEntity(getPos(), -999, writeToNBT(new NBTTagCompound()));
+        return new SPacketUpdateTileEntity(getPos(), -999, write(new NBTTagCompound()));
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity packet)
     {
         super.onDataPacket(net, packet);
-        readFromNBT(packet.getNbtCompound());
+        read(packet.getNbtCompound());
     }
 
     @Nonnull
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound)
+    public NBTTagCompound write(NBTTagCompound compound)
     {
-        compound = super.writeToNBT(compound);
-        compound.setTag(NBT_INVENTORY, inventory.serializeNBT());
+        compound = super.write(compound);
+        compound.put(NBT_INVENTORY, inventory.serializeNBT());
         NBTTagList list = new NBTTagList();
         for (T slot : slots)
         {
             if (slot.hasNBT())
             {
                 NBTTagCompound slotNbt = new NBTTagCompound();
-                slotNbt.setInteger(NBT_SLOTID, slot.slot);
-                slotNbt.setTag(NBT_SLOT, slot.serializeNBT());
-                list.appendTag(slotNbt);
+                slotNbt.putInt(NBT_SLOTID, slot.slot);
+                slotNbt.put(NBT_SLOT, slot.serializeNBT());
+                list.add(slotNbt);
             }
         }
-        compound.setTag(NBT_SLOTLIST, list);
+        compound.put(NBT_SLOTLIST, list);
         return compound;
     }
 
     @Override
-    public void readFromNBT(@Nonnull NBTTagCompound cmp)
+    public void read(@Nonnull NBTTagCompound cmp)
     {
-        super.readFromNBT(cmp);
-        if (cmp.hasKey(NBT_INVENTORY)) inventory.deserializeNBT(cmp.getCompoundTag(NBT_INVENTORY));
-        if (cmp.hasKey(NBT_SLOTLIST))
+        super.read(cmp);
+        if (cmp.hasUniqueId(NBT_INVENTORY)) inventory.deserializeNBT(cmp.getCompound(NBT_INVENTORY));
+        if (cmp.hasUniqueId(NBT_SLOTLIST))
         {
-            NBTTagList list = (NBTTagList)cmp.getTag(NBT_SLOTLIST);
+            NBTTagList list = (NBTTagList)cmp.get(NBT_SLOTLIST);
             list.forEach(nbtBase -> {
                 NBTTagCompound nbt = (NBTTagCompound)nbtBase;
-                if (nbt.hasKey(NBT_SLOTID) && nbt.hasKey(NBT_SLOT))
+                if (nbt.hasUniqueId(NBT_SLOTID) && nbt.hasUniqueId(NBT_SLOT))
                 {
-                    int slotid = nbt.getInteger(NBT_SLOTID);
+                    int slotid = nbt.getInt(NBT_SLOTID);
                     if (slotid < slots.size() && slotid >= 0)
                     {
-                        slots.get(slotid).deserializeNBT((NBTTagCompound)nbt.getTag(NBT_SLOT));
+                        slots.get(slotid).deserializeNBT(nbt.getCompound(NBT_SLOT));
                     }
                 }
             });

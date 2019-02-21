@@ -12,6 +12,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -48,10 +49,10 @@ public class TileQuenchingBasin extends TileEntitySlottedInventory<InventorySlot
     FluidTank tank = new FluidTank(1000);
 
     @Override
-    public void update()
+    public void tick()
     {
         if (world.isRemote) return;
-        if (world.getTotalWorldTime() % 20 != 0) return;
+        if (world.getGameTime() % 20 != 0) return;
         if (ItemUtils.getFirstOccupiedSlot(inventory) < 0) return;
 
         boolean isCooling = false;
@@ -80,15 +81,10 @@ public class TileQuenchingBasin extends TileEntitySlottedInventory<InventorySlot
 
         if (this.isCooling != isCooling)
         {
-            world.setBlockState(pos, getBlockState().withProperty(COOLING, isCooling));
+            world.setBlockState(pos, getBlockState().with(COOLING, isCooling));
             this.isCooling = isCooling;
             markDirty();
         }
-    }
-
-    IBlockState getBlockState()
-    {
-        return world.getBlockState(pos);
     }
 
     //region <inventory>
@@ -106,32 +102,24 @@ public class TileQuenchingBasin extends TileEntitySlottedInventory<InventorySlot
     //endregion
 
     //region <caps>
-    @Override
-    public boolean hasCapability(@Nullable Capability<?> capability, @Nullable EnumFacing facing)
-    {
-        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ||
-                capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY ||
-                capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY)
-            return true;
-        return super.hasCapability(capability, facing);
-    }
-
+    @Nonnull
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T getCapability(@Nullable Capability<T> capability, @Nullable EnumFacing facing)
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, EnumFacing facing)
     {
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY)
-            return (T) tank;
+            return LazyOptional.of(() -> (T) tank);
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
         {
             if (facing != EnumFacing.DOWN)
-                return (T) inventory;
+                return LazyOptional.of(() -> (T) inventory);
         }
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
         {
             if (facing == EnumFacing.DOWN)
-                return (T) tank;
+                return LazyOptional.of(() -> (T) tank);
         }
+
         return super.getCapability(capability, facing);
     }
     //endregion
@@ -141,14 +129,14 @@ public class TileQuenchingBasin extends TileEntitySlottedInventory<InventorySlot
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         compound = super.writeToNBT(compound);
-        compound.setBoolean(NBT_ISCOOLING, isCooling);
+        compound.putBoolean(NBT_ISCOOLING, isCooling);
         return compound;
     }
 
     @Override
     public void readFromNBT(@Nonnull NBTTagCompound cmp) {
         super.readFromNBT(cmp);
-        if (cmp.hasKey(NBT_ISCOOLING)) isCooling = cmp.getBoolean(NBT_ISCOOLING);
+        if (cmp.hasUniqueId(NBT_ISCOOLING)) isCooling = cmp.getBoolean(NBT_ISCOOLING);
     }
     //endregion
 }

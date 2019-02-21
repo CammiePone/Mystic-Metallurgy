@@ -3,8 +3,9 @@ package com.camellias.mysticalmetallurgy.init;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.registries.ObjectHolder;
 
-@GameRegistry.ObjectHolder("mysticalmetallurgy")
+@ObjectHolder("mysticalmetallurgy")
 public class ModItems
 {
 	//-----Item list-----//

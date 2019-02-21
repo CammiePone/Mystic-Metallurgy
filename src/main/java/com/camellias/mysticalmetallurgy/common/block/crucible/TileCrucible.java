@@ -11,21 +11,18 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +42,11 @@ public class TileCrucible extends TileEntity implements ITickable
 
     //region <inventory>
     InternalStackHandler input = new InternalStackHandler(3);
+
+    public TileCrucible(TileEntityType<?> type) {
+        super(type);
+    }
+
     class InternalStackHandler extends ItemStackHandler
     {
         InternalStackHandler(int size)
@@ -93,7 +95,7 @@ public class TileCrucible extends TileEntity implements ITickable
             if (slot == FUEL_SLOT)
             {
                 setLit(lit && !getStackInSlot(slot).isEmpty());
-                world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockCrucible.COAL_LEVEL, getStackInSlot(slot).getCount()));
+                world.setBlockState(pos, world.getBlockState(pos).with(BlockCrucible.COAL_LEVEL, getStackInSlot(slot).getCount()));
             }
             markDirty();
         }
@@ -119,10 +121,10 @@ public class TileCrucible extends TileEntity implements ITickable
     //endregion
 
     @Override
-    public void update()
+    public void tick()
     {
         if (world.isRemote) return;
-        if (world.getTotalWorldTime() % 10 != 0) return;
+        if (world.getGameTime() % 10 != 0) return;
         if (progress >= 100)
         {
             if (canStart())
@@ -157,7 +159,7 @@ public class TileCrucible extends TileEntity implements ITickable
     private void setLit(boolean state)
     {
         lit = state;
-        world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockCrucible.LIT, state));
+        world.setBlockState(pos, world.getBlockState(pos).with(BlockCrucible.LIT, state));
     }
 
     private boolean canStart()
@@ -188,29 +190,22 @@ public class TileCrucible extends TileEntity implements ITickable
         return stack.getItem() == Items.COAL;
     }
 
-    //region <caps>
-    @Override
-    public boolean hasCapability(@Nullable Capability<?> capability, @Nullable EnumFacing facing)
-    {
-        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
-            return true;
-        return super.hasCapability(capability, facing);
-    }
-
+    @Nonnull
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T getCapability(@Nullable Capability<T> capability, @Nullable EnumFacing facing)
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, EnumFacing facing)
     {
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
         {
-            if (facing == null || facing != EnumFacing.DOWN)
-                return (T) input;
+            if (facing != EnumFacing.DOWN)
+                return LazyOptional.of(() -> (T) input);
         }
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
         {
             if (facing == EnumFacing.DOWN)
-                return (T) output;
+                return LazyOptional.of(() -> (T) output);
         }
+
         return super.getCapability(capability, facing);
     }
     //endregion
@@ -221,14 +216,8 @@ public class TileCrucible extends TileEntity implements ITickable
         IBlockState state = world.getBlockState(pos);
         world.markBlockRangeForRenderUpdate(pos, pos);
         world.notifyBlockUpdate(pos, state, state, 3);
-        world.scheduleBlockUpdate(pos, blockType, 0, 0);
+        world.getPendingBlockTicks().scheduleTick(pos, state.getBlock(), 0);
         super.markDirty();
-    }
-
-    @Override
-    public boolean shouldRefresh(World world, BlockPos pos, @Nonnull IBlockState oldState, @Nonnull IBlockState newSate)
-    {
-        return false;
     }
 
     @Override
@@ -240,39 +229,38 @@ public class TileCrucible extends TileEntity implements ITickable
     @Nonnull
     @Override
     public NBTTagCompound getUpdateTag() {
-        return writeToNBT(new NBTTagCompound());
+        return write(new NBTTagCompound());
     }
 
     @Override
     public SPacketUpdateTileEntity getUpdatePacket() {
-        return new SPacketUpdateTileEntity(getPos(), -999, writeToNBT(new NBTTagCompound()));
+        return new SPacketUpdateTileEntity(getPos(), -999, write(new NBTTagCompound()));
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity packet) {
         super.onDataPacket(net, packet);
-        readFromNBT(packet.getNbtCompound());
+        read(packet.getNbtCompound());
     }
 
     @Nonnull
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        compound = super.writeToNBT(compound);
-        compound.setTag(NBT_INPUT, input.serializeNBT());
-        compound.setTag(NBT_OUTPUT, output.writeToNBT(new NBTTagCompound()));
-        compound.setInteger(NBT_PROGRESS, progress);
-        compound.setBoolean(NBT_LIT, lit);
+    public NBTTagCompound write(NBTTagCompound compound) {
+        compound = super.write(compound);
+        compound.put(NBT_INPUT, input.serializeNBT());
+        compound.put(NBT_OUTPUT, output.writeToNBT(new NBTTagCompound()));
+        compound.putInt(NBT_PROGRESS, progress);
+        compound.putBoolean(NBT_LIT, lit);
         return compound;
     }
 
     @Override
-    public void readFromNBT(@Nonnull NBTTagCompound cmp) {
-        super.readFromNBT(cmp);
-        if (cmp.hasKey(NBT_INPUT)) input.deserializeNBT(cmp.getCompoundTag(NBT_INPUT));
-        if (cmp.hasKey(NBT_OUTPUT)) output.readFromNBT(cmp.getCompoundTag(NBT_OUTPUT));
-        if (cmp.hasKey(NBT_PROGRESS)) progress = cmp.getInteger(NBT_PROGRESS);
-        if (cmp.hasKey(NBT_LIT)) lit = cmp.getBoolean(NBT_LIT);
+    public void read(@Nonnull NBTTagCompound cmp) {
+        super.read(cmp);
+        if (cmp.hasUniqueId(NBT_INPUT)) input.deserializeNBT(cmp.getCompound(NBT_INPUT));
+        if (cmp.hasUniqueId(NBT_OUTPUT)) output.readFromNBT(cmp.getCompound(NBT_OUTPUT));
+        if (cmp.hasUniqueId(NBT_PROGRESS)) progress = cmp.getInt(NBT_PROGRESS);
+        if (cmp.hasUniqueId(NBT_LIT)) lit = cmp.getBoolean(NBT_LIT);
     }
     //endregion
 }

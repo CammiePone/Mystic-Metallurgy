@@ -1,33 +1,34 @@
 package com.camellias.mysticalmetallurgy.common.block.basin;
 
 import com.camellias.mysticalmetallurgy.Main;
-import com.camellias.mysticalmetallurgy.library.utils.AABBUtils;
-import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.InventorySlot;
+import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.PropertyBool;
-import net.minecraft.block.properties.PropertyDirection;
-import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EntitySpawnPlacementRegistry;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.InventoryHelper;
+import net.minecraft.init.Particles;
+import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.state.BooleanProperty;
+import net.minecraft.state.DirectionProperty;
+import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorldReaderBase;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,22 +37,20 @@ import java.util.Random;
 public class BlockQuenchingBasin extends Block
 {
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "basin");
-    public static final PropertyBool COOLING = PropertyBool.create("cooling");
-    public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
-    private static final AxisAlignedBB AABB = new AxisAlignedBB(0.0D, 0.0D, 0.07D, 1.0D, 0.62D, 0.93D);
+    public static final BooleanProperty COOLING = BooleanProperty.create("cooling");
+    public static final DirectionProperty FACING = BlockHorizontal.HORIZONTAL_FACING;
+    private static final VoxelShape AABB = Block.makeCuboidShape(0.0D, 0.0D, 0.07D, 1.0D, 0.62D, 0.93D);
 
     public BlockQuenchingBasin()
     {
-        super(Material.IRON);
-        setSoundType(SoundType.METAL);
-        setResistance(5.0F);
-        setHardness(4.0F);
+        super(Properties.create(Material.IRON).sound(SoundType.METAL).hardnessAndResistance(5F).needsRandomTick());
 
-        setDefaultState(blockState.getBaseState().withProperty(COOLING, false).withProperty(FACING, EnumFacing.NORTH));
+        setDefaultState(getDefaultState().with(COOLING, false).with(FACING, EnumFacing.NORTH));
     }
 
     @Override
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
+    @SuppressWarnings("deprecation")
+    public boolean onBlockActivated(IBlockState state, World worldIn, BlockPos pos, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
     {
         if (!worldIn.isRemote)
         {
@@ -61,11 +60,11 @@ public class BlockQuenchingBasin extends Block
             {
                 if (FluidUtil.interactWithFluidHandler(playerIn, hand, tile.tank))
                 {
-                    worldIn.setBlockState(pos, state.withProperty(COOLING, true));
+                    worldIn.setBlockState(pos, state.with(COOLING, true));
                 }
                 else
                 {
-                    InventorySlot slot = tile.getSlotHit(state.getValue(FACING), hitX, hitZ);
+                    InventorySlot slot = tile.getSlotHit(state.get(FACING), hitX, hitZ);
 
                     if (slot != null)
                     {
@@ -85,10 +84,9 @@ public class BlockQuenchingBasin extends Block
         return true;
     }
 
-    @SideOnly(Side.CLIENT)
-    public void randomDisplayTick(IBlockState stateIn, World worldIn, BlockPos pos, Random rand)
+    public void animateTick(IBlockState stateIn, World worldIn, BlockPos pos, Random rand)
     {
-        if (stateIn.getValue(COOLING))
+        if (stateIn.get(COOLING))
         {
             for (int i = 0; i < 3; i++)
             {
@@ -99,7 +97,7 @@ public class BlockQuenchingBasin extends Block
                 double vx = rand.nextDouble() * 0.02 - 0.01;
                 double vy = rand.nextDouble() * 0.05 + 0.03;
                 double vz = rand.nextDouble() * 0.02 - 0.01;
-                worldIn.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, pos.getX() + rx, pos.getY() + ry, pos.getZ() + rz, vx, vy, vz);
+                worldIn.addParticle(Particles.SMOKE, pos.getX() + rx, pos.getY() + ry, pos.getZ() + rz, vx, vy, vz);
             }
         }
     }
@@ -114,7 +112,7 @@ public class BlockQuenchingBasin extends Block
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(@Nonnull World world, @Nonnull IBlockState state)
+    public TileEntity createTileEntity(IBlockState state, IBlockReader world)
     {
         return new TileQuenchingBasin();
     }
@@ -126,58 +124,45 @@ public class BlockQuenchingBasin extends Block
     //endregion
 
     //region <state>
-    @Nonnull
     @Override
-    protected BlockStateContainer createBlockState()
+    protected void fillStateContainer(StateContainer.Builder<Block, IBlockState> builder)
     {
-        return new BlockStateContainer(this, COOLING, FACING);
+        super.fillStateContainer(builder);
+        builder.add(FACING).add(COOLING);
     }
 
-    @Nonnull
+    @Nullable
     @Override
-    public IBlockState getStateForPlacement(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ, int meta, @Nonnull EntityLivingBase placer, EnumHand hand)
+    public IBlockState getStateForPlacement(BlockItemUseContext ctx)
     {
-        return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
+        return getDefaultState().with(FACING, ctx.getNearestLookingDirection().getOpposite());
     }
 
-    @Nonnull
-    @Override
-    @SuppressWarnings("deprecation")
-    public IBlockState getStateFromMeta(int meta)
-    {
-        return getDefaultState().withProperty(FACING, EnumFacing.HORIZONTALS[meta >> 1]).withProperty(COOLING, (meta & 1) == 1);
-    }
-
-    @Override
-    public int getMetaFromState(IBlockState state)
-    {
-        return (state.getValue(COOLING) ? 0 : 1) + ((state.getValue(FACING).ordinal() - 2) << 1);
-    }
     //endregion
 
     //region <other>
     @Override
-    public void breakBlock(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state)
+    public void getDrops(IBlockState state, NonNullList<ItemStack> drops, World world, BlockPos pos, int fortune)
     {
-        TileQuenchingBasin tile = getTile(worldIn, pos);
+        TileQuenchingBasin tile = getTile(world, pos);
         if (tile != null)
-            tile.getSlots().forEach(slot -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), slot.getStack()));
-        super.breakBlock(worldIn, pos, state);
+            tile.getSlots().forEach(slot -> drops.add(slot.getStack()));
+        super.getDrops(state, drops, world, pos, fortune);
     }
 
     @Nonnull
     @Override
     @SuppressWarnings("deprecation")
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos)
+    public VoxelShape getShape(IBlockState state, IBlockReader source, BlockPos pos)
     {
-        switch (state.getValue(FACING).getAxis())
+        switch (state.get(FACING).getAxis())
         {
             case Z:
                 return AABB;
             case X:
-                return AABBUtils.rotateH90(AABB);
+                return AABB;//AABBUtils.rotateH90(AABB);
         }
-        return FULL_BLOCK_AABB;
+        return super.getShape(state, source, pos);
     }
 
     @Override
@@ -188,20 +173,13 @@ public class BlockQuenchingBasin extends Block
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public boolean isOpaqueCube(IBlockState state)
+    public boolean canCreatureSpawn(IBlockState state, IWorldReaderBase world, BlockPos pos, EntitySpawnPlacementRegistry.SpawnPlacementType type, @Nullable EntityType<? extends EntityLiving> entityType)
     {
         return false;
     }
 
     @Override
-    public boolean canCreatureSpawn(@Nonnull IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos, EntityLiving.SpawnPlacementType type)
-    {
-        return false;
-    }
-
-    @Override
-    public boolean canPlaceTorchOnTop(IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos)
+    public boolean canPlaceTorchOnTop(IBlockState state, IWorldReaderBase world, BlockPos pos)
     {
         return false;
     }

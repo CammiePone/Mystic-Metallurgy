@@ -1,28 +1,29 @@
 package com.camellias.mysticalmetallurgy.common.block.basin;
 
-import com.camellias.mysticalmetallurgy.library.utils.RenderUtils;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.InventorySlot;
+import com.camellias.mysticalmetallurgy.library.utils.RenderUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.RenderItem;
-import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.RayTraceFluidMode;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fluids.FluidStack;
 import org.lwjgl.opengl.GL11;
 
-public class RendererQuenchingBasin extends TileEntitySpecialRenderer<TileQuenchingBasin>
+public class RendererQuenchingBasin extends TileEntityRenderer<TileQuenchingBasin>
 {
     @Override
-    public void render(TileQuenchingBasin te, double x, double y, double z, float partialTicks, int destroyStage, float alpha)
+    public void render(TileQuenchingBasin te, double x, double y, double z, float partialTicks, int destroyStage)
     {
         renderItems(te, x, y, z, partialTicks);
 
@@ -38,8 +39,8 @@ public class RendererQuenchingBasin extends TileEntitySpecialRenderer<TileQuench
 
         FluidStack fluid = te.tank.getFluid();
         int color = fluid.getFluid().getColor(fluid);
-        final TextureAtlasSprite still = Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(fluid.getFluid().getStill(fluid).toString());
-        final TextureAtlasSprite flowing = Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(fluid.getFluid().getFlowing(fluid).toString());
+        final TextureAtlasSprite still = Minecraft.getInstance().getTextureMap().getSprite(fluid.getFluid().getStill(fluid));
+        final TextureAtlasSprite flowing = Minecraft.getInstance().getTextureMap().getSprite(fluid.getFluid().getFlowing(fluid));
 
         RenderUtils.renderFluid(fluid, te.getPos(), 0.35d, 0.35d, 0.35d, 0.0d, 0.0d, 0.0d, 0.30d, 0.30d, 0.30d, color, still, flowing);
 
@@ -50,15 +51,15 @@ public class RendererQuenchingBasin extends TileEntitySpecialRenderer<TileQuench
     private void renderItems(TileQuenchingBasin te, double x, double y, double z, float partialTicks)
     {
 
-        EntityPlayer player = Minecraft.getMinecraft().player;
-        RayTraceResult rayTrace = player.rayTrace(4, partialTicks);
+        EntityPlayer player = Minecraft.getInstance().player;
+        RayTraceResult rayTrace = player.rayTrace(4, partialTicks, RayTraceFluidMode.NEVER);
         ItemStack stackHeld = player.getHeldItemMainhand();
-        EnumFacing facing = te.getBlockState().getValue(BlockQuenchingBasin.FACING);
+        EnumFacing facing = te.getBlockState().get(BlockQuenchingBasin.FACING);
 
         GlStateManager.pushMatrix();
-        GlStateManager.translate(x, y, z);
-        GlStateManager.translate(0.5F, 0.5F, 0.5F);
-        GlStateManager.scale(0.2F, 0.2F, 0.2F);
+        GlStateManager.translated(x, y, z);
+        GlStateManager.translatef(0.5F, 0.5F, 0.5F);
+        GlStateManager.scalef(0.2F, 0.2F, 0.2F);
 
         InventorySlot slotHover = null;
         if (rayTrace != null && rayTrace.hitVec != null && rayTrace.sideHit == EnumFacing.UP && rayTrace.getBlockPos().equals(te.getPos()))
@@ -81,8 +82,8 @@ public class RendererQuenchingBasin extends TileEntitySpecialRenderer<TileQuench
 
     private void renderSlot(EntityPlayer player, Vec3d offset, ItemStack stack, EnumFacing facing, boolean highlight, boolean ghostly)
     {
-        RenderItem renderer = Minecraft.getMinecraft().getRenderItem();
-        TextureManager textureManager = Minecraft.getMinecraft().getTextureManager();
+        ItemRenderer renderer = Minecraft.getInstance().getItemRenderer();
+        TextureManager textureManager = Minecraft.getInstance().getTextureManager();
 
         IBakedModel model = renderer.getItemModelWithOverrides(stack, player.world, player);
 
@@ -93,9 +94,9 @@ public class RendererQuenchingBasin extends TileEntitySpecialRenderer<TileQuench
 
         RenderHelper.enableStandardItemLighting();
 
-        GlStateManager.rotate(90.0F, 1.0F, 0.0F, 0.0F);
+        GlStateManager.rotatef(90.0F, 1.0F, 0.0F, 0.0F);
         RenderUtils.rotateOnFacing(facing);
-        GlStateManager.translate(offset.x, offset.y, offset.z);
+        GlStateManager.translated(offset.x, offset.y, offset.z);
 
         if (ghostly)
         {
