@@ -126,7 +126,7 @@ public class TileStoneAnvil extends TileEntitySlottedInventory<TileStoneAnvil.In
 
         private boolean IsValidFluidInput(ItemStack stack)
         {
-            IFluidHandler handler = FluidUtil.getFluidHandler(stack);
+            IFluidHandler handler = FluidUtil.getFluidHandler(stack).orElse( null);
             if (handler == null)
                 return false;
 

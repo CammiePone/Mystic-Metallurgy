@@ -2,30 +2,29 @@ package com.camellias.mysticalmetallurgy.common.block.anvil;
 
 import com.camellias.mysticalmetallurgy.Main;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemHammer;
-import com.camellias.mysticalmetallurgy.library.utils.AABBUtils;
 import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import com.camellias.mysticalmetallurgy.network.NetworkHandler;
 import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.PropertyDirection;
-import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EntitySpawnPlacementRegistry;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
-import net.minecraft.inventory.InventoryHelper;
+import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.state.DirectionProperty;
+import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorldReaderBase;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
@@ -35,56 +34,54 @@ public class BlockStoneAnvil extends Block
 {
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "stone_anvil");
 
-    public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
-    private static final AxisAlignedBB AABB = new AxisAlignedBB(0.186D, 0.0D, 0.254D, 0.81D, 0.435D, 0.748D);
+    public static final DirectionProperty FACING = BlockHorizontal.HORIZONTAL_FACING;
+    private static final VoxelShape AABB = Block.makeCuboidShape(0.186D, 0.0D, 0.254D, 0.81D, 0.435D, 0.748D);
 
     public BlockStoneAnvil()
     {
-        super(Material.ROCK);
-        setSoundType(SoundType.STONE);
-        setHardness(4.0F);
-        setResistance(5.0F);
+        super(Properties.create(Material.ROCK).sound(SoundType.STONE).hardnessAndResistance(4F));
 
-        setDefaultState(getDefaultState().withProperty(FACING, EnumFacing.NORTH));
+        setDefaultState(getDefaultState().with(FACING, EnumFacing.NORTH));
     }
 
     @Override
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
+    @SuppressWarnings("deprecation")
+    public boolean onBlockActivated(IBlockState state, World worldIn, BlockPos pos, EntityPlayer player, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ)
     {
         if (!worldIn.isRemote)
         {
             TileStoneAnvil tile = getTile(worldIn, pos);
-            if (facing == EnumFacing.UP && tile != null)
+            if (side == EnumFacing.UP && tile != null)
             {
-                ItemStack stack = playerIn.getHeldItem(hand);
+                ItemStack stack = player.getHeldItem(hand);
                 if (stack.getItem() instanceof ItemHammer)
                 {
                     if (tile.tryHammer())
                     {
-                        stack.damageItem(1, playerIn);
-                        NetworkHandler.sendAround(new PlaySoundPacket(pos, SoundEvents.BLOCK_ANVIL_HIT, SoundCategory.AMBIENT, 1F, 1.0F), pos, playerIn.dimension);
+                        stack.damageItem(1, player);
+                        NetworkHandler.sendAround(new PlaySoundPacket(pos, SoundEvents.BLOCK_ANVIL_HIT, SoundCategory.AMBIENT, 1F, 1.0F), pos, player.dimension);
                     }
                 }
                 else
                 {
-                    TileStoneAnvil.InventorySlotTyped slot = tile.getSlotHit(state.getValue(FACING), hitX, hitZ,
+                    TileStoneAnvil.InventorySlotTyped slot = tile.getSlotHit(state.get(FACING), hitX, hitZ,
                             tile.hasOutput() ?
                                     TileStoneAnvil.InventorySlotTyped.SlotType.OUTPUT :
                                     TileStoneAnvil.InventorySlotTyped.SlotType.INPUT);
 
                     if (slot != null)
                     {
-                        if (!playerIn.isSneaking() && !stack.isEmpty())
+                        if (!player.isSneaking() && !stack.isEmpty())
                         {
                             if (!tile.hasOutput())
-                                playerIn.setHeldItem(hand, slot.insert(stack, false));
+                                player.setHeldItem(hand, slot.insert(stack, false));
                         }
-                        else if (playerIn.isSneaking())
+                        else if (player.isSneaking())
                         {
                             if (tile.canExtract(slot))
                             {
                                 ItemStack slotStack = slot.extract( 1, true);
-                                if (!slotStack.isEmpty() && ItemUtils.giveStack(playerIn, slotStack).isEmpty())
+                                if (!slotStack.isEmpty() && ItemUtils.giveStack(player, slotStack).isEmpty())
                                     slot.extract(1, false);
                             }
                         }
@@ -96,32 +93,18 @@ public class BlockStoneAnvil extends Block
     }
 
     //region <state>
-    @Nonnull
-    @Override
-    protected BlockStateContainer createBlockState()
-    {
-        return new BlockStateContainer(this, FACING);
-    }
-
-    @Nonnull
-    @Override
-    public IBlockState getStateForPlacement(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ, int meta, @Nonnull EntityLivingBase placer, EnumHand hand)
-    {
-        return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
-    }
-
-    @Nonnull
-    @Override
-    @SuppressWarnings("deprecation")
-    public IBlockState getStateFromMeta(int meta)
-    {
-        return getDefaultState().withProperty(FACING,  EnumFacing.HORIZONTALS[meta & 3]);
-    }
 
     @Override
-    public int getMetaFromState(IBlockState state)
+    protected void fillStateContainer(StateContainer.Builder<Block, IBlockState> builder)
     {
-        return state.getValue(FACING).ordinal() - 2;
+        builder.add(FACING);
+    }
+
+    @Nullable
+    @Override
+    public IBlockState getStateForPlacement(BlockItemUseContext context)
+    {
+        return getDefaultState().with(FACING, context.getNearestLookingDirection().getOpposite());
     }
     //endregion
 
@@ -134,7 +117,7 @@ public class BlockStoneAnvil extends Block
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(@Nonnull World world, @Nonnull IBlockState state)
+    public TileEntity createTileEntity(IBlockState state, IBlockReader world)
     {
         return new TileStoneAnvil();
     }
@@ -148,27 +131,26 @@ public class BlockStoneAnvil extends Block
 
     //region <other>
     @Override
-    public void breakBlock(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state)
+    public void getDrops(IBlockState state, NonNullList<ItemStack> drops, World world, BlockPos pos, int fortune)
     {
-        TileStoneAnvil tile = getTile(worldIn, pos);
+        TileStoneAnvil tile = getTile(world, pos);
         if (tile != null)
-            tile.getSlots().forEach(slot -> InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), slot.getStack()));
-        super.breakBlock(worldIn, pos, state);
+            tile.getSlots().forEach( slot -> drops.add(slot.getStack()));
     }
 
-    @Nonnull
     @Override
     @SuppressWarnings("deprecation")
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos)
+    public VoxelShape getShape(IBlockState state, IBlockReader worldIn, BlockPos pos)
     {
-        switch (state.getValue(FACING).getAxis())
+        switch (state.get(FACING).getAxis())
         {
             case Z:
                 return AABB;
             case X:
-                return AABBUtils.rotateH90(AABB);
+                return AABB;
         }
-        return FULL_BLOCK_AABB;
+
+        return super.getShape(state, worldIn, pos);
     }
 
     @Override
@@ -179,21 +161,13 @@ public class BlockStoneAnvil extends Block
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public boolean isOpaqueCube(IBlockState state)
+    public boolean canPlaceTorchOnTop(IBlockState state, IWorldReaderBase world, BlockPos pos)
     {
         return false;
     }
 
     @Override
-    public boolean canCreatureSpawn(@Nonnull IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos, EntityLiving.SpawnPlacementType type)
-    {
-        return false;
-    }
-
-    @Override
-    public boolean canPlaceTorchOnTop(IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos)
-    {
+    public boolean canCreatureSpawn(IBlockState state, IWorldReaderBase world, BlockPos pos, EntitySpawnPlacementRegistry.SpawnPlacementType type, @Nullable EntityType<? extends EntityLiving> entityType) {
         return false;
     }
     //endregion

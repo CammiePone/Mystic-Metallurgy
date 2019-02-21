@@ -1,38 +1,39 @@
 package com.camellias.mysticalmetallurgy.common.block.anvil;
 
 import com.camellias.mysticalmetallurgy.api.recipe.AnvilRecipe;
-import com.camellias.mysticalmetallurgy.library.utils.RenderUtils;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemHammer;
+import com.camellias.mysticalmetallurgy.library.utils.RenderUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.RenderItem;
-import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.RayTraceFluidMode;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
 
-public class RendererStoneAnvil extends TileEntitySpecialRenderer<TileStoneAnvil>
+public class RendererStoneAnvil extends TileEntityRenderer<TileStoneAnvil>
 {
     @Override
-    public void render(TileStoneAnvil te, double x, double y, double z, float partialTicks, int destroyStage, float alpha)
+    public void render(TileStoneAnvil te, double x, double y, double z, float partialTicks, int destroyStage)
     {
-        EntityPlayer player = Minecraft.getMinecraft().player;
-        RayTraceResult rayTrace = player.rayTrace(4, partialTicks);
+        EntityPlayer player = Minecraft.getInstance().player;
+        RayTraceResult rayTrace = player.rayTrace(4, partialTicks, RayTraceFluidMode.NEVER);
         ItemStack stackHeld = player.getHeldItemMainhand();
-        EnumFacing facing = te.getBlockState().getValue(BlockStoneAnvil.FACING);
+        EnumFacing facing = te.getBlockState().get(BlockStoneAnvil.FACING);
 
         GlStateManager.pushMatrix();
-        GlStateManager.translate(x, y, z);
-        GlStateManager.translate(0.5F, 0.5F, 0.5F);
-        GlStateManager.scale(0.2F, 0.2F, 0.2F);
+        GlStateManager.translated(x, y, z);
+        GlStateManager.translatef(0.5F, 0.5F, 0.5F);
+        GlStateManager.scalef(0.2F, 0.2F, 0.2F);
 
         TileStoneAnvil.InventorySlotTyped slotHover = null;
         if (rayTrace != null && rayTrace.hitVec != null && rayTrace.sideHit == EnumFacing.UP && rayTrace.getBlockPos().equals(te.getPos()))
@@ -71,8 +72,8 @@ public class RendererStoneAnvil extends TileEntitySpecialRenderer<TileStoneAnvil
 
     private void renderSlot(EntityPlayer player, Vec3d offset, ItemStack stack, EnumFacing facing, boolean highlight, boolean ghostly)
     {
-        RenderItem renderer = Minecraft.getMinecraft().getRenderItem();
-        TextureManager textureManager = Minecraft.getMinecraft().getTextureManager();
+        ItemRenderer renderer = Minecraft.getInstance().getItemRenderer();
+        TextureManager textureManager = Minecraft.getInstance().getTextureManager();
 
         IBakedModel model = renderer.getItemModelWithOverrides(stack, player.world, player);
 
@@ -83,9 +84,9 @@ public class RendererStoneAnvil extends TileEntitySpecialRenderer<TileStoneAnvil
 
         RenderHelper.enableStandardItemLighting();
 
-        GlStateManager.rotate(90.0F, 1.0F, 0.0F, 0.0F);
+        GlStateManager.rotatef(90.0F, 1.0F, 0.0F, 0.0F);
         RenderUtils.rotateOnFacing(facing);
-        GlStateManager.translate(offset.x, offset.y, offset.z);
+        GlStateManager.translated(offset.x, offset.y, offset.z);
 
         if (ghostly)
         {
