@@ -63,8 +63,8 @@ public class BlockRack extends Block
 
         return true;
     }
-    //region <state>
 
+    //region <state>
     @Override
     protected void fillStateContainer(StateContainer.Builder<Block, IBlockState> builder) {
         builder.add(FACING);
@@ -124,7 +124,7 @@ public class BlockRack extends Block
         if (!worldIn.isRemote) {
             EnumFacing facing = state.get(FACING);
             if (!canAttachTo(worldIn, pos, facing.getOpposite()) && !canAttachTo(worldIn, pos.up(), EnumFacing.DOWN)) {
-                dropBlockAsItemWithChance(state, worldIn, pos, 0, 100);
+                state.dropBlockAsItem(worldIn, pos, 0);
                 worldIn.removeBlock(pos);
             }
         }

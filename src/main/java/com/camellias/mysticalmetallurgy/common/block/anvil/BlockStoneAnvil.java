@@ -93,7 +93,6 @@ public class BlockStoneAnvil extends Block
     }
 
     //region <state>
-
     @Override
     protected void fillStateContainer(StateContainer.Builder<Block, IBlockState> builder)
     {
@@ -138,6 +137,7 @@ public class BlockStoneAnvil extends Block
             tile.getSlots().forEach( slot -> drops.add(slot.getStack()));
     }
 
+    @Nonnull
     @Override
     @SuppressWarnings("deprecation")
     public VoxelShape getShape(IBlockState state, IBlockReader worldIn, BlockPos pos)

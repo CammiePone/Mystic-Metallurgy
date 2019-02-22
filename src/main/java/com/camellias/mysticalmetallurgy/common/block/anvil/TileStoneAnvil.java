@@ -4,6 +4,7 @@ import com.camellias.mysticalmetallurgy.api.effect.Trait;
 import com.camellias.mysticalmetallurgy.api.recipe.AnvilRecipe;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemLadle;
 import com.camellias.mysticalmetallurgy.init.ModItems;
+import com.camellias.mysticalmetallurgy.init.ModTiles;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.InventorySlot;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.TileEntitySlottedInventory;
 import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
@@ -12,6 +13,8 @@ import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntityChest;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.Vec3d;
@@ -28,9 +31,14 @@ public class TileStoneAnvil extends TileEntitySlottedInventory<TileStoneAnvil.In
 {
     private static final String NBT_SWINGS = "swings";
 
+    public TileStoneAnvil(TileEntityType<?> type)
+    {
+        super(1, type);
+    }
+
     public TileStoneAnvil()
     {
-        super(1);
+        super(1, ModTiles.STONE_ANVIL);
     }
 
     InventorySlotTyped slotOut;
@@ -212,15 +220,15 @@ public class TileStoneAnvil extends TileEntitySlottedInventory<TileStoneAnvil.In
     //region <syncing>
     @Nonnull
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        compound = super.writeToNBT(compound);
+    public NBTTagCompound write(NBTTagCompound compound) {
+        compound = super.write(compound);
         compound.putInt(NBT_SWINGS, swings);
         return compound;
     }
 
     @Override
-    public void readFromNBT(@Nonnull NBTTagCompound cmp) {
-        super.readFromNBT(cmp);
+    public void read(@Nonnull NBTTagCompound cmp) {
+        super.read(cmp);
         if (cmp.hasUniqueId(NBT_SWINGS)) swings = cmp.getInt(NBT_SWINGS);
     }
     //endregion

@@ -1,6 +1,7 @@
 package com.camellias.mysticalmetallurgy.common.fluid;
 
 import com.camellias.mysticalmetallurgy.Main;
+import net.minecraft.fluid.FlowingFluid;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
@@ -8,7 +9,7 @@ import net.minecraftforge.fluids.FluidStack;
 
 import java.awt.*;
 
-public class FluidMysticMetal extends Fluid
+public class FluidMysticMetal extends FlowingFluid
 {
     public static final ResourceLocation ID = new ResourceLocation(Main.MODID, "mystical_liquid_metal");
     public static final ResourceLocation STILL = new ResourceLocation(Main.MODID, "blocks/mystic_metal_still");

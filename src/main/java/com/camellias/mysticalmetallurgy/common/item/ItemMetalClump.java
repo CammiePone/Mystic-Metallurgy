@@ -5,6 +5,7 @@ import com.camellias.mysticalmetallurgy.Main;
 import com.camellias.mysticalmetallurgy.common.entity.EntityClump;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.*;
@@ -12,16 +13,16 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
 
-public class ItemMetalClump extends ItemVariant
+public class ItemMetalClump extends Item
 {
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "metal_clump");
     public static final ResourceLocation CLUMP_0_LOC = new ResourceLocation(Main.MODID, "clump_0");
     public static final ResourceLocation CLUMP_1_LOC = new ResourceLocation(Main.MODID, "clump_1");
     public static final ResourceLocation CLUMP_2_LOC = new ResourceLocation(Main.MODID, "clump_2");
 
-    public ItemMetalClump()
+    public ItemMetalClump(Properties properties)
     {
-        maxStackSize = 16;
+        super(properties.maxStackSize(16));
     }
 
     @Nonnull
@@ -30,10 +31,10 @@ public class ItemMetalClump extends ItemVariant
     {
         ItemStack itemstack = playerIn.getHeldItem(handIn);
 
-        if (!playerIn.capabilities.isCreativeMode)
+        if (!playerIn.isCreative())
             itemstack.shrink(1);
 
-        worldIn.playSound(null, playerIn.posX, playerIn.posY, playerIn.posZ, SoundEvents.ENTITY_SNOWBALL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
+        worldIn.playSound(null, playerIn.posX, playerIn.posY, playerIn.posZ, SoundEvents.ENTITY_SNOWBALL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (random.nextFloat() * 0.4F + 0.8F));
 
         if (!worldIn.isRemote)
         {
@@ -42,7 +43,7 @@ public class ItemMetalClump extends ItemVariant
             worldIn.spawnEntity(clump);
         }
 
-        playerIn.addStat(StatList.getObjectUseStats(this));
+        //playerIn.addStat(StatList.AR.getObjectUseStats(this));
         return new ActionResult<>(EnumActionResult.SUCCESS, itemstack);
     }
 }

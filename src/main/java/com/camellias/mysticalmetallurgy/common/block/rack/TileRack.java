@@ -39,6 +39,10 @@ public class TileRack extends TileEntity
         super(type);
     }
 
+    public TileRack() {
+        super(null);
+    }
+
     //region <caps>
     @Nonnull
     @Override

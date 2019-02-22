@@ -4,6 +4,7 @@ import com.camellias.mysticalmetallurgy.api.ConfigValues;
 import com.camellias.mysticalmetallurgy.api.effect.EffectLinker;
 import com.camellias.mysticalmetallurgy.api.effect.Trait;
 import com.camellias.mysticalmetallurgy.init.ModFluids;
+import com.camellias.mysticalmetallurgy.init.ModTiles;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -45,6 +46,10 @@ public class TileCrucible extends TileEntity implements ITickable
 
     public TileCrucible(TileEntityType<?> type) {
         super(type);
+    }
+
+    public TileCrucible() {
+        super(ModTiles.CRUCIBLE);
     }
 
     class InternalStackHandler extends ItemStackHandler

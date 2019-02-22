@@ -6,6 +6,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.items.ItemStackHandler;
 
@@ -23,11 +24,12 @@ public abstract class TileEntitySlottedInventory<T extends InventorySlot> extend
     private static final String NBT_SLOTLIST = "slot_list";
 
     private List<T> slots = new ArrayList<>();
-    private boolean isInit = false;
+    private boolean isInit;
 
     protected ItemStackHandler inventory;
 
-    public TileEntitySlottedInventory(int limitStackSize) {
+    public TileEntitySlottedInventory(int limitStackSize, TileEntityType<?> type) {
+        super(type);
         try
         {
             initSlots();

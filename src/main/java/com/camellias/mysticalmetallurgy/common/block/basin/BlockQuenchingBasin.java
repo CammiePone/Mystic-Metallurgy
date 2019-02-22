@@ -1,7 +1,6 @@
 package com.camellias.mysticalmetallurgy.common.block.basin;
 
 import com.camellias.mysticalmetallurgy.Main;
-import com.camellias.mysticalmetallurgy.library.tileslottedinventory.InventorySlot;
 import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockHorizontal;
@@ -64,19 +63,14 @@ public class BlockQuenchingBasin extends Block
                 }
                 else
                 {
-                    InventorySlot slot = tile.getSlotHit(state.get(FACING), hitX, hitZ);
-
-                    if (slot != null)
+                    ItemStack stack = playerIn.getHeldItem(hand);
+                    if (!playerIn.isSneaking() && !stack.isEmpty())
+                        playerIn.setHeldItem(hand, tile.insert(stack, false));
+                    else if (playerIn.isSneaking())
                     {
-                        ItemStack stack = playerIn.getHeldItem(hand);
-                        if (!playerIn.isSneaking() && !stack.isEmpty())
-                            playerIn.setHeldItem(hand, tile.insert(slot, stack, false));
-                        else if (playerIn.isSneaking())
-                        {
-                            ItemStack slotStack = tile.extract(slot, true);
-                            if (!slotStack.isEmpty() && ItemUtils.giveStack(playerIn, slotStack).isEmpty())
-                                tile.extract(slot, false);
-                        }
+                        ItemStack slotStack = tile.extract(true);
+                        if (!slotStack.isEmpty() && ItemUtils.giveStack(playerIn, slotStack).isEmpty())
+                            tile.extract(false);
                     }
                 }
             }
@@ -146,7 +140,7 @@ public class BlockQuenchingBasin extends Block
     {
         TileQuenchingBasin tile = getTile(world, pos);
         if (tile != null)
-            tile.getSlots().forEach(slot -> drops.add(slot.getStack()));
+            drops.add(tile.extract(false));
         super.getDrops(state, drops, world, pos, fortune);
     }
 

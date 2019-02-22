@@ -1,6 +1,7 @@
 package com.camellias.mysticalmetallurgy.common.block.basin;
 
 import com.camellias.mysticalmetallurgy.api.IMysticalItem;
+import com.camellias.mysticalmetallurgy.init.ModTiles;
 import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.InventorySlot;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.TileEntitySlottedInventory;
@@ -8,6 +9,8 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.Vec3d;
@@ -16,6 +19,8 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 
 import javax.activity.InvalidActivityException;
 import javax.annotation.Nonnull;
@@ -24,29 +29,38 @@ import java.awt.geom.Point2D;
 
 import static com.camellias.mysticalmetallurgy.common.block.basin.BlockQuenchingBasin.COOLING;
 
-public class TileQuenchingBasin extends TileEntitySlottedInventory<InventorySlot> implements ITickable
+public class TileQuenchingBasin extends TileEntity implements ITickable
 {
     private static final String NBT_ISCOOLING = "iscooling";
+    private static final String NBT_INV = "inventory";
+    private static final String NBT_TANK = "tank";
     private boolean isCooling = false;
+
+    public TileQuenchingBasin(TileEntityType<?> type)
+    {
+        super(type);
+    }
 
     public TileQuenchingBasin()
     {
-        super(1);
-    }
-
-    @Override
-    protected void initSlots() throws InvalidActivityException
-    {
-        addSlot(new InventorySlot(new Point2D.Float(0.530F, 0.375F),
-                new Point2D.Float(0.780F, 0.635F),
-                new Vec3d(0.755F, 0F, 0.25F)));
-
-        addSlot(new InventorySlot(new Point2D.Float(0.250F, 0.500F),
-                new Point2D.Float(0.500F, 0.750F),
-                new Vec3d(0.5F, 0.5F, 0.25F)));
+        super(ModTiles.BASIN);
     }
 
     FluidTank tank = new FluidTank(1000);
+    private ItemStackHandler inventory = new ItemStackHandler()
+    {
+        @Override
+        public int getSlotLimit(int slot)
+        {
+            return 1;
+        }
+
+        @Override
+        public boolean isItemValid(int slot, @Nonnull ItemStack stack)
+        {
+            return !(stack.getItem() instanceof ItemBlock);
+        }
+    };
 
     @Override
     public void tick()
@@ -61,9 +75,9 @@ public class TileQuenchingBasin extends TileEntitySlottedInventory<InventorySlot
             int temp = tank.getFluid().getFluid().getTemperature();
             if (temp <= 300)
             {
-                for (InventorySlot slot : getSlots())
+                for (int slot = 0; slot < inventory.getSlots(); slot++)
                 {
-                    ItemStack stack = slot.getStack();
+                    ItemStack stack = inventory.getStackInSlot(slot);
                     if (!stack.isEmpty() && stack.getItem() instanceof IMysticalItem)
                     {
                         int coolTime = ((IMysticalItem) stack.getItem()).getRemainingCoolingTime(stack);
@@ -88,16 +102,14 @@ public class TileQuenchingBasin extends TileEntitySlottedInventory<InventorySlot
     }
 
     //region <inventory>
-    public ItemStack extract(@Nonnull InventorySlot slot, boolean simulate)
+    public ItemStack extract(boolean simulate)
     {
-        return slot.extract(1, simulate);
+        return inventory.extractItem(0,1, simulate);
     }
 
-    public ItemStack insert(@Nonnull InventorySlot slot, @Nonnull ItemStack stack, boolean simulate)
+    public ItemStack insert(@Nonnull ItemStack stack, boolean simulate)
     {
-        if (!(stack.getItem() instanceof ItemBlock))
-            return slot.insert(stack, simulate);
-        return stack;
+        return inventory.insertItem(0, stack, simulate);
     }
     //endregion
 
@@ -108,16 +120,16 @@ public class TileQuenchingBasin extends TileEntitySlottedInventory<InventorySlot
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, EnumFacing facing)
     {
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY)
-            return LazyOptional.of(() -> (T) tank);
+            return LazyOptional.of(() -> tank).cast();
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
         {
             if (facing != EnumFacing.DOWN)
-                return LazyOptional.of(() -> (T) inventory);
+                return LazyOptional.of(() -> inventory).cast();
         }
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
         {
             if (facing == EnumFacing.DOWN)
-                return LazyOptional.of(() -> (T) tank);
+                return LazyOptional.of(() -> tank).cast();
         }
 
         return super.getCapability(capability, facing);
@@ -127,16 +139,20 @@ public class TileQuenchingBasin extends TileEntitySlottedInventory<InventorySlot
     //region <syncing>
     @Nonnull
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        compound = super.writeToNBT(compound);
+    public NBTTagCompound write(NBTTagCompound compound) {
+        compound = super.write(compound);
         compound.putBoolean(NBT_ISCOOLING, isCooling);
+        compound.put(NBT_INV, inventory.serializeNBT());
+        compound.put(NBT_TANK, tank.writeToNBT(new NBTTagCompound()));
         return compound;
     }
 
     @Override
-    public void readFromNBT(@Nonnull NBTTagCompound cmp) {
-        super.readFromNBT(cmp);
+    public void read(@Nonnull NBTTagCompound cmp) {
+        super.read(cmp);
         if (cmp.hasUniqueId(NBT_ISCOOLING)) isCooling = cmp.getBoolean(NBT_ISCOOLING);
+        if (cmp.hasUniqueId(NBT_INV)) inventory.deserializeNBT(cmp.getCompound(NBT_ISCOOLING));
+        if (cmp.hasUniqueId(NBT_TANK)) tank.readFromNBT(cmp.getCompound(NBT_ISCOOLING));
     }
     //endregion
 }
