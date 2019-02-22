@@ -1,12 +1,12 @@
 {
 	"credit": "Made with Blockbench",
 	"textures": {
-		"0": "blocks/stone",
-		"1": "blocks/stone_slab_top",
-		"3": "blocks/nether_brick",
-		"4": "blocks/glazed_terracotta_silver",
-		"5": "blocks/furnace_top",
-		"particle": "blocks/stone"
+		"0": "block/stone",
+		"1": "block/stone_slab_top",
+		"3": "block/nether_bricks",
+		"4": "block/silver_glazed_terracotta",
+		"5": "block/furnace_top",
+		"particle": "block/stone"
 	},
 	"elements": [
 		{

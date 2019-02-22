@@ -30,7 +30,7 @@ public class PlaySoundPacket
     public static void encode(PlaySoundPacket msg, PacketBuffer buf) {
         buf.writeLong(msg.pos.toLong());
         buf.writeResourceLocation(msg.sound.getRegistryName());
-        buf.writeString(msg.soundCategory.getName());
+        buf.writeInt(msg.soundCategory.ordinal());
         buf.writeFloat(msg.volume);
         buf.writeFloat(msg.pitch);
     }
@@ -39,7 +39,7 @@ public class PlaySoundPacket
         return new PlaySoundPacket(
                 BlockPos.fromLong(buf.readLong()),
                 GameData.getWrapper(SoundEvent.class).get(buf.readResourceLocation()),
-                SoundCategory.valueOf(buf.readString(32767)),
+                SoundCategory.values()[buf.readInt()],
                 buf.readFloat(),
                 buf.readFloat()
         );

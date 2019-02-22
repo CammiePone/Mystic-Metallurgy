@@ -154,7 +154,8 @@ public class TileCrucible extends TileEntity implements ITickable
             Trait.toNBT(fluidTag, effects);
             EffectLinker.writeTierToNBT(fluidTag, tier + 1);
 
-            output.fillInternal(new FluidStack(ModFluids.MYSTICAL_METAL, 144, fluidTag), true);
+            //TODO 1.13
+            //output.fillInternal(new FluidStack(ModFluids.MYSTICAL_METAL, 144, fluidTag), true);
 
             for (int slot = 0; slot < input.getSlots(); slot ++)
                 input.extractItemInternal(slot, 1, false);
@@ -183,7 +184,7 @@ public class TileCrucible extends TileEntity implements ITickable
             ItemStack stack = input.getStackInSlot(slot);
             if (!EffectLinker.hasStackRegisteredTraits(stack))
                 return false;
-            if (EffectLinker.getStackTier(stack) >= ConfigValues.MaxCombineTier)
+            if (EffectLinker.getStackTier(stack) >= ConfigValues.maxCombineTier)
                 return false;
         }
 

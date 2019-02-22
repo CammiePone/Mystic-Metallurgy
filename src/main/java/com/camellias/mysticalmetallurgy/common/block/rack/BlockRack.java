@@ -34,7 +34,6 @@ public class BlockRack extends Block
 {
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "rack");
     public static final DirectionProperty FACING = BlockHorizontal.HORIZONTAL_FACING;
-    private static final VoxelShape AABB = Block.makeCuboidShape(0.0D, 0.875D, 0.0D, 1.0D, 1.0D, 0.125D);
 
     public BlockRack()
     {
@@ -73,7 +72,7 @@ public class BlockRack extends Block
     @Nullable
     @Override
     public IBlockState getStateForPlacement(BlockItemUseContext ctx) {
-        return getDefaultState().with(FACING, ctx.getNearestLookingDirection().getOpposite());
+        return getDefaultState().with(FACING, ctx.getPlacementHorizontalFacing());
     }
     //endregion
 
@@ -109,7 +108,7 @@ public class BlockRack extends Block
     @SuppressWarnings("deprecation")
     public boolean isValidPosition(IBlockState state, IWorldReaderBase worldIn, BlockPos pos) {
         EnumFacing side = state.get(FACING);
-        return canAttachTo(worldIn, pos.offset(side.getOpposite()), side);
+        return canAttachTo(worldIn, pos.offset(side), side.getOpposite());
     }
 
     public boolean canAttachTo(@Nonnull IBlockReader worldIn, @Nonnull BlockPos pos, EnumFacing side) {
@@ -137,13 +136,13 @@ public class BlockRack extends Block
         switch (state.get(FACING))
         {
             case NORTH:
-                return AABB;
+                return Block.makeCuboidShape(0, 14, 0, 16, 16, 2);
             case EAST:
-                return AABB;//AABBUtils.rotateH90(AABB);
+                return Block.makeCuboidShape(14, 14, 0, 16, 16, 16);
             case SOUTH:
-                return AABB;//AABBUtils.rotateH180(AABB);
+                return Block.makeCuboidShape(0, 14, 14, 16, 16, 16);
             case WEST:
-                return AABB;//AABBUtils.rotateH270(AABB);
+                return Block.makeCuboidShape(0, 14, 0, 2, 16, 16);
         }
         return super.getShape(state, source, pos);
     }

@@ -23,13 +23,14 @@ import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.shapes.IBooleanFunction;
 import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.IWorldReaderBase;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -41,7 +42,8 @@ public class BlockCrucible extends Block
     public static final IntegerProperty COAL_LEVEL = IntegerProperty.create("coallevel", 0, 4);
     public static final BooleanProperty LIT = BooleanProperty.create("lit");
 
-    private static final VoxelShape AABB = Block.makeCuboidShape(0.125D, 0.0D, 0.125D, 0.875D, 0.875D, 0.875D);
+    private static final VoxelShape SHAPE = getShape();
+
 
     public BlockCrucible()
     {
@@ -81,8 +83,7 @@ public class BlockCrucible extends Block
     {
         if (!stack.isEmpty())
         {
-            IFluidHandler fluidHandler = FluidUtil.getFluidHandler(stack).orElse(null);
-            if (fluidHandler != null)
+            if (FluidUtil.getFluidHandler(stack).isPresent())
             {
                 FluidUtil.interactWithFluidHandler(playerIn, hand, tile.output);
                 tile.markDirty();
@@ -199,7 +200,12 @@ public class BlockCrucible extends Block
     @SuppressWarnings("deprecation")
     public VoxelShape getShape(IBlockState state, IBlockReader source, BlockPos pos)
     {
-        return AABB;
+        return SHAPE;
+    }
+
+    private static VoxelShape getShape()
+    {
+        return VoxelShapes.combineAndSimplify(Block.makeCuboidShape(2, 3, 2, 14, 14, 14), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(12, 0, 2, 13, 3, 3), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(13, 0, 3, 14, 3, 4), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(13, 0, 2, 14, 3, 3), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(3, 0, 2, 4, 3, 3), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(2, 0, 3, 3, 3, 4), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(2, 0, 2, 3, 3, 3), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(3, 0, 13, 4, 3, 14), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(2, 0, 13, 3, 3, 14), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(2, 0, 12, 3, 3, 13), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(13, 0, 13, 14, 3, 14), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(12, 0, 13, 13, 3, 14), Block.makeCuboidShape(13, 0, 12, 14, 3, 13), IBooleanFunction.OR), IBooleanFunction.OR), IBooleanFunction.OR), IBooleanFunction.OR), IBooleanFunction.OR), IBooleanFunction.OR), IBooleanFunction.OR), IBooleanFunction.OR), IBooleanFunction.OR), IBooleanFunction.OR), IBooleanFunction.OR), IBooleanFunction.OR);
     }
 
     @Override

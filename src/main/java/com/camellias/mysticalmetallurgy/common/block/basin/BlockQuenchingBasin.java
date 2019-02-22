@@ -129,7 +129,7 @@ public class BlockQuenchingBasin extends Block
     @Override
     public IBlockState getStateForPlacement(BlockItemUseContext ctx)
     {
-        return getDefaultState().with(FACING, ctx.getNearestLookingDirection().getOpposite());
+        return getDefaultState().with(FACING, ctx.getPlacementHorizontalFacing().getOpposite());
     }
 
     //endregion

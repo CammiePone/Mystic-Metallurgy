@@ -37,29 +37,27 @@ public class ItemLadle extends ItemFluidContainer
     {
         super.addInformation(stack, worldIn, tooltip, flagIn);
 
-        IFluidHandler handler = FluidUtil.getFluidHandler(stack).orElse(null);
-        assert handler != null;
-
-        IFluidTankProperties props = handler.getTankProperties()[0];
-        if (props.getContents() != null && props.getContents().tag != null)
-        {
-            for (Trait trait : Trait.fromNBT(props.getContents().tag))
-                tooltip.add(new TextComponentString(String.format("%s %d", trait.getEffect().getAttributeInfo(), trait.level)));
-        }
+        FluidUtil.getFluidHandler(stack).ifPresent(handler -> {
+            IFluidTankProperties props = handler.getTankProperties()[0];
+            if (props.getContents() != null && props.getContents().tag != null)
+            {
+                for (Trait trait : Trait.fromNBT(props.getContents().tag))
+                    tooltip.add(new TextComponentString(String.format("%s %d", trait.getEffect().getAttributeInfo(), trait.level)));
+            }
+        });
     }
 
     @Nonnull
     @Override
     public ITextComponent getDisplayName(@Nonnull ItemStack stack)
     {
-        IFluidHandler handler = FluidUtil.getFluidHandler(stack).orElse(null);
-        assert handler != null;
-
-        IFluidTankProperties props = handler.getTankProperties()[0];
         ITextComponent displayName = super.getDisplayName(stack);
-        if (props.getContents() != null)
-            displayName.appendText(" " + props.getContents().getLocalizedName());
+        FluidUtil.getFluidHandler(stack).ifPresent(handler -> {
+            IFluidTankProperties props = handler.getTankProperties()[0];
+            if (props.getContents() != null)
+                displayName.appendText(" " + props.getContents().getLocalizedName());
 
+        });
         return displayName;
     }
 

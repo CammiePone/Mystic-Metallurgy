@@ -33,8 +33,8 @@ public abstract class FluidMysticMetal extends FlowingFluid
 {
     public static final ResourceLocation ID = new ResourceLocation(Main.MODID, "mystical_liquid_metal");
     public static final ResourceLocation ID_FLOW = new ResourceLocation(Main.MODID, "mystical_liquid_metal_flowing");
-    public static final ResourceLocation STILL = new ResourceLocation(Main.MODID, "blocks/mystic_metal_still");
-    public static final ResourceLocation FLOW = new ResourceLocation(Main.MODID, "blocks/mystic_metal_flow");
+    public static final ResourceLocation STILL = new ResourceLocation(Main.MODID, "block/mystic_metal_still");
+    public static final ResourceLocation FLOW = new ResourceLocation(Main.MODID, "block/mystic_metal_flow");
 
     public FluidMysticMetal()
     {
@@ -48,7 +48,7 @@ public abstract class FluidMysticMetal extends FlowingFluid
     @OnlyIn(Dist.CLIENT)
     public void animateTick(World worldIn, BlockPos pos, IFluidState state, Random random) {
         BlockPos blockpos = pos.up();
-        if (worldIn.getBlockState(blockpos).isAir() && !worldIn.getBlockState(blockpos).isOpaqueCube(worldIn, blockpos)) {
+        if (worldIn.isAirBlock(blockpos) && !worldIn.getBlockState(blockpos).isOpaqueCube(worldIn, blockpos)) {
             if (random.nextInt(100) == 0) {
                 double d0 = (double)((float)pos.getX() + random.nextFloat());
                 double d1 = (double)(pos.getY() + 1);

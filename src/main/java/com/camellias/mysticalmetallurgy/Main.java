@@ -1,5 +1,6 @@
 package com.camellias.mysticalmetallurgy;
 
+import com.camellias.mysticalmetallurgy.api.ConfigValues;
 import com.camellias.mysticalmetallurgy.api.effect.Effect;
 import com.camellias.mysticalmetallurgy.api.effect.EffectLinker;
 import com.camellias.mysticalmetallurgy.init.RegistrationHandler;
@@ -20,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 public class Main
 {
 	public static final String MODID = "mysticalmetallurgy";
+	public static final String PROTOCOL_VERSION = "1.0";
 	public static final ResourceLocation CHANNEL = new ResourceLocation(MODID, "networking");
 
 	public static Logger logger;
@@ -47,12 +49,12 @@ public class Main
 	private void setup(FMLCommonSetupEvent event)
 	{
 		NetworkHandler.registerPackets();
-		//RegistrationHandler.registerOreDict();
 		EffectLinker.raiseRegisterEvent();
 	}
 
 	private void setupConfig(ModConfig.ModConfigEvent event)
 	{
-
+		if (event.getConfig().getSpec() == ConfigValues.SPEC)
+			ConfigValues.load();
 	}
 }

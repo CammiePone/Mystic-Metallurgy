@@ -50,33 +50,33 @@ public class RegistrationHandler
     @SubscribeEvent
     public static void registerBlocks(RegistryEvent.Register<Block> event)
     {
-        IRegistry.FLUID.put(FluidMysticMetal.ID, ModFluids.MYSTICAL_METAL);
-        IRegistry.FLUID.put(FluidMysticMetal.ID_FLOW, ModFluids.MYSTICAL_METAL_FLOWING);
+//        IRegistry.FLUID.put(FluidMysticMetal.ID, ModFluids.MYSTICAL_METAL);
+//        IRegistry.FLUID.put(FluidMysticMetal.ID_FLOW, ModFluids.MYSTICAL_METAL_FLOWING);
 
         event.getRegistry().registerAll(
                 asDefault(new BlockCrucible(), BlockCrucible.LOC),
                 asDefault(new BlockBrazier(), BlockBrazier.LOC),
                 asDefault(new BlockStoneAnvil(), BlockStoneAnvil.LOC),
                 asDefault(new BlockQuenchingBasin(), BlockQuenchingBasin.LOC),
-                asDefault(new BlockRack(), BlockRack.LOC),
-                asDefault(new BlockMetalFluid(ModFluids.MYSTICAL_METAL,
-                        Block.Properties
-                                .create(Material.LAVA)
-                                .doesNotBlockMovement()
-                                .tickRandomly()
-                                .hardnessAndResistance(100.0F)
-                                .lightValue(15)),
-                        FluidMysticMetal.ID)
+                asDefault(new BlockRack(), BlockRack.LOC)
+//                asDefault(new BlockMetalFluid(ModFluids.MYSTICAL_METAL,
+//                        Block.Properties
+//                                .create(Material.LAVA)
+//                                .doesNotBlockMovement()
+//                                .tickRandomly()
+//                                .hardnessAndResistance(100.0F)
+//                                .lightValue(15)),
+//                        FluidMysticMetal.ID)
         );
     }
 
     @SubscribeEvent
     public static void registerTileEntity(RegistryEvent.Register<TileEntityType<?>> event)
     {
-        TileEntityType.register(BlockRack.LOC.toString(), TileEntityType.Builder.create(TileRack::new));
-        TileEntityType.register(BlockCrucible.LOC.toString(), TileEntityType.Builder.create(TileCrucible::new));
-        TileEntityType.register(BlockStoneAnvil.LOC.toString(), TileEntityType.Builder.create(TileStoneAnvil::new));
-        TileEntityType.register(BlockQuenchingBasin.LOC.toString(), TileEntityType.Builder.create(TileQuenchingBasin::new));
+        ModTiles.RACK = TileEntityType.register(BlockRack.LOC.toString(), TileEntityType.Builder.create(TileRack::new));
+        ModTiles.CRUCIBLE = TileEntityType.register(BlockCrucible.LOC.toString(), TileEntityType.Builder.create(TileCrucible::new));
+        ModTiles.STONE_ANVIL = TileEntityType.register(BlockStoneAnvil.LOC.toString(), TileEntityType.Builder.create(TileStoneAnvil::new));
+        ModTiles.BASIN = TileEntityType.register(BlockQuenchingBasin.LOC.toString(), TileEntityType.Builder.create(TileQuenchingBasin::new));
     }
 
     @SubscribeEvent
@@ -101,11 +101,11 @@ public class RegistrationHandler
                 asDefault(new ItemMetalClump(new Item.Properties().group(ModGroups.MYSTICAL_METALS_ITEMS)), ItemMetalClump.CLUMP_0_LOC),
                 asDefault(new ItemMetalClump(new Item.Properties().group(ModGroups.MYSTICAL_METALS_ITEMS)), ItemMetalClump.CLUMP_1_LOC),
                 asDefault(new ItemMetalClump(new Item.Properties().group(ModGroups.MYSTICAL_METALS_ITEMS)), ItemMetalClump.CLUMP_2_LOC),
-                asDefault(new ItemBucket(ModFluids.MYSTICAL_METAL,
-                        new Item.Properties().containerItem(Items.BUCKET).
-                                group(ModGroups.MYSTICAL_METALS_ITEMS).
-                                maxStackSize(1)),
-                        new ResourceLocation(Main.MODID, "metal_bucket")),
+//                asDefault(new ItemBucket(ModFluids.MYSTICAL_METAL,
+//                        new Item.Properties().containerItem(Items.BUCKET).
+//                                group(ModGroups.MYSTICAL_METALS_ITEMS).
+//                                maxStackSize(1)),
+//                        new ResourceLocation(Main.MODID, "metal_bucket")),
 
                 //Tools
                 asDefault(new ItemLadle(new Item.Properties().group(ModGroups.MYSTICAL_METALS_ITEMS)), ItemLadle.LOC),

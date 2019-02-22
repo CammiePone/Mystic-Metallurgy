@@ -27,7 +27,7 @@ public class ModGroups
 
         ModGroup(String label, @Nonnull Block blockIcon)
         {
-            this(label, Item.getItemFromBlock(blockIcon));
+            this(label, Item.BLOCK_TO_ITEM.get(blockIcon));
         }
 
         @Nonnull

@@ -15,7 +15,13 @@ import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 public class NetworkHandler
 {
-    private static final SimpleChannel dispatcher = NetworkRegistry.ChannelBuilder.named(Main.CHANNEL).simpleChannel();
+    private static final SimpleChannel dispatcher = NetworkRegistry
+            .ChannelBuilder
+            .named(Main.CHANNEL)
+            .clientAcceptedVersions(Main.PROTOCOL_VERSION::equals)
+            .serverAcceptedVersions(Main.PROTOCOL_VERSION::equals)
+            .networkProtocolVersion(() -> Main.PROTOCOL_VERSION)
+            .simpleChannel();
 
     private static int packetId = 0;
 

@@ -6,7 +6,6 @@ import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import com.camellias.mysticalmetallurgy.network.NetworkHandler;
 import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -19,10 +18,13 @@ import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.DirectionProperty;
 import net.minecraft.state.StateContainer;
+import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.shapes.IBooleanFunction;
 import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorldReaderBase;
 import net.minecraft.world.World;
@@ -33,15 +35,17 @@ import javax.annotation.Nullable;
 public class BlockStoneAnvil extends Block
 {
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "stone_anvil");
+    private static final VoxelShape Z_SHAPE = getZShape();
+    private static final VoxelShape X_SHAPE = getXShape();
 
-    public static final DirectionProperty FACING = BlockHorizontal.HORIZONTAL_FACING;
-    private static final VoxelShape AABB = Block.makeCuboidShape(0.186D, 0.0D, 0.254D, 0.81D, 0.435D, 0.748D);
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     public BlockStoneAnvil()
     {
         super(Properties.create(Material.ROCK).sound(SoundType.STONE).hardnessAndResistance(4F));
 
-        setDefaultState(getDefaultState().with(FACING, EnumFacing.NORTH));
+        setDefaultState(stateContainer.getBaseState().with(FACING, EnumFacing.NORTH));
+
     }
 
     @Override
@@ -103,7 +107,7 @@ public class BlockStoneAnvil extends Block
     @Override
     public IBlockState getStateForPlacement(BlockItemUseContext context)
     {
-        return getDefaultState().with(FACING, context.getNearestLookingDirection().getOpposite());
+        return getDefaultState().with(FACING, context.getPlacementHorizontalFacing().getOpposite());
     }
     //endregion
 
@@ -145,12 +149,57 @@ public class BlockStoneAnvil extends Block
         switch (state.get(FACING).getAxis())
         {
             case Z:
-                return AABB;
+                return Z_SHAPE;
             case X:
-                return AABB;
+                return X_SHAPE;
         }
 
         return super.getShape(state, worldIn, pos);
+    }
+
+    private static VoxelShape getZShape()
+    {
+        return VoxelShapes.combineAndSimplify(
+                Block.makeCuboidShape(4, 1, 6, 12, 4, 10),
+                VoxelShapes.combineAndSimplify(Block.makeCuboidShape(3, 0, 5, 13, 1, 11),
+                        VoxelShapes.combineAndSimplify(Block.makeCuboidShape(4, 4, 5, 12, 6, 11),
+                                VoxelShapes.combineAndSimplify(Block.makeCuboidShape(3, 6, 4, 13, 7, 12),
+                                        VoxelShapes.combineAndSimplify(Block.makeCuboidShape(3, 4, 11, 5, 6, 12),
+                                                VoxelShapes.combineAndSimplify(
+                                                        Block.makeCuboidShape(11, 4, 11, 13, 6, 12),
+                                                        VoxelShapes.combineAndSimplify(Block.makeCuboidShape(11, 4, 4, 13, 6, 5),
+                                                                Block.makeCuboidShape(3, 4, 4, 5, 6, 5), IBooleanFunction.OR),
+                                                        IBooleanFunction.OR),
+                                                IBooleanFunction.OR),
+                                        IBooleanFunction.OR),
+                                IBooleanFunction.OR),
+                        IBooleanFunction.OR),
+                IBooleanFunction.OR);
+    }
+
+    private static VoxelShape getXShape()
+    {
+        return VoxelShapes.combineAndSimplify(
+                Block.makeCuboidShape(6, 1, 4, 10, 4, 12),
+                VoxelShapes.combineAndSimplify(
+                        Block.makeCuboidShape(5, 0, 3, 11, 1, 13),
+                        VoxelShapes.combineAndSimplify(Block.makeCuboidShape(5, 4, 4, 11, 6, 12),
+                                VoxelShapes.combineAndSimplify(
+                                        Block.makeCuboidShape(4, 6, 3, 12, 7, 13),
+                                        VoxelShapes.combineAndSimplify(
+                                                Block.makeCuboidShape(4, 4, 3, 5, 6, 5),
+                                                VoxelShapes.combineAndSimplify(
+                                                        Block.makeCuboidShape(4, 4, 11, 5, 6, 13),
+                                                        VoxelShapes.combineAndSimplify(
+                                                                Block.makeCuboidShape(11, 4, 11, 12, 6, 13),
+                                                                Block.makeCuboidShape(11, 4, 3, 12, 6, 5),
+                                                                IBooleanFunction.OR),
+                                                        IBooleanFunction.OR),
+                                                IBooleanFunction.OR),
+                                        IBooleanFunction.OR),
+                                IBooleanFunction.OR),
+                        IBooleanFunction.OR),
+                IBooleanFunction.OR);
     }
 
     @Override

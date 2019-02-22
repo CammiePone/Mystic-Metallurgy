@@ -1,12 +1,12 @@
 {
 	"credit": "Made with Blockbench",
 	"textures": {
-		"side": "blocks/cauldron_inner",
-		"particle": "blocks/cauldron_inner",
-		"feet": "blocks/anvil_base",
-		"handle": "blocks/iron_block",
-		"coal": "blocks/coal_block",
-		"inner": "blocks/concrete_gray"
+		"side": "block/cauldron_inner",
+		"particle": "block/cauldron_inner",
+		"feet": "block/anvil",
+		"handle": "block/iron_block",
+		"coal": "block/coal_block",
+		"inner": "block/gray_concrete"
 	},
 	"elements": [
 		{

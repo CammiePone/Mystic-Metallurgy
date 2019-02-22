@@ -1,0 +1,23 @@
+{
+    "item.mysticalmetallurgy.ingot_silver": "Silver Ingot",
+    "item.mysticalmetallurgy.ladle": "Ladle",
+    "item.mysticalmetallurgy.hammer": "Hammer",
+
+    "block.mysticalmetallurgy.crucible": "Crucible",
+    "block.mysticalmetallurgy.brazier": "Brazier",
+    "block.mysticalmetallurgy.stone_anvil": "Stone Anvil",
+    "block.mysticalmetallurgy.mystical_liquid_metal": "Mystical Liquid Metal",
+    "block.mysticalmetallurgy.basin": "Quenching Basin",
+    "block.mysticalmetallurgy.rack": "Item Rack",
+
+    "info.mysticalmetallurgy.shift": "<Hold Shift For More Info>",
+    "info.mysticalmetallurgy.attributes": "Attributes:",
+
+    "effect.mysticalmetallurgy.dense": "Durable",
+    "effect.mysticalmetallurgy.fire": "Flame",
+
+    "fluid.mystical_liquid_metal": "Mystical Liquid Metal",
+
+    "itemGroup.mystical_metals_items": "Mystical Metallurgy Items",
+    "itemGroup.mystical_metals_ores": "Mystical Metallurgy Ores"
+}

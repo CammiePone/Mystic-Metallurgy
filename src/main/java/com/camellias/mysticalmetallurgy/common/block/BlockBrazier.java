@@ -23,7 +23,9 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.shapes.IBooleanFunction;
 import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.IWorldReaderBase;
@@ -39,7 +41,7 @@ public class BlockBrazier extends Block
     public static final BooleanProperty COAL = BooleanProperty.create("coal");
     public static final BooleanProperty LIT = BooleanProperty.create("lit");
 
-    private static final VoxelShape AABB = Block.makeCuboidShape(0.3D, 0.0D, 0.3D, 0.7D, 0.55D, 0.7D);
+    private static final VoxelShape SHAPE = getShape();
 
     public BlockBrazier()
     {
@@ -112,7 +114,12 @@ public class BlockBrazier extends Block
     @Override
     @SuppressWarnings("deprecation")
     public VoxelShape getShape(IBlockState state, IBlockReader source, BlockPos pos) {
-        return AABB;
+        return SHAPE;
+    }
+
+    private static VoxelShape getShape()
+    {
+        return VoxelShapes.combineAndSimplify(Block.makeCuboidShape(7, 1, 7, 9, 4.1, 9), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(6, 0, 6, 10, 1, 10), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(10.5, 8.35, 5.5, 11.5, 9.35, 10.5), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(5.5, 8.35, 4.5, 10.5, 9.35, 5.5), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(4.5, 8.35, 5.5, 5.5, 9.35, 10.5), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(5.5, 8.35, 10.5, 10.5, 9.35, 11.5), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(6, 4, 7, 7, 8, 9), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(7, 4, 6, 9, 8, 7), VoxelShapes.combineAndSimplify(Block.makeCuboidShape(7, 4, 9, 9, 8, 10), Block.makeCuboidShape(9, 4, 7, 10, 8, 9), IBooleanFunction.OR), IBooleanFunction.OR), IBooleanFunction.OR), IBooleanFunction.OR), IBooleanFunction.OR), IBooleanFunction.OR), IBooleanFunction.OR), IBooleanFunction.OR), IBooleanFunction.OR);
     }
 
     @Override

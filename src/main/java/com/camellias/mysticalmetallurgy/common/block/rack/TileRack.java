@@ -1,5 +1,6 @@
 package com.camellias.mysticalmetallurgy.common.block.rack;
 
+import com.camellias.mysticalmetallurgy.init.ModTiles;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -35,12 +36,8 @@ public class TileRack extends TileEntity
         }
     };
 
-    public TileRack(TileEntityType<?> type) {
-        super(type);
-    }
-
     public TileRack() {
-        super(null);
+        super(ModTiles.RACK);
     }
 
     //region <caps>

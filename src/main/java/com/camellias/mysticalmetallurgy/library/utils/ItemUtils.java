@@ -12,7 +12,7 @@ public class ItemUtils
 {
     public static IItemHandler getItemHandler(@Nonnull EntityPlayer player)
     {
-        return player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).orElseGet(null);
+        return player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).orElseGet(() -> null);
     }
 
     public static ItemStack giveStack(@Nonnull EntityPlayer player, ItemStack stack)
