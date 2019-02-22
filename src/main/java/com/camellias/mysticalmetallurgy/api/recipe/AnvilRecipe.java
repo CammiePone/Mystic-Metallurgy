@@ -137,11 +137,11 @@ public class AnvilRecipe
 
             int diminish = 0;
             List<Trait> traits = new ArrayList<>();
-            NBTTagCompound nbtIn = input.getTagCompound();
+            NBTTagCompound nbtIn = input.getTag();
             if (nbtIn != null)
                 traits.addAll(Trait.fromNBT(nbtIn));
 
-            NBTTagCompound nbtExtra = extra.getTagCompound();
+            NBTTagCompound nbtExtra = extra.getTag();
             if (nbtExtra != null)
             {
                 int cnt = traits.size();
@@ -152,9 +152,9 @@ public class AnvilRecipe
 
             Trait.toNBT(nbtResult, Trait.combine(traits, diminish));
 
-            nbtResult.setInteger(IMysticalItem.NBT_COOLINGTIME, ((IMysticalItem) res.getItem()).getCoolingTime());
+            nbtResult.putInt(IMysticalItem.NBT_COOLINGTIME, ((IMysticalItem) res.getItem()).getCoolingTime());
 
-            res.setTagCompound(nbtResult);
+            res.setTag(nbtResult);
         }
 
         return res;

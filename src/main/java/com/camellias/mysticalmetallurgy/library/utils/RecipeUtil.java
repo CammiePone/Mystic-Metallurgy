@@ -3,7 +3,9 @@ package com.camellias.mysticalmetallurgy.library.utils;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.oredict.OreDictionary;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.Tag;
+import net.minecraft.util.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,10 +31,11 @@ public class RecipeUtil
             result = Collections.singletonList(new ItemStack((Block) item));
         else if (item instanceof String)
         {
-            List<ItemStack> oreDicts = OreDictionary.getOres((String) item);
-            if (oreDicts == null || oreDicts.size() <= 0)
-                oreDicts = null;
-            result = oreDicts;
+            //Tag tag = ItemTags.getCollection().get(new ResourceLocation((String) item));
+            //List<ItemStack> oreDicts = OreDictionary.getOres((String) item);
+            //if (oreDicts == null || oreDicts.size() <= 0)
+            //    oreDicts = null;
+            //result = tag.getEntries();
         }
         return result;
     }

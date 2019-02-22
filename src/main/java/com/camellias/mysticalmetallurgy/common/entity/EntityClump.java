@@ -1,10 +1,12 @@
 package com.camellias.mysticalmetallurgy.common.entity;
 
+import com.camellias.mysticalmetallurgy.Main;
+import com.camellias.mysticalmetallurgy.init.ModEntities;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.init.Particles;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
@@ -12,19 +14,21 @@ import javax.annotation.Nonnull;
 
 public class EntityClump extends EntityThrowable
 {
+    public static final ResourceLocation ID = new ResourceLocation(Main.MODID, "clump");
+
     public EntityClump(World worldIn)
     {
-        super(worldIn);
+        super(ModEntities.CLUMP, worldIn);
     }
 
-    public EntityClump(World worldIn, EntityLivingBase throwerIn)
+    public EntityClump(EntityLivingBase throwerIn, World worldIn)
     {
-        super(worldIn, throwerIn);
+        super(ModEntities.CLUMP, throwerIn, worldIn);
     }
 
-    public EntityClump(World worldIn, double x, double y, double z)
+    public EntityClump(double x, double y, double z, World worldIn)
     {
-        super(worldIn, x, y, z);
+        super(ModEntities.CLUMP, x, y, z, worldIn);
     }
 
     /**
@@ -37,7 +41,7 @@ public class EntityClump extends EntityThrowable
         {
             for (int i = 0; i < 8; ++i)
             {
-                this.world.addParticle(Particles.FALLING_DUST, this.posX, this.posY, this.posZ, 0.0D, 0.0D, 0.0D);
+                //this.world.addParticle(Particles.FALLING_DUST, this.posX, this.posY, this.posZ, 0.0D, 0.0D, 0.0D);
             }
         }
     }

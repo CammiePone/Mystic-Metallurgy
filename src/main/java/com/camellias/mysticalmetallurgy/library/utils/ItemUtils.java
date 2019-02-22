@@ -5,7 +5,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
-import net.minecraftforge.oredict.OreDictionary;
 
 import javax.annotation.Nonnull;
 
@@ -13,7 +12,7 @@ public class ItemUtils
 {
     public static IItemHandler getItemHandler(@Nonnull EntityPlayer player)
     {
-        return player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        return player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).orElseGet(null);
     }
 
     public static ItemStack giveStack(@Nonnull EntityPlayer player, ItemStack stack)
@@ -49,16 +48,5 @@ public class ItemUtils
     public static int getFirstOccupiedSlot(IItemHandler inventory) {
         for (int i = 0; i < inventory.getSlots(); ++i) if (!inventory.getStackInSlot(i).isEmpty()) return i;
         return -1;
-    }
-
-    public static boolean stackHasOreName(ItemStack stack, String oreName)
-    {
-        if (stack.isEmpty())
-            return false;
-
-        int id = OreDictionary.getOreID(oreName);
-        for (int i : OreDictionary.getOreIDs(stack))
-            if (i == id) return true;
-        return false;
     }
 }

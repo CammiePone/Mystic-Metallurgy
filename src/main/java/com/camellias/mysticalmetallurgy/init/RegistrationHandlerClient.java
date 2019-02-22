@@ -29,8 +29,6 @@ public class RegistrationHandlerClient
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event)
     {
-        registerFluidModel(ModBlocks.MYSTICAL_LIQUID_METAL, ModFluids.MYSTICAL_METAL, FluidMysticMetal.ID);
-
         ClientRegistry.bindTileEntitySpecialRenderer(TileRack.class, new RendererRack());
         ClientRegistry.bindTileEntitySpecialRenderer(TileCrucible.class, new RendererCrucible());
         ClientRegistry.bindTileEntitySpecialRenderer(TileStoneAnvil.class, new RendererStoneAnvil());
@@ -52,16 +50,6 @@ public class RegistrationHandlerClient
     {
         for (ResourceLocation tex : locations)
             map.registerSprite(Minecraft.getInstance().getResourceManager(), tex);
-    }
-
-    private static void registerFluidModel(Block block, Fluid fluid, ResourceLocation location)
-    {
-        Item item = Item.getItemFromBlock(block);
-        FluidStateMapper mapper = new FluidStateMapper(fluid, new ModelResourceLocation(location, "normal"));
-
-        ModelLoader.registerItemVariants(item);
-        ModelLoader.setCustomMeshDefinition(item, mapper);
-        ModelLoader.setCustomStateMapper(block, mapper);
     }
     //endregion
 }

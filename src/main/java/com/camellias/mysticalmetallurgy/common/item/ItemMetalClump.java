@@ -7,7 +7,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.stats.StatList;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
 
@@ -38,7 +37,7 @@ public class ItemMetalClump extends Item
 
         if (!worldIn.isRemote)
         {
-            EntityClump clump = new EntityClump(worldIn, playerIn);
+            EntityClump clump = new EntityClump(playerIn, worldIn);
             clump.shoot(playerIn, playerIn.rotationPitch, playerIn.rotationYaw, 0.0F, 1.5F, 1.0F);
             worldIn.spawnEntity(clump);
         }

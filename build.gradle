@@ -25,7 +25,7 @@ minecraft {
     // stable_#            Stables are built at the discretion of the MCP team.
     // Use non-default mappings at your own risk. they may not always work.
     // Simply re-run your setup task after changing the mappings to update your workspace.
-    mappings channel: 'snapshot', version: "20190216-1.13.1" // FIXME - Use properties when Forge fixes lack of GString support
+    mappings channel: 'snapshot', version: "20190222-1.13.1" // FIXME - Use properties when Forge fixes lack of GString support
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
     
     // accessTransformer = file('build/resources/main/META-INF/accesstransformer.cfg')
@@ -58,7 +58,7 @@ repositories {
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:1.13.2-25.0.44"
+    minecraft "net.minecraftforge:forge:1.13.2-25.0.48"
 }
 
 processResources {

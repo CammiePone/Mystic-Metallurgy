@@ -38,11 +38,14 @@ public class RendererQuenchingBasin extends TileEntityRenderer<TileQuenchingBasi
         RenderUtils.translateAgainstPlayer(te.getPos(), false);
 
         FluidStack fluid = te.tank.getFluid();
-        int color = fluid.getFluid().getColor(fluid);
-        final TextureAtlasSprite still = Minecraft.getInstance().getTextureMap().getSprite(fluid.getFluid().getStill(fluid));
-        final TextureAtlasSprite flowing = Minecraft.getInstance().getTextureMap().getSprite(fluid.getFluid().getFlowing(fluid));
+        if (fluid != null)
+        {
+            int color = fluid.getFluid().getColor(fluid);
+            final TextureAtlasSprite still = Minecraft.getInstance().getTextureMap().getSprite(fluid.getFluid().getStill(fluid));
+            final TextureAtlasSprite flowing = Minecraft.getInstance().getTextureMap().getSprite(fluid.getFluid().getFlowing(fluid));
 
-        RenderUtils.renderFluid(fluid, te.getPos(), 0.35d, 0.35d, 0.35d, 0.0d, 0.0d, 0.0d, 0.30d, 0.30d, 0.30d, color, still, flowing);
+            RenderUtils.renderFluid(fluid, te.getPos(), 0.35d, 0.35d, 0.35d, 0.0d, 0.0d, 0.0d, 0.30d, 0.30d, 0.30d, color, still, flowing);
+        }
 
         GlStateManager.disableBlend();
         GlStateManager.popMatrix();
@@ -61,22 +64,7 @@ public class RendererQuenchingBasin extends TileEntityRenderer<TileQuenchingBasi
         GlStateManager.translatef(0.5F, 0.5F, 0.5F);
         GlStateManager.scalef(0.2F, 0.2F, 0.2F);
 
-        InventorySlot slotHover = null;
-        if (rayTrace != null && rayTrace.hitVec != null && rayTrace.sideHit == EnumFacing.UP && rayTrace.getBlockPos().equals(te.getPos()))
-        {
-            float hitX = (float) (Math.abs(rayTrace.hitVec.x) - Math.floor(Math.abs(rayTrace.hitVec.x)));
-            float hitZ = (float) (Math.abs(rayTrace.hitVec.z) - Math.floor(Math.abs(rayTrace.hitVec.z)));
-            slotHover = te.getSlotHit(facing, hitX, hitZ);
-        }
 
-        for (InventorySlot slot : te.getSlots())
-        {
-            ItemStack slotStack = te.extract(slot, true);
-            if (!slotStack.isEmpty())
-                renderSlot(player, slot.getRenderOffset(), slotStack, facing, slot == slotHover, false);
-            else if (slotHover == slot && !stackHeld.isEmpty() && slotHover.acceptStack(stackHeld))
-                renderSlot(player, slot.getRenderOffset(), stackHeld, facing, false, true);
-        }
         GlStateManager.popMatrix();
     }
 

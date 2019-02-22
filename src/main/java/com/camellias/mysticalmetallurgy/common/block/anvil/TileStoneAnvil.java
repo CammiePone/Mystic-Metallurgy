@@ -11,11 +11,15 @@ import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import com.camellias.mysticalmetallurgy.network.NetworkHandler;
 import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
 import net.minecraft.init.SoundEvents;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.Tag;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fluids.FluidStack;
@@ -52,25 +56,25 @@ public class TileStoneAnvil extends TileEntitySlottedInventory<TileStoneAnvil.In
         slotPrint = new InventorySlotTyped(new Point2D.Float(0.530F, 0.375F),
                 new Point2D.Float(0.780F, 0.625F),
                 new Vec3d(0.755F, 0F, 0.25F),
-                InventorySlotTyped.SlotType.INPUT, "paper");
+                InventorySlotTyped.SlotType.INPUT, null);
         addSlot(slotPrint);
 
         slotIn = new InventorySlotTyped(new Point2D.Float(0.250F, 0.500F),
                 new Point2D.Float(0.500F, 0.750F),
                 new Vec3d(-0.5F, 0.8F, 0.25F),
-                InventorySlotTyped.SlotType.INPUT, "");
+                InventorySlotTyped.SlotType.INPUT, null);
         addSlot(slotIn);
 
         slotExtra = new InventorySlotTyped(new Point2D.Float(0.250F, 0.250F),
                 new Point2D.Float(0.500F, 0.500F),
                 new Vec3d(-0.5F, -0.2F, 0.25F),
-                InventorySlotTyped.SlotType.INPUT, "");
+                InventorySlotTyped.SlotType.INPUT, null);
         addSlot(slotExtra);
 
         slotOut = new InventorySlotTyped(new Point2D.Float(0.375F, 0.250F),
                 new Point2D.Float(0.635F, 0.500F),
                 new Vec3d(-0.5F, 0, 0.25F),
-                InventorySlotTyped.SlotType.OUTPUT, "");
+                InventorySlotTyped.SlotType.OUTPUT, null);
         addSlot(slotOut);
     }
 
@@ -83,13 +87,13 @@ public class TileStoneAnvil extends TileEntitySlottedInventory<TileStoneAnvil.In
         }
 
         private SlotType type;
-        private String oreDict;
+        private Tag<Item> tag;
 
-        public InventorySlotTyped(Point2D bl, Point2D tr, Vec3d renderOffset, SlotType type, String oreDict)
+        public InventorySlotTyped(Point2D bl, Point2D tr, Vec3d renderOffset, SlotType type, Tag<Item> tag)
         {
             super(bl, tr, renderOffset);
             this.type = type;
-            this.oreDict = oreDict;
+            this.tag = tag;
         }
 
         @Override
@@ -98,8 +102,8 @@ public class TileStoneAnvil extends TileEntitySlottedInventory<TileStoneAnvil.In
             if (type == SlotType.OUTPUT)
                 return false;
 
-            if (!oreDict.isEmpty())
-                return ItemUtils.stackHasOreName(stack, oreDict);
+            if (tag != null)
+                return stack.getItem().isIn(tag);
             return true;
         }
 

@@ -17,13 +17,13 @@ public class RenderUtils
 {
     public static void renderFluid(FluidStack fluid, BlockPos pos, double x, double y, double z, double x1, double y1, double z1, double x2, double y2, double z2, int color, TextureAtlasSprite top, TextureAtlasSprite side)
     {
-        final Minecraft mc = Minecraft.getMinecraft();
+        final Minecraft mc = Minecraft.getInstance();
         final Tessellator tessellator = Tessellator.getInstance();
         final BufferBuilder buffer = tessellator.getBuffer();
         final int brightness = mc.world.getCombinedLight(pos, fluid.getFluid().getLuminosity());
 
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-        mc.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+        mc.textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
         GlStateManager.pushMatrix();
         RenderHelper.disableStandardItemLighting();
@@ -35,7 +35,7 @@ public class RenderUtils
         else
             GL11.glShadeModel(GL11.GL_FLAT);
 
-        GlStateManager.translate(x, y, z);
+        GlStateManager.translated(x, y, z);
 
         addTexturedQuad(buffer, top, x1, y1, z1, x2 - x1, y2 - y1, z2 - z1, EnumFacing.DOWN, color, brightness);
         addTexturedQuad(buffer, side, x1, y1, z1, x2 - x1, y2 - y1, z2 - z1, EnumFacing.NORTH, color, brightness);
@@ -188,9 +188,9 @@ public class RenderUtils
         final float z = (float) (pos.getZ() - TileEntityRendererDispatcher.staticPlayerZ);
 
         if (offset)
-            GlStateManager.translate(x + 0.5, y + 0.5, z + 0.5);
+            GlStateManager.translated(x + 0.5, y + 0.5, z + 0.5);
         else
-            GlStateManager.translate(x, y, z);
+            GlStateManager.translatef(x, y, z);
     }
 
     public static void rotateOnFacing(@Nonnull EnumFacing facing) {
@@ -199,13 +199,13 @@ public class RenderUtils
             case NORTH:
                 break;
             case EAST:
-                GlStateManager.rotate(90.0F, 0.0F, 0.0F, 1.0F);
+                GlStateManager.rotatef(90.0F, 0.0F, 0.0F, 1.0F);
                 break;
             case SOUTH:
-                GlStateManager.rotate(180.0F, 0.0F, 0.0F, 1.0F);
+                GlStateManager.rotatef(180.0F, 0.0F, 0.0F, 1.0F);
                 break;
             case WEST:
-                GlStateManager.rotate(270.0F, 0.0F, 0.0F, 1.0F);
+                GlStateManager.rotatef(270.0F, 0.0F, 0.0F, 1.0F);
                 break;
             case DOWN:
                 //GlStateManager.rotate(-90.0F, 1.0F, 0.0F, 0.0F);

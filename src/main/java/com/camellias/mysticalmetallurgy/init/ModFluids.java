@@ -1,9 +1,12 @@
 package com.camellias.mysticalmetallurgy.init;
 
 import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
-import net.minecraftforge.fluids.Fluid;
+import net.minecraft.fluid.FlowingFluid;
+import net.minecraftforge.registries.ObjectHolder;
 
+@ObjectHolder("mysticalmetallurgy")
 public class ModFluids
 {
-    public static final Fluid MYSTICAL_METAL = new FluidMysticMetal("mystical_liquid_metal");
+    public static final FlowingFluid MYSTICAL_METAL = new FluidMysticMetal.Source();
+    public static final FlowingFluid MYSTICAL_METAL_FLOWING = new FluidMysticMetal.Flowing();
 }

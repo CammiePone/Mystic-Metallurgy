@@ -4,6 +4,7 @@ import com.camellias.mysticalmetallurgy.api.ConfigValues;
 import com.camellias.mysticalmetallurgy.api.effect.EffectLinker;
 import com.camellias.mysticalmetallurgy.api.effect.Trait;
 import com.camellias.mysticalmetallurgy.init.ModFluids;
+import com.camellias.mysticalmetallurgy.init.ModItems;
 import com.camellias.mysticalmetallurgy.init.ModTiles;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Items;
@@ -19,7 +20,9 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
+import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.wrappers.FluidBlockWrapper;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 

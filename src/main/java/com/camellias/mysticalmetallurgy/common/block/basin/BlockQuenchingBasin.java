@@ -42,7 +42,7 @@ public class BlockQuenchingBasin extends Block
 
     public BlockQuenchingBasin()
     {
-        super(Properties.create(Material.IRON).sound(SoundType.METAL).hardnessAndResistance(5F).needsRandomTick());
+        super(Properties.create(Material.IRON).sound(SoundType.METAL).hardnessAndResistance(5F).tickRandomly());
 
         setDefaultState(getDefaultState().with(COOLING, false).with(FACING, EnumFacing.NORTH));
     }
