@@ -1,5 +1,7 @@
 package com.camellias.mysticalmetallurgy.init;
 
+import com.camellias.mysticalmetallurgy.Main;
+import com.camellias.mysticalmetallurgy.api.ConfigValues;
 import com.camellias.mysticalmetallurgy.api.effect.Effect;
 import com.camellias.mysticalmetallurgy.api.RegisterItemEffectsEvent;
 import com.camellias.mysticalmetallurgy.api.recipe.AnvilRecipe;
@@ -12,6 +14,8 @@ import com.camellias.mysticalmetallurgy.common.block.crucible.BlockCrucible;
 import com.camellias.mysticalmetallurgy.common.block.crucible.TileCrucible;
 import com.camellias.mysticalmetallurgy.common.block.rack.BlockRack;
 import com.camellias.mysticalmetallurgy.common.block.rack.TileRack;
+import com.camellias.mysticalmetallurgy.common.capability.HotCarry.CapHotCarry;
+import com.camellias.mysticalmetallurgy.common.capability.HotItem.CapHotStack;
 import com.camellias.mysticalmetallurgy.common.effect.*;
 import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
 
@@ -21,12 +25,15 @@ import com.camellias.mysticalmetallurgy.common.item.tool.ItemLadle;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fluids.Fluid;
@@ -86,7 +93,8 @@ public class RegistrationHandler
 
                 //Tools
                 asDefault(new ItemLadle(), ItemLadle.LOC, ModTabs.MYSTICAL_METALS_ITEMS),
-                asDefault(new ItemHammer(), ItemHammer.LOC, ModTabs.MYSTICAL_METALS_ITEMS)
+                asDefault(new ItemHammer(), ItemHammer.LOC, ModTabs.MYSTICAL_METALS_ITEMS),
+                asDefault((new Item()).setMaxStackSize(1).setMaxDamage(ConfigValues.Heat.GlovesDurablity), new ResourceLocation(Main.MODID, "gloves"), ModTabs.MYSTICAL_METALS_ITEMS)
                 //asDefault(new ItemIngot()
                 //                .addVariant(0, new ResourceLocation(Main.MODID, "ingot_silver")),
                 //        new ResourceLocation(Main.MODID, "ingot"),
@@ -121,6 +129,24 @@ public class RegistrationHandler
     public static void registerOreDict()
     {
         //OreDictionary.registerOre("ingotSilver", new ItemStack(ModItems.INGOT, 1, 0));
+    }
+
+    @SubscribeEvent
+    public static void attachEntityCapability(AttachCapabilitiesEvent<Entity> event)
+    {
+        if (!(event.getObject() instanceof EntityPlayer)) return;
+
+        event.addCapability(CapHotCarry.HOT_CARRY_CAPLOC, new CapHotCarry());
+    }
+
+    @SubscribeEvent
+    public static void attachStackCapability(AttachCapabilitiesEvent<ItemStack> event)
+    {
+//        if (event.getObject().getItem() != ModItems.LADLE
+//                && event.getObject().getItem() != Items.BUCKET)
+//            return;
+//
+//        event.addCapability(CapHotStack.HOT_STACK_CAPLOC, new CapHotStack());
     }
 
     //region <helper>

@@ -12,6 +12,8 @@ tile.mysticalmetallurgy.rack.name=Item Rack
 info.mysticalmetallurgy.shift=<Hold Shift For More Info>
 info.mysticalmetallurgy.attributes=Attributes:
 
+message.mysticalmetallurgy.toohot=Ouch! You dropped the item because it got too hot! Wait a little to cool off.
+
 effect.mysticalmetallurgy.dense.name=Durable
 effect.mysticalmetallurgy.fire.name=Flame
 
