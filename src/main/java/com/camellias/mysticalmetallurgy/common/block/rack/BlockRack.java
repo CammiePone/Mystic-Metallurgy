@@ -1,7 +1,6 @@
 package com.camellias.mysticalmetallurgy.common.block.rack;
 
 import com.camellias.mysticalmetallurgy.Main;
-import com.camellias.mysticalmetallurgy.library.utils.AABBUtils;
 import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRedstoneDiode;
@@ -31,7 +30,10 @@ public class BlockRack extends Block
 {
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "rack");
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
-    private static final AxisAlignedBB AABB = new AxisAlignedBB(0.0D, 0.875D, 0.0D, 1.0D, 1.0D, 0.125D);
+    private static final AxisAlignedBB AABB_N = new AxisAlignedBB(0.0D, 0.875D, 0.0D, 1.0D, 1.0D, 0.125D);
+    private static final AxisAlignedBB AABB_E = new AxisAlignedBB(1.0D, 0.875D, 1.0D, 1.0D, 1.0D, 0.125D);
+    private static final AxisAlignedBB AABB_S = new AxisAlignedBB(1.0D, 0.875D, 1.0D, 0.125D, 1.0D, 0.875D);
+    private static final AxisAlignedBB AABB_W = new AxisAlignedBB(0.125D, 0.875D, 1.0D, 0.0D, 1.0D, 0.0D);
 
     public BlockRack()
     {
@@ -150,13 +152,13 @@ public class BlockRack extends Block
         switch (state.getValue(FACING))
         {
             case NORTH:
-                return AABB;
+                return AABB_N;
             case EAST:
-                return AABBUtils.rotateH90(AABB);
+                return AABB_E;
             case SOUTH:
-                return AABBUtils.rotateH180(AABB);
+                return AABB_S;
             case WEST:
-                return AABBUtils.rotateH270(AABB);
+                return AABB_W;
         }
         return FULL_BLOCK_AABB;
     }

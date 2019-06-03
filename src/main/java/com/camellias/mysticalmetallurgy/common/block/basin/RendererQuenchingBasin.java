@@ -58,7 +58,7 @@ public class RendererQuenchingBasin extends TileEntitySpecialRenderer<TileQuench
         GlStateManager.pushMatrix();
         GlStateManager.translate(x, y, z);
         GlStateManager.translate(0.5F, 0.5F, 0.5F);
-        GlStateManager.scale(0.2F, 0.2F, 0.2F);
+        GlStateManager.scale(0.5F, 0.5F, 0.5F);
 
         InventorySlot slotHover = null;
         if (rayTrace != null && rayTrace.hitVec != null && rayTrace.sideHit == EnumFacing.UP && rayTrace.getBlockPos().equals(te.getPos()))
@@ -93,7 +93,7 @@ public class RendererQuenchingBasin extends TileEntitySpecialRenderer<TileQuench
 
         RenderHelper.enableStandardItemLighting();
 
-        GlStateManager.rotate(90.0F, 1.0F, 0.0F, 0.0F);
+        //GlStateManager.rotate(180.0F, 0.0F, 1.0F, 0.0F);
         RenderUtils.rotateOnFacing(facing);
         GlStateManager.translate(offset.x, offset.y, offset.z);
 

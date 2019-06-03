@@ -51,13 +51,13 @@ public class TileStoneAnvil extends TileEntitySlottedInventory<TileStoneAnvil.In
 
         slotIn = new InventorySlotTyped(new Point2D.Float(0.250F, 0.500F),
                 new Point2D.Float(0.500F, 0.750F),
-                new Vec3d(-0.5F, 0.8F, 0.25F),
+                new Vec3d(-0.5F, 0.65F, 0.25F),
                 InventorySlotTyped.SlotType.INPUT, "");
         addSlot(slotIn);
 
         slotExtra = new InventorySlotTyped(new Point2D.Float(0.250F, 0.250F),
                 new Point2D.Float(0.500F, 0.500F),
-                new Vec3d(-0.5F, -0.2F, 0.25F),
+                new Vec3d(-0.5F, -0.45F, 0.25F),
                 InventorySlotTyped.SlotType.INPUT, "");
         addSlot(slotExtra);
 
@@ -224,7 +224,7 @@ public class TileStoneAnvil extends TileEntitySlottedInventory<TileStoneAnvil.In
 
     public boolean canExtract(InventorySlotTyped slot)
     {
-        return swings > 0 && slot != slotOut;
+        return swings == 0 && slot != slotOut;
     }
     //endregion
 

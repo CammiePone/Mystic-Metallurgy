@@ -2,7 +2,6 @@ package com.camellias.mysticalmetallurgy.common.block.anvil;
 
 import com.camellias.mysticalmetallurgy.Main;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemHammer;
-import com.camellias.mysticalmetallurgy.library.utils.AABBUtils;
 import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import com.camellias.mysticalmetallurgy.network.NetworkHandler;
 import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
@@ -36,7 +35,8 @@ public class BlockStoneAnvil extends Block
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "stone_anvil");
 
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
-    private static final AxisAlignedBB AABB = new AxisAlignedBB(0.186D, 0.0D, 0.254D, 0.81D, 0.435D, 0.748D);
+    private static final AxisAlignedBB AABB_Z = new AxisAlignedBB(0.186D, 0.0D, 0.254D, 0.81D, 0.435D, 0.748D);
+    private static final AxisAlignedBB AABB_X = new AxisAlignedBB(0.254D, 0.0D, 0.186D, 0.748D, 0.435D, 0.81D);
 
     public BlockStoneAnvil()
     {
@@ -164,9 +164,9 @@ public class BlockStoneAnvil extends Block
         switch (state.getValue(FACING).getAxis())
         {
             case Z:
-                return AABB;
+                return AABB_Z;
             case X:
-                return AABBUtils.rotateH90(AABB);
+                return AABB_X;
         }
         return FULL_BLOCK_AABB;
     }

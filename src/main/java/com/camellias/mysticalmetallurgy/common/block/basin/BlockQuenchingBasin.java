@@ -1,7 +1,6 @@
 package com.camellias.mysticalmetallurgy.common.block.basin;
 
 import com.camellias.mysticalmetallurgy.Main;
-import com.camellias.mysticalmetallurgy.library.utils.AABBUtils;
 import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.InventorySlot;
 import net.minecraft.block.Block;
@@ -38,7 +37,8 @@ public class BlockQuenchingBasin extends Block
     public static final ResourceLocation LOC = new ResourceLocation(Main.MODID, "basin");
     public static final PropertyBool COOLING = PropertyBool.create("cooling");
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
-    private static final AxisAlignedBB AABB = new AxisAlignedBB(0.0D, 0.0D, 0.07D, 1.0D, 0.62D, 0.93D);
+    private static final AxisAlignedBB AABB_Z = new AxisAlignedBB(0.0D, 0.0D, 0.07D, 1.0D, 0.62D, 0.93D);
+    private static final AxisAlignedBB AABB_X = new AxisAlignedBB(0.7D, 0.0D, 0.00D, 0.93D, 0.62D, 1.0D);
 
     public BlockQuenchingBasin()
     {
@@ -173,9 +173,9 @@ public class BlockQuenchingBasin extends Block
         switch (state.getValue(FACING).getAxis())
         {
             case Z:
-                return AABB;
+                return AABB_Z;
             case X:
-                return AABBUtils.rotateH90(AABB);
+                return AABB_X;
         }
         return FULL_BLOCK_AABB;
     }

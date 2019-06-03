@@ -203,7 +203,7 @@ public class TileCrucible extends TileEntity implements ITickable
     {
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
         {
-            if (facing == null || facing != EnumFacing.DOWN)
+            if (facing != EnumFacing.DOWN)
                 return (T) input;
         }
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)

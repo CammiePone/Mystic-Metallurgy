@@ -94,25 +94,27 @@ public class AABBUtils
         if (forcePositive)
         {
             // Get the absolute value of the coordinates
-            if (maxCoords.x < 0)
-            {
-                minCoords.x = 1 - minCoords.x;
-                maxCoords.x = maxCoords.x + 1;
-            }
-            if (maxCoords.z < 0)
-            {
-                minCoords.z = 1 - minCoords.z;
-                maxCoords.z = maxCoords.z + 1;
-            }
+            minCoords.absolute();
+            maxCoords.absolute();
+//            if (maxCoords.x < 0)
+//            {
+//                minCoords.x = 1 - minCoords.x;
+//                maxCoords.x = maxCoords.x + 1;
+//            }
+//            if (maxCoords.z < 0)
+//            {
+//                minCoords.z = 1 - minCoords.z;
+//                maxCoords.z = maxCoords.z + 1;
+//            }
         }
 
         // Return an AABB with the new coordinates
-        return new AxisAlignedBB(minCoords.getX(), minCoords.getY(), minCoords.getZ(), maxCoords.getX(), maxCoords.getY(), maxCoords.getZ());
+        return new AxisAlignedBB(Math.min(minCoords.getX(), maxCoords.getX()), minCoords.getY(), Math.min(minCoords.getZ(), maxCoords.getZ()), Math.max(minCoords.getX(), maxCoords.getX()), maxCoords.getY(), Math.max(minCoords.getZ(), maxCoords.getZ()));
     }
 
     public static AxisAlignedBB rotateH90(AxisAlignedBB AABB)
     {
-        return  rotateAABB(AABB, getRotationMatrix(EnumFacing.Axis.Y, Math.toRadians(270)), true);
+        return  rotateAABB(AABB, getRotationMatrix(EnumFacing.Axis.Y, Math.toRadians(90)), true);
     }
 
     public static AxisAlignedBB rotateH180(AxisAlignedBB AABB)
@@ -122,7 +124,7 @@ public class AABBUtils
 
     public static AxisAlignedBB rotateH270(AxisAlignedBB AABB)
     {
-        return rotateAABB(AABB, getRotationMatrix(EnumFacing.Axis.Y, Math.toRadians(90)), true);
+        return rotateAABB(AABB, getRotationMatrix(EnumFacing.Axis.Y, Math.toRadians(270)), true);
     }
 
     /**

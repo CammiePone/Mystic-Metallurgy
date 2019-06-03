@@ -36,13 +36,13 @@ public class TileQuenchingBasin extends TileEntitySlottedInventory<InventorySlot
     @Override
     protected void initSlots() throws InvalidActivityException
     {
-        addSlot(new InventorySlot(new Point2D.Float(0.530F, 0.375F),
-                new Point2D.Float(0.780F, 0.635F),
-                new Vec3d(0.755F, 0F, 0.25F)));
+        addSlot(new InventorySlot(new Point2D.Float(0.0F, 0.0F),
+                new Point2D.Float(0.50F, 0.55F),
+                new Vec3d(0.5F, 0F, 0.5F)));
 
-        addSlot(new InventorySlot(new Point2D.Float(0.250F, 0.500F),
-                new Point2D.Float(0.500F, 0.750F),
-                new Vec3d(0.5F, 0.5F, 0.25F)));
+        addSlot(new InventorySlot(new Point2D.Float(0.50F, 0.500F),
+                new Point2D.Float(1.0F, 1.0F),
+                new Vec3d(0.5F, 0.5F, 0.5F)));
     }
 
     FluidTank tank = new FluidTank(1000);
