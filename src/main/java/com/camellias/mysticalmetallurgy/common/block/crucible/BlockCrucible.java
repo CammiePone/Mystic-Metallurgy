@@ -66,7 +66,7 @@ public class BlockCrucible extends Block
                     {
                         tile.setLit();
                         stack.damageItem(1, playerIn);
-                        NetworkHandler.sendAround(new PlaySoundPacket(pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.PLAYERS, 0.4F, 0.7F), pos, worldIn.provider.getDimension());
+                        worldIn.playSound(null, pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.PLAYERS, 0.4F, 0.7F);
                         tile.markDirty();
                     }
                 }

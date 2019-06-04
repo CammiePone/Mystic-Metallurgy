@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class ItemVariant extends Item
+public class ItemVariant extends Item
 {
     protected Map<Integer, ResourceLocation> variants = new HashMap<>();
 

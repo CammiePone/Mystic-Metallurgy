@@ -5,11 +5,9 @@ import com.camellias.mysticalmetallurgy.api.recipe.AnvilRecipe;
 import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemLadle;
 import com.camellias.mysticalmetallurgy.init.ModItems;
-import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.InventorySlot;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.TileEntitySlottedInventory;
-import com.camellias.mysticalmetallurgy.network.NetworkHandler;
-import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
+import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
@@ -61,8 +59,8 @@ public class TileStoneAnvil extends TileEntitySlottedInventory<TileStoneAnvil.In
                 InventorySlotTyped.SlotType.INPUT, "");
         addSlot(slotExtra);
 
-        slotOut = new InventorySlotTyped(new Point2D.Float(0.375F, 0.250F),
-                new Point2D.Float(0.635F, 0.500F),
+        slotOut = new InventorySlotTyped(new Point2D.Float(0.250F, 0.250F),
+                new Point2D.Float(0.500F, 0.750F),
                 new Vec3d(-0.5F, 0, 0.25F),
                 InventorySlotTyped.SlotType.OUTPUT, "");
         addSlot(slotOut);
@@ -163,8 +161,13 @@ public class TileStoneAnvil extends TileEntitySlottedInventory<TileStoneAnvil.In
 
     public boolean tryHammer()
     {
-        AnvilRecipe recipe = AnvilRecipe.getMatching(slotPrint.getStack(),
-                slotIn.getStack(), slotExtra.getStack());
+        AnvilRecipe recipe = swings > 0 ?
+                getActiveRecipe() :
+                AnvilRecipe.getMatching(
+                        slotPrint.getStack(),
+                        slotIn.getStack(),
+                        slotExtra.getStack()
+                );
 
         if (recipe != null)
         {
@@ -175,12 +178,13 @@ public class TileStoneAnvil extends TileEntitySlottedInventory<TileStoneAnvil.In
                 slotExtra.empty();
                 slotOut.setStack(result);
 
-                NetworkHandler.sendAround(new PlaySoundPacket(pos, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.AMBIENT, 1F, 1.0F), pos, world.provider.getDimension());
+                world.playSound(null, pos, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.AMBIENT, 1F, 1.0F);
             }
 
             markDirty();
             return true;
         }
+
         return false;
     }
 

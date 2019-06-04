@@ -1,13 +1,13 @@
 [
 {
-  "modid": "lorecraft",
-  "name": "LoreCraft",
-  "description": "Unifying Minecraft's Lore.",
-  "version": "0.0.0",
+  "modid": "mysticalmetallurgy",
+  "name": "Mystical Metallurgy",
+  "description": "Metals and Tools.",
+  "version": "0.0.1",
   "mcversion": "1.12.2",
   "url": "",
   "updateUrl": "",
-  "authorList": ["Camellias_"],
+  "authorList": ["Camellias_", "Shyrik"],
   "credits": "",
   "logoFile": "",
   "screenshots": [],

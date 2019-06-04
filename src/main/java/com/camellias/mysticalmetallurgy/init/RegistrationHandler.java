@@ -19,6 +19,7 @@ import com.camellias.mysticalmetallurgy.common.capability.HotItem.CapHotStack;
 import com.camellias.mysticalmetallurgy.common.effect.*;
 import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
 import com.camellias.mysticalmetallurgy.common.item.ItemMetalClump;
+import com.camellias.mysticalmetallurgy.common.item.ItemVariant;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemHammer;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemLadle;
 import net.minecraft.block.Block;
@@ -71,6 +72,7 @@ public class RegistrationHandler
     public static void registerItems(RegistryEvent.Register<Item> event)
     {
         event.getRegistry().registerAll(
+
                 //Blocks
                 asItem(ModBlocks.CRUCIBLE, BlockCrucible.LOC),
                 asItem(ModBlocks.BRAZIER, BlockBrazier.LOC),
@@ -87,10 +89,22 @@ public class RegistrationHandler
                         ItemMetalClump.LOC,
                         ModTabs.MYSTICAL_METALS_ITEMS),
 
+                asDefault(new ItemVariant()
+                                .addVariant(0, createRL("design_pick"))
+                                .addVariant(0, createRL("design_axe"))
+                                .addVariant(0, createRL("design_hoe"))
+                                .addVariant(0, createRL("design_sword")),
+                        createRL("design"),
+                        ModTabs.MYSTICAL_METALS_ITEMS),
+
                 //Tools
                 asDefault(new ItemLadle(), ItemLadle.LOC, ModTabs.MYSTICAL_METALS_ITEMS),
                 asDefault(new ItemHammer(), ItemHammer.LOC, ModTabs.MYSTICAL_METALS_ITEMS),
-                asDefault((new Item()).setMaxStackSize(1).setMaxDamage(ConfigValues.Heat.GlovesDurablity), new ResourceLocation(Main.MODID, "gloves"), ModTabs.MYSTICAL_METALS_ITEMS)
+                asDefault(new Item()
+                                .setMaxStackSize(1)
+                                .setMaxDamage(ConfigValues.Heat.GlovesDurablity),
+                        createRL("gloves"),
+                        ModTabs.MYSTICAL_METALS_ITEMS)
                 //asDefault(new ItemIngot()
                 //                .addVariant(0, new ResourceLocation(Main.MODID, "ingot_silver")),
                 //        new ResourceLocation(Main.MODID, "ingot"),

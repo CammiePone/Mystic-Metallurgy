@@ -3,8 +3,6 @@ package com.camellias.mysticalmetallurgy.common.block.anvil;
 import com.camellias.mysticalmetallurgy.Main;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemHammer;
 import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
-import com.camellias.mysticalmetallurgy.network.NetworkHandler;
-import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
@@ -62,7 +60,7 @@ public class BlockStoneAnvil extends Block
                     if (tile.tryHammer())
                     {
                         stack.damageItem(1, playerIn);
-                        NetworkHandler.sendAround(new PlaySoundPacket(pos, SoundEvents.BLOCK_ANVIL_HIT, SoundCategory.AMBIENT, 1F, 1.0F), pos, playerIn.dimension);
+                        worldIn.playSound(null, pos, SoundEvents.BLOCK_ANVIL_HIT, SoundCategory.AMBIENT, 1F, 1.0F);
                     }
                 }
                 else
@@ -74,20 +72,15 @@ public class BlockStoneAnvil extends Block
 
                     if (slot != null)
                     {
-                        if (!playerIn.isSneaking() && !stack.isEmpty())
+                        if (tile.hasOutput() ||
+                                (playerIn.isSneaking() && tile.canExtract(slot)))
                         {
-                            if (!tile.hasOutput())
+                            ItemStack slotStack = slot.extract(1, true);
+                            if (!slotStack.isEmpty() && ItemUtils.giveStack(playerIn, slotStack).isEmpty())
+                                slot.extract(1, false);
+                        }
+                        else if (!playerIn.isSneaking() && !stack.isEmpty() && !tile.hasOutput())
                                 playerIn.setHeldItem(hand, slot.insert(stack, false));
-                        }
-                        else if (playerIn.isSneaking())
-                        {
-                            if (tile.canExtract(slot))
-                            {
-                                ItemStack slotStack = slot.extract( 1, true);
-                                if (!slotStack.isEmpty() && ItemUtils.giveStack(playerIn, slotStack).isEmpty())
-                                    slot.extract(1, false);
-                            }
-                        }
                     }
                 }
             }
@@ -192,7 +185,7 @@ public class BlockStoneAnvil extends Block
     }
 
     @Override
-    public boolean canPlaceTorchOnTop(IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos)
+    public boolean canPlaceTorchOnTop(@Nonnull IBlockState state, @Nonnull IBlockAccess world, @Nonnull BlockPos pos)
     {
         return false;
     }
