@@ -1,20 +1,29 @@
 package com.camellias.mysticalmetallurgy.common.capability.HotItem;
 
 import com.camellias.mysticalmetallurgy.Main;
+import com.camellias.mysticalmetallurgy.api.ConfigValues;
+import com.camellias.mysticalmetallurgy.api.IMysticalItem;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagShort;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+@SuppressWarnings("ConstantConditions")
+@Mod.EventBusSubscriber
 public class CapHotStack implements ICapabilitySerializable<NBTBase>
 {
-    public static final ResourceLocation HOT_STACK_CAPLOC = new ResourceLocation(Main.MODID, "hotstack");
+    private static final ResourceLocation HOT_STACK_CAPLOC = new ResourceLocation(Main.MODID, "hotstack");
 
     @CapabilityInject(IHotStack.class)
     public static final Capability<IHotStack> HOT_STACK_CAPABILITY = null;
@@ -29,29 +38,51 @@ public class CapHotStack implements ICapabilitySerializable<NBTBase>
                     @Override
                     public NBTBase writeNBT(Capability<IHotStack> capability, IHotStack instance, EnumFacing side)
                     {
-                        return new NBTTagShort((short) (instance.isHot() ? 0 : 1));
+                        NBTTagCompound tag = new NBTTagCompound();
+                        tag.setInteger("temp", instance.getTemp());
+                        tag.setBoolean("canCool", instance.canCool());
+                        return tag;
                     }
 
                     @Override
                     public void readNBT(Capability<IHotStack> capability, IHotStack instance, EnumFacing side, NBTBase nbt)
                     {
-                        if (((NBTTagShort)nbt).getShort() == 0)
-                            instance.setCold();
-                        else
-                            instance.setHot();
+                        instance.setTemp(((NBTTagCompound)nbt).getInteger("temp"));
+                        instance.setCanCool(((NBTTagCompound)nbt).getBoolean("canCool"));
                     }
                 },
                 IHotStack.Impl::new);
     }
 
+    @SubscribeEvent
+    public static void attachStackCapability(AttachCapabilitiesEvent<ItemStack> event)
+    {
+        ItemStack stack = event.getObject();
+        if (stack.getItem() instanceof IMysticalItem)
+            event.addCapability(CapHotStack.HOT_STACK_CAPLOC, new CapHotStack());
+        else
+        {
+            for (ItemStack stack2 : ConfigValues.Heat.HotItemStacks)
+            {
+                if (stack.isItemEqual(stack2))
+                {
+                    CapHotStack cap = new CapHotStack();
+                    cap.instance.setTemp(350);
+                    cap.instance.setCanCool(false);
+                    event.addCapability(CapHotStack.HOT_STACK_CAPLOC, cap);
+                }
+            }
+        }
+    }
+
     @Override
-    public boolean hasCapability(Capability<?> capability, EnumFacing facing)
+    public boolean hasCapability(@Nonnull Capability<?> capability, EnumFacing facing)
     {
         return capability == HOT_STACK_CAPABILITY;
     }
 
     @Override
-    public <T> T getCapability(Capability<T> capability, EnumFacing facing)
+    public <T> T getCapability(@Nonnull Capability<T> capability, EnumFacing facing)
     {
         return capability == HOT_STACK_CAPABILITY ? HOT_STACK_CAPABILITY.cast(this.instance) : null;
     }

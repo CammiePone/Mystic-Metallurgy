@@ -2,8 +2,8 @@ package com.camellias.mysticalmetallurgy.init;
 
 import com.camellias.mysticalmetallurgy.Main;
 import com.camellias.mysticalmetallurgy.api.ConfigValues;
-import com.camellias.mysticalmetallurgy.api.effect.Effect;
 import com.camellias.mysticalmetallurgy.api.RegisterItemEffectsEvent;
+import com.camellias.mysticalmetallurgy.api.effect.Effect;
 import com.camellias.mysticalmetallurgy.api.recipe.AnvilRecipe;
 import com.camellias.mysticalmetallurgy.common.block.BlockBrazier;
 import com.camellias.mysticalmetallurgy.common.block.anvil.BlockStoneAnvil;
@@ -18,22 +18,18 @@ import com.camellias.mysticalmetallurgy.common.capability.HotCarry.CapHotCarry;
 import com.camellias.mysticalmetallurgy.common.capability.HotItem.CapHotStack;
 import com.camellias.mysticalmetallurgy.common.effect.*;
 import com.camellias.mysticalmetallurgy.common.fluid.FluidMysticMetal;
-
 import com.camellias.mysticalmetallurgy.common.item.ItemMetalClump;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemHammer;
 import com.camellias.mysticalmetallurgy.common.item.tool.ItemLadle;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fluids.Fluid;
@@ -41,7 +37,7 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.registries.*;
+import net.minecraftforge.registries.RegistryBuilder;
 
 @Mod.EventBusSubscriber
 public class RegistrationHandler
@@ -131,30 +127,24 @@ public class RegistrationHandler
         //OreDictionary.registerOre("ingotSilver", new ItemStack(ModItems.INGOT, 1, 0));
     }
 
-    @SubscribeEvent
-    public static void attachEntityCapability(AttachCapabilitiesEvent<Entity> event)
+    public static void registerCaps()
     {
-        if (!(event.getObject() instanceof EntityPlayer)) return;
-
-        event.addCapability(CapHotCarry.HOT_CARRY_CAPLOC, new CapHotCarry());
-    }
-
-    @SubscribeEvent
-    public static void attachStackCapability(AttachCapabilitiesEvent<ItemStack> event)
-    {
-//        if (event.getObject().getItem() != ModItems.LADLE
-//                && event.getObject().getItem() != Items.BUCKET)
-//            return;
-//
-//        event.addCapability(CapHotStack.HOT_STACK_CAPLOC, new CapHotStack());
+        CapHotCarry.register();
+        CapHotStack.register();
     }
 
     //region <helper>
+
+    private static ResourceLocation createRL(String path)
+    {
+        return new ResourceLocation(Main.MODID, path);
+    }
+
     private static Block asDefault(Block block, ResourceLocation loc, CreativeTabs tab)
     {
         return block.setRegistryName(loc).setCreativeTab(tab).setTranslationKey(loc.toString().replace(':', '.'));
     }
-    
+
     private static Item asDefault(Item item, ResourceLocation loc, CreativeTabs tab)
     {
         return item.setRegistryName(loc).setCreativeTab(tab).setTranslationKey(loc.toString().replace(':', '.'));
@@ -166,7 +156,7 @@ public class RegistrationHandler
         FluidRegistry.addBucketForFluid(fluid);
         return (BlockFluidClassic)new BlockFluidClassic(fluid, material).setRegistryName(loc).setCreativeTab(tab).setTranslationKey(loc.toString().replace(':', '.'));
     }
-    
+
     private static Item asItem(Block block, ResourceLocation loc)
     {
         return new ItemBlock(block).setRegistryName(loc);

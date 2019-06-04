@@ -28,6 +28,9 @@ public final class ConfigValues
         @Config.Comment("Which part of the inventory to check for heat handling")
         public HotCheckType HotHandling = HotCheckType.HAND;
 
+        @Config.Comment("Temperature in K. Every temperature above this is hot.")
+        public int TempConsideredCold = 300;
+
         @Config.RangeInt(min = 0, max = 600)
         @Config.Comment("Drops the item in hand after X seconds (0 = don't drop)")
         public int DropHotAfterSec = 5;
@@ -38,12 +41,12 @@ public final class ConfigValues
 
         @Config.Comment({
                 "Items declared as hot",
-                "use the following syntax per line: 'modid:itemname:meta' e.g: minecraft:stone:1"
+                "use the following syntax per line: 'modid:itemname:meta' e.g: minecraft:stone:1",
         })
-        public String[] HotItemsWhiteList = {""};
+        public String[] HotItemList = {""};
 
         @Config.Ignore
-        public List<ItemStack> HotItemStacks = new ArrayList<>();
+        public List<ItemStack> HotItemStacks = parseItemList(HotItemList);
     }
 
     @Mod.EventBusSubscriber
@@ -52,14 +55,7 @@ public final class ConfigValues
         public static void onOnConfigChangedEvent(final ConfigChangedEvent.OnConfigChangedEvent event) {
             if (event.getModID().equals(Main.MODID)) {
                 ConfigManager.sync(Main.MODID, Config.Type.INSTANCE);
-                Heat.HotItemStacks.clear();
-                for (String stackString : Heat.HotItemsWhiteList)
-                {
-                    ItemStack stack = parseCfgItem(stackString);
-                    if (stack.isEmpty())
-                        continue;
-                    Heat.HotItemStacks.add(stack);
-                }
+                Heat.HotItemStacks = parseItemList(Heat.HotItemList);
 
                 ModItems.GLOVES.setMaxDamage(Heat.GlovesDurablity);
             }
@@ -75,6 +71,20 @@ public final class ConfigValues
             if (split.length == 2) return new ItemStack(tmp);
             return new ItemStack(tmp, Integer.getInteger(split[2]));
         }
+    }
+
+    private static List<ItemStack> parseItemList(String[] items)
+    {
+        List<ItemStack> itemStacks = new ArrayList<>(items.length);
+        for (String stackString : items)
+        {
+            ItemStack stack = parseCfgItem(stackString);
+            if (stack.isEmpty())
+                continue;
+            itemStacks.add(stack);
+        }
+
+        return itemStacks;
     }
 
     public enum HotCheckType {

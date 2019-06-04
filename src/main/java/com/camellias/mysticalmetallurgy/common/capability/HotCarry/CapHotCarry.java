@@ -1,6 +1,8 @@
 package com.camellias.mysticalmetallurgy.common.capability.HotCarry;
 
 import com.camellias.mysticalmetallurgy.Main;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.util.EnumFacing;
@@ -9,12 +11,18 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+@SuppressWarnings("ConstantConditions")
+@Mod.EventBusSubscriber
 public class CapHotCarry implements ICapabilitySerializable<NBTBase>
 {
-    public static final ResourceLocation HOT_CARRY_CAPLOC = new ResourceLocation(Main.MODID, "hotcarry");
+    private static final ResourceLocation HOT_CARRY_CAPLOC = new ResourceLocation(Main.MODID, "hotcarry");
 
     @CapabilityInject(IHotCarry.class)
     public static final Capability<IHotCarry> HOT_CARRY_CAPABILITY = null;
@@ -41,14 +49,22 @@ public class CapHotCarry implements ICapabilitySerializable<NBTBase>
                 IHotCarry.Impl::new);
     }
 
+    @SubscribeEvent
+    public static void attachEntityCapability(AttachCapabilitiesEvent<Entity> event)
+    {
+        if (!(event.getObject() instanceof EntityPlayer)) return;
+
+        event.addCapability(CapHotCarry.HOT_CARRY_CAPLOC, new CapHotCarry());
+    }
+
     @Override
-    public boolean hasCapability(Capability<?> capability, EnumFacing facing)
+    public boolean hasCapability(@Nonnull Capability<?> capability, EnumFacing facing)
     {
         return capability == HOT_CARRY_CAPABILITY;
     }
 
     @Override
-    public <T> T getCapability(Capability<T> capability, EnumFacing facing)
+    public <T> T getCapability(@Nonnull Capability<T> capability, EnumFacing facing)
     {
         return capability == HOT_CARRY_CAPABILITY ? HOT_CARRY_CAPABILITY.cast(this.instance) : null;
     }

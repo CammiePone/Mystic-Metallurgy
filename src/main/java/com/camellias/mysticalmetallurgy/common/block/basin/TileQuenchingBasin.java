@@ -1,9 +1,10 @@
 package com.camellias.mysticalmetallurgy.common.block.basin;
 
-import com.camellias.mysticalmetallurgy.api.IMysticalItem;
-import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
+import com.camellias.mysticalmetallurgy.common.capability.HotItem.IHotStack;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.InventorySlot;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.TileEntitySlottedInventory;
+import com.camellias.mysticalmetallurgy.library.utils.HotUtils;
+import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -60,19 +61,15 @@ public class TileQuenchingBasin extends TileEntitySlottedInventory<InventorySlot
             int temp = tank.getFluid().getFluid().getTemperature();
             if (temp <= 300)
             {
+                int coolTemp = (int) (Math.floor((300 - temp) / 50d) + 1);
                 for (InventorySlot slot : getSlots())
                 {
-                    ItemStack stack = slot.getStack();
-                    if (!stack.isEmpty() && stack.getItem() instanceof IMysticalItem)
+                    IHotStack hotStack = HotUtils.getHotStackCap(slot.getStack());
+                    if (hotStack != null && hotStack.isHot() && hotStack.canCool())
                     {
-                        int coolTime = ((IMysticalItem) stack.getItem()).getRemainingCoolingTime(stack);
-                        if (coolTime > 0)
-                        {
-                            isCooling = true;
-                            coolTime -= Math.floor((300 - temp) / 50d) + 1;
-                            ((IMysticalItem) stack.getItem()).setRemainingCoolingTime(stack, --coolTime);
-                            tank.drain(2, true);
-                        }
+                        hotStack.setTemp(hotStack.getTemp() - coolTemp);
+                        isCooling = true;
+                        tank.drain(2, true);
                     }
                 }
             }

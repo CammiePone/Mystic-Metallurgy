@@ -4,20 +4,34 @@ public interface IHotStack
 {
     boolean isHot();
 
-    void setHot();
-    void setCold();
+    void setTemp(int t);
+
+    int getTemp();
+
+    boolean canCool();
+
+    void setCanCool(boolean can);
 
     class Impl implements IHotStack
     {
-        private boolean isHot = false;
+        private final int normalTemp = 300;
+        private int temp = normalTemp;
+
+        private boolean canCool = true;
 
         @Override
-        public boolean isHot() { return isHot; }
+        public boolean isHot() { return temp > normalTemp; }
 
         @Override
-        public void setHot() { isHot = true; }
+        public void setTemp(int t) { temp = t; }
 
         @Override
-        public void setCold() { isHot = false; }
+        public int getTemp() { return temp; }
+
+        @Override
+        public boolean canCool() { return canCool; }
+
+        @Override
+        public void setCanCool(boolean canCool) { this.canCool = canCool; }
     }
 }
