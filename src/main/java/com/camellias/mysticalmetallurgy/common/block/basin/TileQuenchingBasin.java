@@ -1,5 +1,6 @@
 package com.camellias.mysticalmetallurgy.common.block.basin;
 
+import com.camellias.mysticalmetallurgy.api.ConfigValues;
 import com.camellias.mysticalmetallurgy.common.capability.HotItem.IHotStack;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.InventorySlot;
 import com.camellias.mysticalmetallurgy.library.tileslottedinventory.TileEntitySlottedInventory;
@@ -69,7 +70,7 @@ public class TileQuenchingBasin extends TileEntitySlottedInventory<InventorySlot
                     {
                         hotStack.setTemp(hotStack.getTemp() - coolTemp);
                         isCooling = true;
-                        tank.drain(2, true);
+                        tank.drain(ConfigValues.Heat.LiquidDrainedPerSec, true);
                     }
                 }
             }

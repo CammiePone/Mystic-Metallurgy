@@ -39,6 +39,10 @@ public final class ConfigValues
         @Config.Comment("Basically how many seconds the gloves can carry hot items")
         public int GlovesDurablity = 120;
 
+        @Config.RangeInt(min = 0, max = 1000)
+        @Config.Comment("How much mB of liquid the Basin drains per Item when it's cooling")
+        public int LiquidDrainedPerSec = 5;
+
         @Config.Comment({
                 "Items declared as hot",
                 "use the following syntax per line: 'modid:itemname:meta' e.g: minecraft:stone:1",
