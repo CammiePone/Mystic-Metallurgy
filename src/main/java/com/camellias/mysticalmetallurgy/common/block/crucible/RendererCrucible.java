@@ -1,5 +1,6 @@
 package com.camellias.mysticalmetallurgy.common.block.crucible;
 
+import com.camellias.mysticalmetallurgy.init.ModFluids;
 import com.camellias.mysticalmetallurgy.library.utils.RenderUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -26,13 +27,13 @@ public class RendererCrucible extends TileEntitySpecialRenderer<TileCrucible>
             Minecraft.getMinecraft().getRenderItem().renderItem(te.input.getStackInSlot(slot), ItemCameraTransforms.TransformType.FIXED);
             GlStateManager.popMatrix();
         }
-        if (te.output != null && te.output.getFluidAmount() > 0)
+        if (te.progress >= 0 && te.progress <= 99)
         {
             GlStateManager.pushMatrix();
             GlStateManager.enableBlend();
             RenderUtils.translateAgainstPlayer(te.getPos(), false);
 
-            FluidStack fluid = te.output.getFluid();
+            FluidStack fluid = new FluidStack(ModFluids.MYSTICAL_METAL, te.progress);
             int color = fluid.getFluid().getColor(fluid);
             final TextureAtlasSprite still = Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(fluid.getFluid().getStill(fluid).toString());
             final TextureAtlasSprite flowing = Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(fluid.getFluid().getFlowing(fluid).toString());

@@ -3,7 +3,7 @@ package com.camellias.mysticalmetallurgy.common.block.crucible;
 import com.camellias.mysticalmetallurgy.api.ConfigValues;
 import com.camellias.mysticalmetallurgy.api.effect.EffectLinker;
 import com.camellias.mysticalmetallurgy.api.effect.Trait;
-import com.camellias.mysticalmetallurgy.init.ModFluids;
+import com.camellias.mysticalmetallurgy.init.ModItems;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -16,8 +16,6 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -41,10 +39,10 @@ public class TileCrucible extends TileEntity implements ITickable
     public static int FUEL_SLOT = INPUT_SLOTS;
 
     private boolean lit = false;
-    private int progress = 100;
+    int progress = 100;
 
     //region <inventory>
-    InternalStackHandler input = new InternalStackHandler(3);
+    InternalStackHandler input = new InternalStackHandler(INPUT_SLOTS + 1);
     class InternalStackHandler extends ItemStackHandler
     {
         InternalStackHandler(int size)
@@ -66,7 +64,7 @@ public class TileCrucible extends TileEntity implements ITickable
         {
             if (isValidFuel(stack))
                 slot = FUEL_SLOT;
-            else if (!output.canFill() || slot == FUEL_SLOT)
+            else if (!isSlotEmpty(slot) || slot == FUEL_SLOT)
                 return stack;
             return super.insertItem(slot, stack, simulate);
         }
@@ -97,23 +95,20 @@ public class TileCrucible extends TileEntity implements ITickable
             }
             markDirty();
         }
+
+        public boolean isSlotEmpty(int slot)
+        {
+            return getStackInSlot(slot).isEmpty();
+        }
     }
 
-    private static final int MaxFluidAmount = 144;
-    FluidTank output = new FluidTank(MaxFluidAmount)
+    public ItemStackHandler output = new ItemStackHandler(1)
     {
         @Override
-        public boolean canFill()
+        @Nonnull
+        public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate)
         {
-            return getFluidAmount() < MaxFluidAmount;
-        }
-
-        @Override
-        public boolean canDrain()
-        {
-            if (progress < 100)
-                return false;
-            return super.canDrain();
+            return stack;
         }
     };
     //endregion
@@ -140,11 +135,11 @@ public class TileCrucible extends TileEntity implements ITickable
             }
 
             List<Trait> effects = EffectLinker.combineStackTraits(stacks.toArray(new ItemStack[0]));
-            NBTTagCompound fluidTag = new NBTTagCompound();
-            Trait.toNBT(fluidTag, effects);
-            EffectLinker.writeTierToNBT(fluidTag, tier + 1);
+            NBTTagCompound tag = new NBTTagCompound();
+            Trait.toNBT(tag, effects);
+            EffectLinker.writeTierToNBT(tag, tier + 1);
 
-            output.fillInternal(new FluidStack(ModFluids.MYSTICAL_METAL, 144, fluidTag), true);
+            output.setStackInSlot(0, new ItemStack(ModItems.METAL_CLUMP, 1, 0, tag));
 
             for (int slot = 0; slot < input.getSlots(); slot ++)
                 input.extractItemInternal(slot, 1, false);
@@ -162,7 +157,7 @@ public class TileCrucible extends TileEntity implements ITickable
 
     private boolean canStart()
     {
-        return output.canFill() && hasValidContent() && progress >= 100 && !input.getStackInSlot(FUEL_SLOT).isEmpty() && lit;
+        return output.getStackInSlot(0).isEmpty() && hasValidContent() && progress >= 100 && !input.getStackInSlot(FUEL_SLOT).isEmpty() && lit;
     }
     //endregion
 
@@ -192,7 +187,7 @@ public class TileCrucible extends TileEntity implements ITickable
     @Override
     public boolean hasCapability(@Nullable Capability<?> capability, @Nullable EnumFacing facing)
     {
-        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
+        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
             return true;
         return super.hasCapability(capability, facing);
     }
@@ -205,10 +200,7 @@ public class TileCrucible extends TileEntity implements ITickable
         {
             if (facing != EnumFacing.DOWN)
                 return (T) input;
-        }
-        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
-        {
-            if (facing == EnumFacing.DOWN)
+            else
                 return (T) output;
         }
         return super.getCapability(capability, facing);
@@ -260,7 +252,7 @@ public class TileCrucible extends TileEntity implements ITickable
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         compound = super.writeToNBT(compound);
         compound.setTag(NBT_INPUT, input.serializeNBT());
-        compound.setTag(NBT_OUTPUT, output.writeToNBT(new NBTTagCompound()));
+        compound.setTag(NBT_OUTPUT, output.serializeNBT());
         compound.setInteger(NBT_PROGRESS, progress);
         compound.setBoolean(NBT_LIT, lit);
         return compound;
@@ -270,7 +262,7 @@ public class TileCrucible extends TileEntity implements ITickable
     public void readFromNBT(@Nonnull NBTTagCompound cmp) {
         super.readFromNBT(cmp);
         if (cmp.hasKey(NBT_INPUT)) input.deserializeNBT(cmp.getCompoundTag(NBT_INPUT));
-        if (cmp.hasKey(NBT_OUTPUT)) output.readFromNBT(cmp.getCompoundTag(NBT_OUTPUT));
+        if (cmp.hasKey(NBT_OUTPUT)) output.deserializeNBT(cmp.getCompoundTag(NBT_OUTPUT));
         if (cmp.hasKey(NBT_PROGRESS)) progress = cmp.getInteger(NBT_PROGRESS);
         if (cmp.hasKey(NBT_LIT)) lit = cmp.getBoolean(NBT_LIT);
     }

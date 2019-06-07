@@ -3,8 +3,6 @@ package com.camellias.mysticalmetallurgy.common.block.crucible;
 
 import com.camellias.mysticalmetallurgy.Main;
 import com.camellias.mysticalmetallurgy.library.utils.ItemUtils;
-import com.camellias.mysticalmetallurgy.network.NetworkHandler;
-import com.camellias.mysticalmetallurgy.network.packet.PlaySoundPacket;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
@@ -81,13 +79,7 @@ public class BlockCrucible extends Block
     {
         if (!stack.isEmpty())
         {
-            IFluidHandler fluidHandler = FluidUtil.getFluidHandler(stack);
-            if (fluidHandler != null)
-            {
-                FluidUtil.interactWithFluidHandler(playerIn, hand, tile.output);
-                tile.markDirty();
-            }
-            else if (!playerIn.isSneaking())
+            if (!playerIn.isSneaking())
             {
                 if (TileCrucible.isValidFuel(stack))
                 {
@@ -112,14 +104,22 @@ public class BlockCrucible extends Block
         }
         else if (playerIn.isSneaking())
         {
-            for (int slot = TileCrucible.INPUT_SLOTS - 1; slot >= 0; slot--)
+            if (!tile.output.getStackInSlot(0).isEmpty())
             {
-                ItemStack slotStack = tile.input.extractItem(slot, 1, true);
-                if (!slotStack.isEmpty())
+                if (ItemUtils.giveStack(playerIn, tile.output.getStackInSlot(0)).isEmpty())
+                    tile.input.extractItem(0, 1, false);
+            }
+            else
+            {
+                for (int slot = TileCrucible.INPUT_SLOTS - 1; slot >= 0; slot--)
                 {
-                    if (ItemUtils.giveStack(playerIn, slotStack).isEmpty())
-                        tile.input.extractItem(slot, 1, false);
-                    break;
+                    ItemStack slotStack = tile.input.extractItem(slot, 1, true);
+                    if (!slotStack.isEmpty())
+                    {
+                        if (ItemUtils.giveStack(playerIn, slotStack).isEmpty())
+                            tile.input.extractItem(slot, 1, false);
+                        break;
+                    }
                 }
             }
         }
