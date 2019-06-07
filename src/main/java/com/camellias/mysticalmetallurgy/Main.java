@@ -1,7 +1,9 @@
 package com.camellias.mysticalmetallurgy;
 
 import com.camellias.mysticalmetallurgy.api.effect.EffectLinker;
+import com.camellias.mysticalmetallurgy.common.compat.CompatCT;
 import com.camellias.mysticalmetallurgy.init.RegistrationHandler;
+import com.camellias.mysticalmetallurgy.library.Mods;
 import com.camellias.mysticalmetallurgy.network.NetworkHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.FluidRegistry;
@@ -38,6 +40,9 @@ public class Main
 		logger = event.getModLog();
 		RegistrationHandler.registerCaps();
 		NetworkHandler.registerPackets();
+
+		if (Mods.CRAFTTWEAKER.isPresent())
+			CompatCT.INSTANCE.load();
 	}
 
 	@EventHandler

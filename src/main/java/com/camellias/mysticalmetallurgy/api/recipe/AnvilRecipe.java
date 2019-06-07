@@ -2,73 +2,73 @@ package com.camellias.mysticalmetallurgy.api.recipe;
 
 import com.camellias.mysticalmetallurgy.api.IMysticalItem;
 import com.camellias.mysticalmetallurgy.api.effect.Trait;
+import com.camellias.mysticalmetallurgy.library.ItemHandle;
 import com.camellias.mysticalmetallurgy.library.utils.HotUtils;
 import com.camellias.mysticalmetallurgy.library.utils.RecipeUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import scala.actors.threadpool.Arrays;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AnvilRecipe
 {
     private ItemStack result;
     private int swings;
 
-    private ItemStack printStack;
-    private List<ItemStack> inputStack;
-    private List<ItemStack> extraStack;
+    public ItemHandle printHandle;
+    public ItemHandle inputHandle;
+    public ItemHandle extraHandle;
     private List<ItemStack> progressStack = new ArrayList<>();
+
+    public AnvilRecipe(@Nonnull ItemStack craftResult, int hammerSwings, @Nullable ItemHandle print, @Nonnull ItemHandle input, @Nullable ItemHandle extra, ItemStack... progress)
+    {
+        if (craftResult.isEmpty())
+            throw new IllegalArgumentException("invalid anvil recipe without output");
+        result = craftResult;
+        if (hammerSwings <= 0)
+            throw new IllegalArgumentException("invalid anvil recipe with no hammerswings: " + craftResult.getDisplayName());
+        swings = hammerSwings;
+
+        printHandle = print;
+        inputHandle = input;
+        extraHandle = extra;
+
+        if (progress != null)
+            progressStack = Arrays.asList(progress);
+    }
 
     public AnvilRecipe(@Nonnull ItemStack craftResult, int hammerSwings, @Nullable Object print, @Nonnull Object input, @Nullable Object extra, Object... progress)
     {
         if (craftResult.isEmpty())
-            throw new IllegalArgumentException("invalid stone anvil recipe without output");
+            throw new IllegalArgumentException("invalid anvil recipe: no output set");
         result = craftResult;
         if (hammerSwings <= 0)
-            throw new IllegalArgumentException("invalid stone anvil recipe with no hammerswings: " + craftResult.getDisplayName());
+            throw new IllegalArgumentException("invalid anvil recipe: no hammer swings set");
         swings = hammerSwings;
 
-        List<ItemStack> temp = RecipeUtil.getStacksFromObject(print);
-        if (temp == null || temp.size() <= 0)
-            printStack = ItemStack.EMPTY;
-        else if (temp.size() > 1)
-            throw new IllegalArgumentException("invalid input for print ingredient in anvil recipe: " + craftResult.getDisplayName());
-        else
-        {
-            printStack = temp.get(0).copy();
-            printStack.setCount(1);
-        }
+        printHandle = RecipeUtil.getHandleFromObject(print);
+        inputHandle = RecipeUtil.getHandleFromObject(input);
+        extraHandle = RecipeUtil.getHandleFromObject(extra);
 
-        temp = RecipeUtil.getStacksFromObject(input);
-        if (temp == null || temp.size() <= 0)
-            throw new IllegalArgumentException("invalid second input ingredient in anvil recipe: " + craftResult.getDisplayName());
-        else
+        if (progress != null)
         {
-            inputStack = temp;
-            inputStack.forEach(stack -> stack.setCount(1));
-        }
-
-        temp = RecipeUtil.getStacksFromObject(extra);
-        if (temp == null || temp.size() <= 0)
-            extraStack = new ArrayList<>();
-        else
-        {
-            extraStack = temp;
-            extraStack.forEach(stack -> stack.setCount(1));
-        }
-
-        for (Object prog : progress)
-        {
-            List<ItemStack> l = RecipeUtil.getStacksFromObject(prog);
-            if (l != null && l.size() > 0)
-                progressStack.add(l.get(0));
+            for (Object prog : progress)
+            {
+                ItemHandle progressHandle = RecipeUtil.getHandleFromObject(prog);
+                if (progressHandle.handleType != ItemHandle.Type.STACK)
+                    throw new IllegalArgumentException("invalid anvil recipe: invalid type for progress items (valid: BLOCKS, ITEMS, ITEMSTACKS)");
+                progressStack.add(progressHandle.getApplicableItems().get(0));
+            }
         }
     }
 
-    public ItemStack getResult() { return result.copy(); }
+    public ItemStack getOutput() { return result.copy(); }
 
     public int getSwings() { return swings; }
     public ItemStack getSwingStack(int swing)
@@ -80,50 +80,24 @@ public class AnvilRecipe
 
     public boolean match(ItemStack print, ItemStack input, ItemStack extra)
     {
-        if (!printStack.isItemEqual(print))
+        if (printHandle != null && !printHandle.matchCrafting(print))
             return false;
 
-        boolean contains = false;
-        for (ItemStack stack : inputStack)
-        {
-            if (stack.isItemEqual(input))
-            {
-                contains = true;
-                break;
-            }
-        }
-
-        if (!contains)
+        if (!inputHandle.matchCrafting(input))
             return false;
 
-        contains = false;
-        if (extraStack.size() == 0)
-            contains = extra.isEmpty();
-        else
-        {
-            for (ItemStack stack : extraStack)
-            {
-                if (stack.isItemEqual(extra))
-                {
-                    contains = true;
-                    break;
-                }
-            }
-        }
+        if (extraHandle != null && !extraHandle.matchCrafting(extra))
+            return false;
 
-        return contains;
+        return true;
     }
 
-    private static List<AnvilRecipe> recipes = new ArrayList<>();
-    public static void register(AnvilRecipe recipe)
-    {
-        recipes.add(recipe);
-    }
+    public static Map<String, AnvilRecipe> recipes = new HashMap<>();
 
     @Nullable
     public static AnvilRecipe getMatching(@Nonnull ItemStack print, @Nonnull ItemStack input, @Nonnull ItemStack extra)
     {
-        for (AnvilRecipe recipe : recipes)
+        for (AnvilRecipe recipe : recipes.values())
             if (recipe.match(print, input, extra))
                 return recipe;
         return null;
@@ -131,7 +105,7 @@ public class AnvilRecipe
 
     public ItemStack craft(@Nonnull ItemStack input, @Nonnull ItemStack extra)
     {
-        ItemStack res = getResult();
+        ItemStack res = getOutput();
         if (res.getItem() instanceof IMysticalItem)
         {
             NBTTagCompound nbtResult = new NBTTagCompound();

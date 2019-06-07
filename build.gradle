@@ -13,7 +13,7 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 
 version = "$mod_version"
 group = "com.camellias.$mod_name"
-archivesBaseName = "$mod_name-$mc_version"
+archivesBaseName = "$mod_name-$mc_version-$mod_version"
 
 sourceCompatibility = targetCompatibility = '1.8'
 compileJava {
@@ -51,6 +51,12 @@ repositories {
         name = "ModMaven"
         url = "modmaven.k-4u.nl"
     }
+
+    maven {
+        // CraftTweaker
+        name 'jared maven'
+        url "https://maven.blamejared.com/"
+    }
 }
 
 dependencies {
@@ -58,6 +64,8 @@ dependencies {
 
     deobfProvided "mezz.jei:jei_$mc_version:$jei_version:api"
     runtime "mezz.jei:jei_$mc_version:$jei_version"
+
+    deobfCompile "CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-$ct_version"
 
     //compile "thaumcraft:Thaumcraft:$mc_version:$thaumcraft_version"
 }

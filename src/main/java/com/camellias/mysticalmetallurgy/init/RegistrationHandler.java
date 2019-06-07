@@ -116,7 +116,13 @@ public class RegistrationHandler
     @SubscribeEvent
     public static void registerRecipes(RegistryEvent.Register<IRecipe> event)
     {
-        AnvilRecipe.register(new AnvilRecipe(new ItemStack(Items.ARROW), 4, Items.PAPER, "ingotIron", null, Items.COAL, Items.BONE, Items.APPLE, Items.BEEF));
+        AnvilRecipe.recipes.put("test",
+                new AnvilRecipe(new ItemStack(Items.ARROW),
+                        4,
+                        Items.PAPER,
+                        "ingotIron",
+                        null,
+                        Items.COAL, Items.BONE, Items.APPLE, Items.BEEF));
     }
 
     @SubscribeEvent
